@@ -118,6 +118,9 @@ test('HTML superscripts and subscripts cannot silently change numerical meaning'
   const result = await convert('limits.html', Buffer.from('<p>Maximum capacity is 10<sup>3</sup> requests; formula H<sub>2</sub>O.</p>'));
   assert.match(result.chunks[0].text, /10<sup>3<\/sup> requests/);
   assert.match(result.chunks[0].text, /H<sub>2<\/sub>O/);
+  const math = '<math><msup><mn>10</mn><mn>3</mn></msup><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></math>';
+  const formula = await convert('formula.htm', Buffer.from(`<p>Limit: ${math} requests.</p>`));
+  assert.ok(formula.chunks[0].text.includes(math));
 });
 
 test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {

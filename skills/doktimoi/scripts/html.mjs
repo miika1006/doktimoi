@@ -10,6 +10,7 @@ export function html(buffer) {
     filter: ['sup', 'sub'],
     replacement: (content, node) => `<${node.nodeName.toLowerCase()}>${content}</${node.nodeName.toLowerCase()}>`,
   });
+  converter.addRule('math', { filter: 'math', replacement: (_, node) => node.outerHTML });
   converter.addRule('checkbox', {
     filter: node => node.nodeName === 'INPUT' && node.type === 'checkbox',
     replacement: (_, node) => node.hasAttribute('checked') ? '[x] ' : '[ ] ',
