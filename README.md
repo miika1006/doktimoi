@@ -2,14 +2,15 @@
 
 A Claude Code and Codex skill for finding answers in local documentation with
 small, source-cited context. Supports Markdown, plain text, Word (`.docx`/`.doc`), Excel
-(`.xlsx`/`.xls`), PDF, and PNG/JPEG/WebP images.
+(`.xlsx`/`.xls`), PowerPoint (`.pptx`), PDF, draw.io, CSV, YAML, JSON, and
+PNG/JPEG/WebP images.
 
 Built on **[QMD](https://github.com/tobi/qmd)**, a local search engine with keyword
 (BM25) and semantic search. QMD does the retrieval; your assistant writes the answer.
 
 ## What Doktimoi adds
 
-- **Document ingestion and local OCR**, including images embedded in Word and PDF.
+- **Document ingestion and local OCR**, including images embedded in Word, Excel, PowerPoint and PDF.
   Citations retain source files, Markdown lines, PDF pages or Excel sheets/cells.
 - **Automatic refresh before searching** when documents are added, edited, or deleted.
 - **Token-budgeted output**: selected source passages, defaulting to 1600 tokens,
@@ -32,7 +33,8 @@ Open your documentation folder and ask:
 ## Install
 
 Requires **Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+** on the machine running
-the assistant. Upgrade an older npm with `npm install --global npm@latest`.
+the assistant. Setup reuses nvm on Windows when available; switching Node or
+updating npm may require your administrator terminal.
 
 ### Ask your assistant
 
@@ -70,12 +72,13 @@ and [Codex skill](https://learn.chatgpt.com/docs/build-skills) instructions.
 Doktimoi stores a disposable, machine-only index in `.doktimoi/`. Search runs
 locally; only selected passages enter your assistant's normal model context.
 Keyword search needs no AI model. Optional semantic search downloads and runs a
-local embedding model. Source documents are not rewritten.
+local embedding model. Setup explains the tradeoffs and asks whether to enable
+it. Source documents are not rewritten.
 
 OCR downloads English/Finnish recognition data on first use and runs locally.
-Legacy `.doc` conversion also requires LibreOffice. OCR can misread text; inspect
-the linked image for critical facts and diagrams. Excel charts/images are not
-extracted, and formulas use cached results. Token counts are estimates.
+Legacy `.doc` and `.xls` image conversion also require LibreOffice. OCR can misread text; inspect
+the linked image for critical facts and diagrams. Complex chart/diagram/layout content may need direct inspection, and Excel
+formulas use cached results. Token counts are estimates.
 
 Search checks file metadata and verifies returned sources against their hashes;
 `--verify` rehashes every source. A tiny folder may be cheaper to read directly.

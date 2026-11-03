@@ -11,6 +11,10 @@
 - `formats/`: fictional PDF, image-bearing Word/DOC, image and legacy XLS fixtures
   with known answers for extraction tests. `benchmarks/create-formats.py` regenerates
   PDF/PNG/DOCX; the DOC copy was exported with LibreOffice and XLS with SheetJS.
+- `extended/`: fictional PowerPoint and Excel workbooks containing an approval
+  image. Regenerate PPTX/XLSX with `benchmarks/create-office-images.py` (dev-only
+  python-pptx/openpyxl/Pillow); export the XLS copy with LibreOffice using
+  `--headless --convert-to "xls:MS Excel 97" --outdir examples/extended examples/extended/image-policy.xlsx`.
 - `product-case/`: fictional customer meeting requirements for a gap-analysis
   exercise. Keep these distinguishable from the product's actual capabilities.
 

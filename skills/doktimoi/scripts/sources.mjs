@@ -4,10 +4,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import ignore from 'ignore';
 import { fromMarkdown } from 'mdast-util-from-markdown';
-import { createExtraction, legacyDoc } from './extraction.mjs';
+import { createExtraction, legacyDoc, legacyOffice } from './extraction.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
-export const supported = new Set(['.md', '.markdown', '.txt', '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp']);
+export const supported = new Set(['.md', '.markdown', '.txt', '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.csv', '.yaml', '.yml', '.json', '.pptx']);
 const excluded = new Set(['node_modules', 'vendor', 'dist', 'build', 'coverage']);
 
 export async function safePath(root, relative) {
@@ -74,7 +74,7 @@ export async function inventory(root) {
         if (!gitFiles || gitDirs.has(relative)) await visit(path.join(dir, entry.name), localRules);
       }
       else if (entry.isFile() && (!gitFiles || gitFiles.has(relative))) {
-        if (supported.has(path.extname(entry.name).toLowerCase())) files.push(relative);
+        if (supported.has(path.extname(entry.name).toLowerCase()) || entry.name.toLowerCase().endsWith('.drawio.xml')) files.push(relative);
         else unsupported.push(relative);
       }
     }
@@ -125,6 +125,14 @@ async function convertWithContext(source, buffer, extraction) {
   if (['.md', '.markdown', '.txt'].includes(extension)) {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
     return { chunks: chunkMarkdown(text, source), warnings: [] };
+  }
+  if (extension === '.csv') return (await import('./structured.mjs')).csv(source, buffer);
+  if (['.json', '.yaml', '.yml'].includes(extension)) return (await import('./structured.mjs')).structured(source, buffer, extension === '.json');
+  if (extension === '.drawio' || source.toLowerCase().endsWith('.drawio.xml')) return (await import('./drawio.mjs')).drawio(source, buffer);
+  if (extension === '.pptx') {
+    const result = await (await import('./office.mjs')).powerpoint(buffer, extraction);
+    return { chunks: result.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
+      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))), warnings: result.warnings };
   }
   if (extension === '.pdf') {
     const result = await extraction.pdf(buffer);
@@ -207,7 +215,12 @@ async function convertWithContext(source, buffer, extraction) {
       }
       flush();
     }
-    return { chunks, warnings: ['Excel: formulas are not recalculated; cached results may be stale. Images/charts are not indexed.'] };
+    const { spreadsheetImages, legacyHasDrawings } = await import('./office.mjs');
+    const drawings = extension === '.xlsx' || legacyHasDrawings(buffer, XLSX);
+    const images = drawings ? await spreadsheetImages(extension === '.xls' ? await legacyOffice(buffer, '.xls') : buffer, extraction) : { segments: [], warnings: [] };
+    chunks.push(...images.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
+      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))));
+    return { chunks, warnings: ['Excel: formulas are not recalculated; cached results may be stale. Charts, in-cell rich-data images and embedded objects may need inspection.', ...images.warnings] };
   }
   throw new Error(`Unsupported source format: ${extension}`);
 }

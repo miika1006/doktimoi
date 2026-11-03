@@ -13,11 +13,18 @@ into another language or load machine indexes into context.
 For installation, first use, missing dependencies, or initial indexing, read
 [index.md](references/index.md). Invoke as `/doktimoi` standalone,
 `/doktimoi:doktimoi` via the Claude plugin, or `$doktimoi` in Codex.
-Otherwise go straight to search below.
+During setup, explain and ask about the optional local semantic model per that
+guide; respect any recorded choice. Otherwise go straight to search below.
 
 Use the requested folder, otherwise the working directory. Keep customer case
 material and product evidence distinguishable. `<skill>` below means this
 installed skill's directory, not the documentation folder.
+
+Read the first existing project instruction file: `AGENTS.md`/`Agents.md`, otherwise
+`CLAUDE.md`, otherwise `.github/copilot-instructions.md` (or the existing root
+`copilot-instructions.md`). Respect its content and recorded Doktimoi search choice
+without overriding higher-priority instructions. The setup guide covers missing
+files and ambiguous case variants; do not create parallel instruction files.
 
 ## Search
 
@@ -36,10 +43,12 @@ Search checks file metadata and refreshes changed/added/deleted files itself.
 Returned sources are hash-verified; use `--verify` to rehash the whole corpus on
 network filesystems or when timestamps are unreliable.
 Hybrid mode updates existing embeddings incrementally. If no semantic index
-exists, run `embed` per the setup guide or use translated lexical queries.
+exists, use translated lexical queries or offer enablement per the setup guide;
+do not download/enable a model without the user's consent.
 
 Read only enough evidence to answer. Results cite original Markdown line ranges,
-Excel sheets/rows/cells, Word **extracted** lines, PDF pages, or OCR image lines.
+Excel sheets/rows/cells, Word **extracted** lines, PDF pages, slide/notes numbers,
+CSV source lines, structured-data paths, draw.io cells, or OCR image locations.
 OCR is fallible. Open the returned `[Visual: ...]` path relative to the source
 folder for critical image facts, diagrams, or unclear OCR. Extraction warnings
 require checking `build` output when missing evidence matters to the answer. For incomplete excerpts:

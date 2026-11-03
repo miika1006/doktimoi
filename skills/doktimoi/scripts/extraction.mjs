@@ -135,23 +135,27 @@ export function createExtraction(assetDir) {
 }
 
 // Use a private profile with macros disabled, so an open LibreOffice cannot intercept conversion.
-export async function legacyDoc(buffer) {
+export const legacyDoc = buffer => legacyOffice(buffer, ".doc");
+
+export async function legacyOffice(buffer, extension) {
+  const conversion = { ".doc": ["docx:Office Open XML Text", ".docx"], ".xls": ["xlsx:Calc MS Excel 2007 XML", ".xlsx"] }[extension];
+  if (!conversion) throw new Error("Unsupported legacy Office conversion");
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-doc-'));
   try {
     const profile = path.join(temp, 'profile');
     await fs.mkdir(path.join(profile, 'user'), { recursive: true });
-    await fs.writeFile(path.join(profile, 'user/registrymodifications.xcu'), '<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Writer/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item></oor:items>');
-    const input = path.join(temp, 'input.doc');
+    await fs.writeFile(path.join(profile, 'user/registrymodifications.xcu'), '<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Writer/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>1</value></prop></item></oor:items>');
+    const input = path.join(temp, `input${extension}`);
     await fs.writeFile(input, buffer);
     const executable = await findSoffice();
     try {
       await run(executable, [`-env:UserInstallation=${pathToFileURL(profile).href}`, '--headless', '--nologo', '--nodefault', '--norestore',
-        '--convert-to', 'docx:Office Open XML Text', '--outdir', temp, input], { timeout: 120000, maxBuffer: 1024 * 1024 });
+        '--convert-to', conversion[0], '--outdir', temp, input], { timeout: 120000, maxBuffer: 1024 * 1024 });
     } catch (e) {
-      if (e.code === 'ENOENT') throw new Error('Legacy .doc requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable');
+      if (e.code === 'ENOENT') throw new Error(`Legacy ${extension} requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable`);
       throw e;
     }
-    return await fs.readFile(path.join(temp, 'input.docx'));
+    return await fs.readFile(path.join(temp, `input${conversion[1]}`));
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 }
 
