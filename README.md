@@ -31,7 +31,8 @@ Open your documentation folder and ask:
 
 ## Install
 
-Requires **Node.js 22.13+ and npm** on the machine running the assistant.
+Requires **Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+** on the machine running
+the assistant. Upgrade an older npm with `npm install --global npm@latest`.
 
 ### Ask your assistant
 

@@ -85,8 +85,8 @@ export function createExtraction(assetDir) {
     const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
     const base = path.dirname(require.resolve('pdfjs-dist/package.json'));
     const task = pdfjs.getDocument({ data: new Uint8Array(buffer), isEvalSupported: false,
-      cMapUrl: path.join(base, 'cmaps/'), cMapPacked: true,
-      standardFontDataUrl: path.join(base, 'standard_fonts/'), useSystemFonts: false });
+      cMapUrl: path.join(base, 'cmaps').replaceAll('\\', '/') + '/', cMapPacked: true,
+      standardFontDataUrl: path.join(base, 'standard_fonts').replaceAll('\\', '/') + '/', useSystemFonts: false });
     const doc = await task.promise;
     const segments = [], warnings = [];
     try {

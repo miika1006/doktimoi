@@ -1,9 +1,11 @@
 # Setup
 
-Requires Node.js 22.13+ and the dependencies in this skill's package-lock.json:
+Requires Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+. Use the dependencies in
+this skill's package-lock.json. Older npm can incorrectly rebuild native SQLite
+on Windows; update npm with `npm install --global npm@latest` before installation.
 
 The Claude marketplace installs the skill files, not npm packages. On first use,
-check `node --version` and install dependencies in this installed skill directory
+check `node --version` and `npm --version`, then install dependencies in this installed skill directory
 (the directory containing SKILL.md and package.json), then build the target folder.
 Use the same setup after a standalone URL installation if dependencies are absent.
 

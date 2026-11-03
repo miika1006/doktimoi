@@ -29,7 +29,7 @@ export function excerpt(text, query, maxChars = 600, db) {
       db.prepare('INSERT INTO temp.doktimoi_excerpt(body) VALUES (?)').run(text);
       const row = db.prepare("SELECT snippet(doktimoi_excerpt, 0, '', '', ' … ', 48) AS text FROM temp.doktimoi_excerpt WHERE doktimoi_excerpt MATCH ?")
         .get(terms.map(term => `"${term}"*`).join(' OR '));
-      if (row?.text && row.text.length <= maxChars) return row.text;
+      if (row?.text) return row.text;
     } finally { db.exec('DELETE FROM temp.doktimoi_excerpt'); }
   }
   const hit = extractSnippet(text, terms.join(' '), maxChars);

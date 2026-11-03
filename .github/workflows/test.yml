@@ -20,6 +20,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
           cache-dependency-path: skills/doktimoi/package-lock.json
+      - run: npm install --global npm@12.2.1
       - run: npm ci --prefix skills/doktimoi
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libreoffice-writer

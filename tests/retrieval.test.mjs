@@ -262,3 +262,11 @@ test('an incomplete database rebuild fails and retries after unreadable chunks r
   try { assert.match((await project.search(['ZEBRASKIPPED'])).payload.results[0].text, /requires approval/); }
   finally { await project.close(); }
 });
+
+test('stemmed excerpts survive long words without reverting to unrelated headings', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'long.md'), '# Policy\n\n' + 'internationalization '.repeat(1000) + 'All requests must be approved by the manager.');
+  const { payload } = await project.search(['approvals'], { budget: 300 });
+  assert.match(payload.results[0].text, /approved by the manager/);
+  assert.ok(tokens(render(payload)) <= 300);
+});
