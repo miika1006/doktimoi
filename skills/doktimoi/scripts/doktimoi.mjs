@@ -19,11 +19,24 @@ export function tokens(text) {
 
 export const reference = item => `${item.source}:${item.location.replace(/^lines:/, '')}`;
 
+export function excerpt(text, query, maxChars = 600) {
+  const hit = extractSnippet(text, query, maxChars);
+  const lines = text.split('\n');
+  const window = lines.slice(Math.max(0, hit.line - 2), hit.line + 2).join('\n');
+  if (window.length <= maxChars) return window;
+  const line = lines[hit.line - 1];
+  const terms = (query.match(/[\p{L}\p{N}_]+/gu) ?? []).sort((a, b) => b.length - a.length);
+  const lower = line.toLowerCase();
+  const match = terms.map(term => lower.indexOf(term.toLowerCase())).find(index => index >= 0) ?? 0;
+  const start = Math.max(0, match - Math.floor(maxChars / 3));
+  return line.slice(start, start + maxChars);
+}
+
 export function render(payload) {
   if (!payload.results.length) return payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.';
   let text = payload.results.map(item => {
     const heading = item.heading && (!item.text.startsWith('#') || item.heading.includes(' > ')) ? `${item.heading}\n` : '';
-    return `${reference(item)}\n${heading}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
+    return `${reference(item)}\n${heading}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.warning ? `\n[${item.warning}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
   }).join('\n\n');
   if (payload.more) text += '\n[More matches available.]';
   if (payload.note) text += `\n[${payload.note}]`;
@@ -32,7 +45,7 @@ export function render(payload) {
 
 export async function openProject(directory) {
   const root = await fs.realpath(directory);
-  const converterVersion = JSON.stringify({ version: 2, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 3, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
@@ -46,6 +59,8 @@ export async function openProject(directory) {
   try {
     const chunkDir = path.join(cache, 'chunks');
     await fs.mkdir(chunkDir, { recursive: true });
+    const databaseExists = await fs.stat(path.join(cache, 'index.sqlite')).then(() => true, e => { if (e.code !== 'ENOENT') throw e; return false; });
+    if (!databaseExists) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
     store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
       collections: { docs: { path: chunkDir, pattern: '*.md' } },
     } });
@@ -125,6 +140,10 @@ export async function openProject(directory) {
         for (const name of await fs.readdir(visualDir).catch(e => { if (e.code !== 'ENOENT') throw e; return []; })) {
           if (/^[a-f0-9]{64}\.png$/.test(name) && !visuals.has(`.doktimoi/visuals/${name}`)) await fs.unlink(path.join(visualDir, name));
         }
+        const ocrDir = path.join(cache, 'ocr');
+        for (const name of await fs.readdir(ocrDir).catch(e => { if (e.code !== 'ENOENT') throw e; return []; })) {
+          if (/^[a-f0-9]{64}-[a-z+]+\.json$/.test(name) && !visuals.has(`.doktimoi/visuals/${name.slice(0, 64)}.png`)) await fs.unlink(path.join(ocrDir, name));
+        }
       } else if (touched) {
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
       }
@@ -143,7 +162,9 @@ export async function openProject(directory) {
       const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8');
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
       if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
-      return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, text: body.slice(body.indexOf('\n\n') + 2) };
+      const warnings = manifest.files[entry.source].warnings;
+      const warning = warnings.length ? `Extraction: ${warnings.join(' ').slice(0, 240)}${warnings.join(' ').length > 240 ? '… (build lists details)' : ''}` : undefined;
+      return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, warning, text: body.slice(body.indexOf('\n\n') + 2) };
     }
 
     return {
@@ -184,13 +205,14 @@ export async function openProject(directory) {
           const item = await evidence(id);
           let candidate = item;
           if (tokens(render({ results: [...results, candidate] })) > budget - 100) {
-            candidate = { ...item, text: extractSnippet(item.text, queries.join(' '), 600).snippet, excerpt: true };
+            candidate = { ...item, text: excerpt(item.text, queries.join(' ')), excerpt: true };
           }
           if (tokens(render({ results: [...results, candidate] })) > budget - 100) { omitted++; continue; }
           results.push(candidate);
         }
         const payload = { results, more: omitted > 0 || found.length > results.length };
         if (results.some(r => /\.xlsx?$/i.test(r.source))) payload.note = 'Excel formula results are cached, not recalculated.';
+        if (update.warnings.length) payload.note = [payload.note, `Extraction may be incomplete (${update.warnings.length} warnings); run build for details.`].filter(Boolean).join(' ');
         return { payload, metrics: { updateMs: update.ms, searchMs: Math.round((performance.now() - started) * 100) / 100,
           resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
           unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };

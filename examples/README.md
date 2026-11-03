@@ -8,6 +8,9 @@
 - `product/`: fictional product with three source repositories, limitations,
   integrations, security rules and a roadmap. The `example.invalid` URLs are
   placeholders, not repositories to fetch.
+- `formats/`: fictional PDF, image-bearing Word/DOC, image and legacy XLS fixtures
+  with known answers for extraction tests. `benchmarks/create-formats.py` regenerates
+  PDF/PNG/DOCX; the DOC copy was exported with LibreOffice and XLS with SheetJS.
 - `product-case/`: fictional customer meeting requirements for a gap-analysis
   exercise. Keep these distinguishable from the product's actual capabilities.
 

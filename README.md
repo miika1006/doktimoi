@@ -1,16 +1,16 @@
 # Doktimoi
 
 A Claude Code and Codex skill for finding answers in local documentation with
-small, source-cited context. Supports Markdown, plain text, Word (`.docx`), and
-Excel (`.xlsx`).
+small, source-cited context. Supports Markdown, plain text, Word (`.docx`/`.doc`), Excel
+(`.xlsx`/`.xls`), PDF, and PNG/JPEG/WebP images.
 
 Built on **[QMD](https://github.com/tobi/qmd)**, a local search engine with keyword
 (BM25) and semantic search. QMD does the retrieval; your assistant writes the answer.
 
 ## What Doktimoi adds
 
-- **Word and Excel ingestion**, with references to original files, extracted Word
-  text, and Excel sheets/cells. Markdown references retain original line ranges.
+- **Document ingestion and local OCR**, including images embedded in Word and PDF.
+  Citations retain source files, Markdown lines, PDF pages or Excel sheets/cells.
 - **Automatic refresh before searching** when documents are added, edited, or deleted.
 - **Token-budgeted output**: selected source passages, defaulting to 1600 tokens,
   instead of loading the index into the assistant's context.
@@ -31,7 +31,7 @@ Open your documentation folder and ask:
 
 ## Install
 
-Requires **Node.js 22+ and npm** on the machine running the assistant.
+Requires **Node.js 22.13+ and npm** on the machine running the assistant.
 
 ### Ask your assistant
 
@@ -71,9 +71,13 @@ locally; only selected passages enter your assistant's normal model context.
 Keyword search needs no AI model. Optional semantic search downloads and runs a
 local embedding model. Source documents are not rewritten.
 
-No PDF/OCR, legacy `.doc`/`.xls`, or image/chart extraction. Excel formulas use
-cached results. Token counts are estimates, and freshness checks read source bytes
-on every search. A tiny folder may be cheaper to read directly.
+OCR downloads English/Finnish recognition data on first use and runs locally.
+Legacy `.doc` conversion also requires LibreOffice. OCR can misread text; inspect
+the linked image for critical facts and diagrams. Excel charts/images are not
+extracted, and formulas use cached results. Token counts are estimates.
+
+Search checks file metadata and verifies returned sources against their hashes;
+`--verify` rehashes every source. A tiny folder may be cheaper to read directly.
 
 [Setup and CLI](skills/doktimoi/references/index.md) ·
 [Search workflow](skills/doktimoi/SKILL.md) ·

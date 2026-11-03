@@ -62,8 +62,14 @@ export async function inventory(root) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || entry.name.startsWith('~$') || excluded.has(entry.name) || entry.isSymbolicLink()) continue;
       const relative = [relativeDir, entry.name].filter(Boolean).join('/');
-      if (!gitFiles && localRules.some(({ base, matcher }) =>
-        matcher.ignores((base ? relative.slice(base.length + 1) : relative) + (entry.isDirectory() ? '/' : '')))) continue;
+      if (!gitFiles) {
+        let ignored = false;
+        for (const { base, matcher } of localRules) {
+          const result = matcher.test((base ? relative.slice(base.length + 1) : relative) + (entry.isDirectory() ? '/' : ''));
+          if (result.ignored || result.unignored) ignored = result.ignored;
+        }
+        if (ignored) continue;
+      }
       if (entry.isDirectory()) {
         if (!gitFiles || gitDirs.has(relative)) await visit(path.join(dir, entry.name), localRules);
       }
@@ -138,17 +144,22 @@ async function convertWithContext(source, buffer, extraction) {
       import('mammoth'), import('turndown'), import('turndown-plugin-gfm'),
     ]);
     const images = [];
+    let imageError;
     const result = await mammoth.convertToHtml({ buffer }, {
       externalFileAccess: false,
       includeEmbeddedStyleMap: false,
       convertImage: mammoth.images.imgElement(async image => {
         const entry = { number: images.length + 1 };
         images.push(entry);
-        const raw = await image.readAsBuffer();
-        Object.assign(entry, await extraction.ocr(raw));
+        try {
+          const raw = await image.readAsBuffer();
+          Object.assign(entry, await extraction.ocr(raw));
+        } catch (error) { imageError ??= error; throw error; }
         return { src: `doktimoi-image:${entry.number}`, alt: `Image ${entry.number}; OCR indexed separately` };
       }),
     });
+    // Mammoth converts image callback failures to warnings; an incomplete index must fail.
+    if (imageError) throw new Error(`Word image extraction failed: ${imageError.message}`, { cause: imageError });
     const converter = new Turndown({ headingStyle: 'atx' });
     converter.use(gfm.gfm);
     converter.addRule('image-reference', { filter: 'img', replacement: (_, node) => `[${node.getAttribute('alt')}]` });

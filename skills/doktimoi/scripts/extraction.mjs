@@ -9,6 +9,12 @@ import { promisify } from 'node:util';
 
 const run = promisify(execFile);
 const require = createRequire(import.meta.url);
+
+export function additionalOcrLines(ocrText, nativeText) {
+  const normalize = text => text.trim().replace(/\s+/g, ' ').toLowerCase();
+  const native = new Set(nativeText.split('\n').map(normalize));
+  return ocrText.split('\n').filter(line => normalize(line) && !native.has(normalize(line))).join('\n');
+}
 export function extractionConfig() {
   const languages = process.env.DOKTIMOI_OCR_LANGUAGES ?? 'eng+fin';
   const mode = process.env.DOKTIMOI_OCR ?? 'auto';
@@ -106,9 +112,7 @@ export function createExtraction(assetDir) {
             await page.render({ canvasContext: surface.context, viewport }).promise;
             const result = await ocr(surface.canvas.toBuffer('image/png'));
             // Avoid repeating the native text layer when OCR sees the same lines.
-            const normalize = s => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-            const native = normalize(text);
-            const extra = result.text.split('\n').filter(line => normalize(line) && !native.includes(normalize(line))).join('\n');
+            const extra = additionalOcrLines(result.text, text);
             if (extra || !text) segments.push({ text: extra || '[Visual content; no readable text detected. Inspect the image.]',
               location: `page:${number}:ocr-lines`, heading: `Page ${number} OCR (confidence ${Math.round(result.confidence ?? 0)})`, visual: result.visual });
             else segments.at(-1).visual = result.visual;

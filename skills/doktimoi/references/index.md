@@ -1,6 +1,6 @@
 # Setup
 
-Requires Node.js 22+ and the dependencies in this skill's package-lock.json:
+Requires Node.js 22.13+ and the dependencies in this skill's package-lock.json:
 
 The Claude marketplace installs the skill files, not npm packages. On first use,
 check `node --version` and install dependencies in this installed skill directory
@@ -8,13 +8,14 @@ check `node --version` and install dependencies in this installed skill director
 Use the same setup after a standalone URL installation if dependencies are absent.
 
 ```text
-npm ci --prefix <skill>
-node <skill>/scripts/doktimoi.mjs build <folder>
+npm ci --prefix "<skill>"
+node "<skill>/scripts/doktimoi.mjs" build "<folder>"
 ```
 
-The program indexes `.md`, `.markdown`, `.txt`, `.docx`, `.xlsx`. It reads Markdown
-without rewriting facts, converts Word with Mammoth and Excel with ExcelJS, and
-uses QMD/SQLite for search. Office converters are loaded only when needed.
+The program indexes `.md`, `.markdown`, `.txt`, `.docx`, `.doc`, `.xlsx`, `.xls`,
+`.pdf`, `.png`, `.jpg`, `.jpeg`, and `.webp`. It uses Mammoth for Word, ExcelJS
+for XLSX, SheetJS for XLS, PDF.js for PDF text/rendering, Tesseract.js for OCR,
+and QMD/SQLite for search. Converters are loaded only when needed.
 It skips symlinks, hidden paths, dependency/build directories and ignored files.
 Git's tracked/nonignored inventory is used within repositories. Unsupported
 formats and conversion warnings are reported; failed conversion aborts the query.
@@ -23,6 +24,26 @@ No source files are changed by the program.
 For a tiny folder, direct source reading may be cheaper than indexing. Decide by
 content volume and question, not file count. Do not pretend a fixed threshold or
 a particular backend is optimal for every corpus.
+
+## OCR and Windows
+
+Use the same quoted Node/npm commands in PowerShell, macOS or Linux terminals.
+Use Windows paths such as `"C:\Docs\Product"` for `<folder>`; do not require Bash.
+Legacy `.doc` needs LibreOffice installed locally. Its standard Windows/macOS
+location is detected; otherwise set `DOKTIMOI_SOFFICE` to the executable path
+(`soffice.exe` on Windows). No Python installation is needed by the skill.
+
+OCR defaults to English and Finnish (`DOKTIMOI_OCR_LANGUAGES=eng+fin`). Recognition
+data downloads on first use; subsequent recognition is local. `DOKTIMOI_OCR=off`
+disables OCR, while `always` also OCRs native-text PDF pages. The default `auto`
+OCRs PDF pages containing raster images or no native text, plus standalone and
+embedded Word images. Vector diagrams with native text still need inspection.
+Unsupported embedded image encodings can fail conversion; do not claim complete
+coverage after an extraction failure. `DOKTIMOI_OCR_CACHE` selects the model cache.
+
+For example, in PowerShell: `$env:DOKTIMOI_OCR_LANGUAGES = "eng+fin"`.
+OCR cannot establish a diagram's meaning; open cited visual files when needed.
+Images/charts inside Excel and exact Word layout are not extracted.
 
 ## Semantic search
 
@@ -33,8 +54,7 @@ node <skill>/scripts/doktimoi.mjs embed <folder>
 ```
 
 This downloads QMD's embedding model on first use, then computes embeddings
-locally. It requires additional disk/RAM and initialization time. Lexical search
-downloads no models. Hybrid search uses the embedding model plus lexical search;
+locally. It requires additional disk/RAM and initialization time. Lexical ranking downloads no language models; OCR may still download recognition data. Hybrid search uses the embedding model plus lexical search;
 it does not load a query-generation or reranking model. Search and conversion do
 not upload documents. The host assistant still uses its normal model service.
 
@@ -68,9 +88,12 @@ original locations. `chunks/` contains exact text blocks and structural context
 for the indexer; the assistant sees only selected evidence. JSON minification or
 cache file size is not a measure of model context consumption.
 
-Each search rescans the inventory and hashes source bytes, including new/deleted
-files. Only changed sources are reconverted. This favors correctness even when
-timestamps are preserved. The scan is O(corpus bytes); measure it on large corpora.
+Each search rescans the inventory and compares size, identity, modification and
+change timestamps. Changed files are hashed; only changed content is reconverted.
+Selected source bytes are always hash-verified. `build` and `search --verify` hash
+every source, useful when filesystem timestamps are unreliable. Unchanged searches
+scan O(file count) metadata plus returned source bytes. Changed Word text can reuse
+OCR for unchanged images. Visual and OCR caches are removed when no source uses them.
 A per-folder lock serializes writers and searches. A dirty marker forces repair
 after an interrupted update. A failed update returns an error, not stale evidence.
 Hybrid searches re-embed changed chunks when a semantic index already exists.

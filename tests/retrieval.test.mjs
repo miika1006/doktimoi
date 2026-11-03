@@ -120,7 +120,7 @@ test('path traversal, symlinks and ignored files cannot enter retrieval', async 
   await fs.writeFile(path.join(root, '.gitignore'), 'private/\n');
   await fs.mkdir(path.join(root, 'private'));
   await fs.writeFile(path.join(root, 'private/secret.md'), 'SECRET_MARKER');
-  await fs.symlink(path.join(root, 'private'), path.join(root, 'link'));
+  await fs.symlink(path.join(root, 'private'), path.join(root, 'link'), process.platform === 'win32' ? 'junction' : 'dir');
   await fs.writeFile(path.join(root, 'visible.md'), '# Visible\n\nPUBLIC_MARKER');
   await assert.rejects(safePath(root, '../outside'), /relative path/);
   await assert.rejects(safePath(root, 'link/secret.md'), /Symlink/);
@@ -189,4 +189,39 @@ test('downloaded Word and Excel fixtures produce searchable source-backed eviden
   assert.match(payload.results[0].text, /multiple agents/);
   const result = await project.search(['6ff4173b-42a5-4784-9b19-f49caff4d93d']);
   assert.equal(result.payload.results[0].source, 'example.xlsx');
+});
+
+
+test('a missing database is rebuilt from surviving source and chunk metadata', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-db-recovery-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.writeFile(path.join(root, 'policy.md'), '# Policy\n\nRECOVERY_MARKER requires approval.');
+  let project = await openProject(root);
+  try { await project.sync(); } finally { await project.close(); }
+  await fs.unlink(path.join(root, '.doktimoi/index.sqlite'));
+  project = await openProject(root);
+  try {
+    const result = await project.search(['RECOVERY_MARKER']);
+    assert.match(result.payload.results[0].text, /requires approval/);
+  } finally { await project.close(); }
+});
+
+test('a small excerpt retains the matching fact near the end of a long line', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'long.md'), '# Policy\n\n' + 'Ordinary introductory context. '.repeat(1000) + 'ZEBRALONGLINE requires 17 days notice.');
+  const { payload } = await project.search(['ZEBRALONGLINE'], { budget: 300 });
+  assert.equal(payload.results[0].excerpt, true);
+  assert.match(payload.results[0].text, /ZEBRALONGLINE requires 17 days notice/);
+  assert.ok(tokens(render(payload)) <= 300);
+});
+
+test('child ignore rules can restore files in non-Git documentation folders', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, '.gitignore'), '*.md\n');
+  await fs.mkdir(path.join(root, 'sub'));
+  await fs.writeFile(path.join(root, 'sub/.gitignore'), '!public.md\n');
+  await fs.writeFile(path.join(root, 'sub/public.md'), 'RESTORED_MARKER');
+  await fs.writeFile(path.join(root, 'sub/private.md'), 'EXCLUDED_MARKER');
+  assert.equal((await project.search(['RESTORED_MARKER'])).payload.results.length, 1);
+  assert.equal((await project.search(['EXCLUDED_MARKER'])).payload.results.length, 0);
 });

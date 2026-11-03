@@ -1,6 +1,6 @@
 ---
 name: doktimoi
-description: Search local product documentation, Word and Excel with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder.
+description: Search local product documentation, Office files, PDFs and images with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder.
 ---
 
 # Doktimoi
@@ -32,12 +32,17 @@ or cross-language questions, use `--mode hybrid` when embeddings are enabled.
 The first query is also the semantic query; put the natural-language question
 first in hybrid mode. Do not confuse a ranking score with confidence.
 
-Search checks source bytes and refreshes changed/added/deleted files itself.
+Search checks file metadata and refreshes changed/added/deleted files itself.
+Returned sources are hash-verified; use `--verify` to rehash the whole corpus on
+network filesystems or when timestamps are unreliable.
 Hybrid mode updates existing embeddings incrementally. If no semantic index
 exists, run `embed` per the setup guide or use translated lexical queries.
 
 Read only enough evidence to answer. Results cite original Markdown line ranges,
-Excel sheets/rows/cells, or DOCX **extracted** line ranges. For incomplete excerpts:
+Excel sheets/rows/cells, Word **extracted** lines, PDF pages, or OCR image lines.
+OCR is fallible. Open the returned `[Visual: ...]` path relative to the source
+folder for critical image facts, diagrams, or unclear OCR. Extraction warnings
+require checking `build` output when missing evidence matters to the answer. For incomplete excerpts:
 
 ```text
 node <skill>/scripts/doktimoi.mjs read <folder> "path.md:20-45" --from 1 --lines 40
