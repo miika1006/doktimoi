@@ -114,6 +114,12 @@ test('TSV keeps literal quotes and HTML task lists retain checked states', async
   assert.match(result.chunks[0].text, /\[ \] Approved/);
 });
 
+test('HTML superscripts and subscripts cannot silently change numerical meaning', async () => {
+  const result = await convert('limits.html', Buffer.from('<p>Maximum capacity is 10<sup>3</sup> requests; formula H<sub>2</sub>O.</p>'));
+  assert.match(result.chunks[0].text, /10<sup>3<\/sup> requests/);
+  assert.match(result.chunks[0].text, /H<sub>2<\/sub>O/);
+});
+
 test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-text-'));
   const project = await openProject(root);
