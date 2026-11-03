@@ -6,6 +6,7 @@ const MAX_PART = 64 * 1024 * 1024;
 export const elements = (node, name) => Array.from(node.getElementsByTagName('*')).filter(n => n.localName === name);
 export const relationId = (node, name = 'id') => Array.from(node.attributes ?? []).find(a => a.localName === name && a.prefix)?.value;
 export function xml(text) {
+  text = text.replace(/^\uFEFF/, '');
   if (/<!\s*(DOCTYPE|ENTITY)/i.test(text)) throw new Error('XML DTDs/entities are not allowed');
   return new DOMParser({ onError: (_level, message) => { throw new Error(message); } }).parseFromString(text, 'text/xml');
 }

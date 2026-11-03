@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { convert } from '../skills/doktimoi/scripts/sources.mjs';
 import { openProject, render, tokens, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
 
@@ -180,6 +182,36 @@ test('Excel embedded image OCR is cited to its sheet and anchor cell', async () 
   assert.ok(result.chunks.some(c => c.location.includes('Approval Policy') && c.location.includes('!D5:image:') && c.text.includes('8400')));
   assert.ok(result.chunks.some(c => c.text.includes('NATIVE_XLSX_MARKER')));
   await assert.rejects(convert('policy.xlsx', raw, { ocr: async () => { throw new Error('OCR unavailable'); } }), /OCR unavailable/);
+});
+
+test('Office XML BOMs preserve cell, slide and image evidence and allow CLI builds', async t => {
+  const { default: JSZip } = await import('../skills/doktimoi/node_modules/jszip/lib/index.js');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-office-bom-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  for (const name of ['image-policy.xlsx', 'image-policy.pptx']) {
+    const raw = await fs.readFile(new URL(name, extended));
+    const zip = await JSZip.loadAsync(raw);
+    for (const entry of Object.values(zip.files)) {
+      if (!entry.dir && /\.(xml|rels)$/.test(entry.name)) {
+        zip.file(entry.name, Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), await entry.async('nodebuffer')]));
+      }
+    }
+    const withBom = await zip.generateAsync({ type: 'nodebuffer' });
+    assert.deepEqual(await convert(name, withBom, mockOcr), await convert(name, raw, mockOcr));
+    await fs.writeFile(path.join(root, name), withBom);
+  }
+  const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
+  const options = { encoding: 'utf8', env: { ...process.env, DOKTIMOI_OCR: 'off' } };
+  const built = JSON.parse(execFileSync(process.execPath, [cli, 'build', root], options));
+  assert.equal(built.files, 2);
+  assert.match(execFileSync(process.execPath, [cli, 'search', root, '--query', 'NATIVE_XLSX_MARKER'], options), /NATIVE_XLSX_MARKER/);
+});
+
+test('XML strips only the leading BOM and still rejects malformed or unsafe XML', async () => {
+  const { xml } = await import('../skills/doktimoi/scripts/office.mjs');
+  assert.equal(xml('\uFEFF<?xml version="1.0"?><root>keep\uFEFFinside</root>').documentElement.textContent, 'keep\uFEFFinside');
+  assert.throws(() => xml('\uFEFFjunk<root/>'));
+  assert.throws(() => xml('\uFEFF<!DOCTYPE root><root/>'), /DTD/);
 });
 
 test('real PowerPoint and XLS/XLSX image evidence refreshes and remains source-backed', {
