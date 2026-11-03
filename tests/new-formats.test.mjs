@@ -123,6 +123,12 @@ test('HTML superscripts and subscripts cannot silently change numerical meaning'
   assert.ok(formula.chunks[0].text.includes(math));
 });
 
+test('HTML ordered lists keep explicit values, reverse order and nested numbering', async () => {
+  const result = await convert('codes.html', Buffer.from('<ol start="400"><li>Bad request</li><li value="403">Forbidden</li><li>Not found</li></ol><ol reversed><li>Latest<ol start="0"><li>Nested zero</li></ol></li><li>Previous</li></ol>'));
+  const text = result.chunks.map(c => c.text).join('\n');
+  for (const expected of ['400. Bad request', '403. Forbidden', '404. Not found', '2. Latest', '1. Previous', '0. Nested zero']) assert.ok(text.includes(expected), expected);
+});
+
 test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-text-'));
   const project = await openProject(root);

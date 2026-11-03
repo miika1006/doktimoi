@@ -11,6 +11,24 @@ export function html(buffer) {
     replacement: (content, node) => `<${node.nodeName.toLowerCase()}>${content}</${node.nodeName.toLowerCase()}>`,
   });
   converter.addRule('math', { filter: 'math', replacement: (_, node) => node.outerHTML });
+  const ordinals = new WeakMap();
+  const integer = value => /^[+-]?\d+$/.test(value?.trim() || '') ? BigInt(value.trim()) : null;
+  converter.addRule('ordered-item', {
+    filter: node => node.nodeName === 'LI' && node.parentNode.nodeName === 'OL',
+    replacement: (content, node) => {
+      if (!ordinals.has(node)) {
+        const list = node.parentNode, items = Array.from(list.children).filter(child => child.nodeName === 'LI');
+        const step = list.hasAttribute('reversed') ? -1n : 1n;
+        let number = integer(list.getAttribute('start')) ?? (step < 0n ? BigInt(items.length) : 1n);
+        for (const item of items) {
+          number = integer(item.getAttribute('value')) ?? number;
+          ordinals.set(item, number); number += step;
+        }
+      }
+      const prefix = `${ordinals.get(node)}. `;
+      return prefix + content.replace(/^\n+|\n+$/g, '').replace(/\n/g, '\n' + ' '.repeat(prefix.length)) + '\n';
+    },
+  });
   converter.addRule('checkbox', {
     filter: node => node.nodeName === 'INPUT' && node.type === 'checkbox',
     replacement: (_, node) => node.hasAttribute('checked') ? '[x] ' : '[ ] ',
