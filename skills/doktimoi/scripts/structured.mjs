@@ -83,3 +83,25 @@ export function structured(source, buffer, json = false) {
   }
   return { chunks, warnings: json ? [] : ['YAML: aliases, merge keys and custom tags are not evaluated; inspect definitions and comments in the source.'] };
 }
+
+// Mermaid is indexed as source lines; subgraph titles become chunk headings so labels keep their context.
+export function mermaid(source, buffer) {
+  const lines = decode(buffer).replace(/^\uFEFF/, '').split(/\r?\n/);
+  const chunks = [], stack = [];
+  let group = [], first = 1, size = 0, heading = '';
+  function flush(last) {
+    if (group.some(line => line.trim())) chunks.push({ source, location: `lines:${first}-${last}`, heading: heading || 'Mermaid', text: group.join('\n') });
+    group = []; size = 0;
+  }
+  for (const [index, line] of lines.entries()) {
+    const number = index + 1;
+    const subgraph = line.match(/^\s*subgraph\s+(.+?)\s*$/);
+    if (subgraph) { flush(number - 1); stack.push(subgraph[1].replace(/^[^\s[]+\s*\[\s*"?(.*?)"?\s*\]$/, '$1')); }
+    if (size + line.length > 1600) flush(number - 1);
+    if (!group.length) { first = number; heading = stack.join(' > '); }
+    group.push(line); size += line.length;
+    if (/^\s*end\s*$/.test(line)) { flush(number); stack.pop(); }
+  }
+  flush(lines.length);
+  return { chunks, warnings: ['Mermaid: indexed as source text; the diagram is not rendered, so arrow direction and layout require the original.'] };
+}

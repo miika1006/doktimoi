@@ -23,6 +23,33 @@ test('draw.io compressed and plain pages preserve graph endpoints and object met
   await assert.rejects(convert('bad.drawio', Buffer.from('<!DOCTYPE mxfile [<!ENTITY secret SYSTEM "file:///secret">]><mxfile>&secret;</mxfile>')), /DTD/);
 });
 
+test('Mermaid keeps labels on source lines with subgraph titles as headings', async () => {
+  const result = await convert('flow.mmd', Buffer.from('graph LR\n    subgraph HQ["Central server"]\n        CADDY["Caddy<br/>TLS gateway"]\n    end\n    APP -->|"OTLP push"| CADDY\n'));
+  const node = result.chunks.find(c => c.text.includes('TLS gateway'));
+  assert.equal(node.heading, 'Central server');
+  assert.equal(node.location, 'lines:2-4');
+  const edge = result.chunks.find(c => c.text.includes('OTLP push'));
+  assert.equal(edge.location, 'lines:5-6');
+  assert.equal(edge.heading, 'Mermaid');
+});
+
+test('SVG indexes visible text once and draw.io exports reuse the diagram converter', async () => {
+  const plain = await convert('plain.svg', Buffer.from('<?xml version="1.0"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<svg xmlns="http://www.w3.org/2000/svg"><title>Network map</title><desc>Firewall zones</desc><script>SCRIPT_MARKER</script><text>Port <tspan>443</tspan></text><switch><foreignObject><div xmlns="http://www.w3.org/1999/xhtml">Only <b>outbound</b><br/>link</div></foreignObject><text>Only outb...</text></switch></svg>'));
+  const text = plain.chunks.map(c => c.text).join('\n');
+  for (const value of ['Network map', 'Firewall zones', 'Port 443', 'Only outbound link']) assert.ok(text.includes(value), value);
+  assert.ok(!text.includes('SCRIPT_MARKER'));
+  assert.ok(!text.includes('outb...'));
+  const packed = deflateRawSync(Buffer.from(encodeURIComponent(model))).toString('base64');
+  const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  for (const diagram of [model, packed]) {
+    const result = await convert('process.drawio.svg', Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" content="${escape(`<mxfile><diagram name="P">${diagram}</diagram></mxfile>`)}"><text>Fallback</text></svg>`));
+    assert.match(result.chunks.find(c => c.location === 'page:1:cell:edge').text, /source=request "Request"; target=manager "Manager"/);
+    assert.ok(!result.chunks.some(c => c.text.includes('Fallback')));
+  }
+  await assert.rejects(convert('bad.svg', Buffer.from('<!DOCTYPE svg [<!ENTITY secret SYSTEM "file:///etc/passwd">]><svg xmlns="http://www.w3.org/2000/svg"><text>&secret;</text></svg>')), /DTD/);
+  await assert.rejects(convert('bomb.svg', Buffer.from('<?xml version="1.0"?><!DOCTYPE svg PUBLIC "a" "b" [<!ENTITY a "aaaa">]><svg><text>&a;</text></svg>')), /DTD/);
+});
+
 test('CSV preserves quoted newlines, leading zeroes, formulas as text and physical line citations', async () => {
   const result = await convert('case.csv', Buffer.from('ID;Note;Amount\r\n0012;"needs; approval\nnot self-approved";"=2+2"\r\n'));
   assert.equal(result.chunks[0].location, 'lines:1-3');
@@ -61,8 +88,8 @@ test('new text formats are searchable and references survive updates/deletions',
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-formats-'));
   const project = await openProject(root);
   t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
-  for (const [name, text] of Object.entries({ 'case.csv': 'ID,Rule\n42,CSV_MARKER\n', 'config.yaml': 'rule: YAML_MARKER\n', 'flags.json': '{"rule":"JSON_MARKER"}', 'process.drawio.xml': model })) await fs.writeFile(path.join(root, name), text);
-  for (const term of ['CSV_MARKER', 'YAML_MARKER', 'JSON_MARKER', 'requires approval']) {
+  for (const [name, text] of Object.entries({ 'case.csv': 'ID,Rule\n42,CSV_MARKER\n', 'config.yaml': 'rule: YAML_MARKER\n', 'flags.json': '{"rule":"JSON_MARKER"}', 'process.drawio.xml': model, 'flow.mmd': 'graph LR\n  A["MERMAID_MARKER"] --> B\n', 'map.svg': '<svg xmlns="http://www.w3.org/2000/svg"><text>SVG_MARKER</text></svg>' })) await fs.writeFile(path.join(root, name), text);
+  for (const term of ['CSV_MARKER', 'YAML_MARKER', 'JSON_MARKER', 'requires approval', 'MERMAID_MARKER', 'SVG_MARKER']) {
     const { payload } = await project.search([term]);
     assert.ok(payload.results.length);
     assert.ok(tokens(render(payload)) <= 1600);

@@ -3,7 +3,7 @@
 A Claude Code and Codex skill for finding answers in local documentation with
 small, source-cited context. Supports Markdown, plain text, Word (`.docx`/`.doc`), Excel
 (`.xlsx`/`.xls`), PowerPoint (`.pptx`), PDF, HTML (`.html`/`.htm`),
-RST, AsciiDoc, draw.io, CSV/TSV, YAML, JSON, and
+RST, AsciiDoc, draw.io, Mermaid (`.mmd`), SVG, CSV/TSV, YAML, JSON, and
 PNG/JPEG/WebP images.
 
 Built on **[QMD](https://github.com/tobi/qmd)**, a local search engine with keyword

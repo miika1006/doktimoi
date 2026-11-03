@@ -8,7 +8,7 @@ import { createExtraction, legacyDoc, legacyOffice } from './extraction.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
 const textFormats = new Set(['.md', '.markdown', '.txt', '.text', '.rst', '.adoc', '.asciidoc']);
-export const supported = new Set([...textFormats, '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.csv', '.tsv', '.yaml', '.yml', '.json', '.pptx', '.html', '.htm']);
+export const supported = new Set([...textFormats, '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.svg', '.mmd', '.csv', '.tsv', '.yaml', '.yml', '.json', '.pptx', '.html', '.htm']);
 const excluded = new Set(['node_modules', 'vendor', 'dist', 'build', 'coverage']);
 
 export async function safePath(root, relative) {
@@ -135,6 +135,11 @@ async function convertWithContext(source, buffer, extraction) {
   if (extension === '.csv' || extension === '.tsv') return (await import('./structured.mjs')).csv(source, buffer);
   if (['.json', '.yaml', '.yml'].includes(extension)) return (await import('./structured.mjs')).structured(source, buffer, extension === '.json');
   if (extension === '.drawio' || source.toLowerCase().endsWith('.drawio.xml')) return (await import('./drawio.mjs')).drawio(source, buffer);
+  if (extension === '.mmd') return (await import('./structured.mjs')).mermaid(source, buffer);
+  if (extension === '.svg') {
+    const result = (await import('./svg.mjs')).svg(source, buffer);
+    return result.chunks ? result : { chunks: chunkMarkdown(result.text, source, 'extracted-lines'), warnings: result.warnings };
+  }
   if (extension === '.pptx') {
     const result = await (await import('./office.mjs')).powerpoint(buffer, extraction);
     return { chunks: result.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)

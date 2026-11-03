@@ -48,7 +48,7 @@ do not download/enable a model without the user's consent.
 
 Read only enough evidence to answer. Results cite original Markdown line ranges,
 Excel sheets/rows/cells, Word/HTML **extracted** lines, PDF pages, slide/notes numbers,
-CSV/TSV and plain-text source lines, structured-data paths, draw.io cells, or OCR image locations.
+CSV/TSV and plain-text source lines, structured-data paths, draw.io cells, Mermaid source lines, SVG text, or OCR image locations.
 OCR is fallible. Open the returned `[Visual: ...]` path relative to the source
 folder for critical image facts, diagrams, or unclear OCR. Extraction warnings
 require checking `build` output when missing evidence matters to the answer. For incomplete excerpts:

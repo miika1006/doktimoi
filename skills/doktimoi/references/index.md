@@ -36,7 +36,7 @@ node "<skill>/scripts/doktimoi.mjs" build "<folder>"
 
 The program indexes `.md`, `.markdown`, `.txt`, `.text`, `.rst`, `.adoc`, `.asciidoc`,
 `.docx`, `.doc`, `.xlsx`, `.xls`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.webp`,
-`.drawio`/`.drawio.xml`, `.csv`, `.tsv`,
+`.drawio`/`.drawio.xml`, `.mmd`, `.svg`, `.csv`, `.tsv`,
 `.yaml`/`.yml`, `.json`, `.pptx`, and `.html`/`.htm`. It uses Turndown for HTML, Mammoth for Word, SheetJS
 for XLS/XLSX, PDF.js for PDF text/rendering, Tesseract.js for OCR,
 and QMD/SQLite for search. Converters are loaded only when needed.
@@ -72,7 +72,10 @@ Embedded drawing images in Excel and slide/notes images in PowerPoint are OCRed.
 Excel charts/in-cell rich-data images, PowerPoint charts/SmartArt/master content,
 and exact visual layout may still require inspection. Linked external images are
 reported but never downloaded. draw.io preserves labels and connector endpoints;
-arrow styles are not interpreted as process direction. JSON/YAML retain source
+arrow styles are not interpreted as process direction. Mermaid is indexed as
+source lines with subgraph titles as headings; it is not rendered. SVG text,
+titles and descriptions are indexed without scripts, DTDs or linked resources;
+draw.io SVG exports are read from their embedded diagram. JSON/YAML retain source
 ranges and structural paths; YAML aliases and tags are not evaluated. CSV fields
 remain strings, with column numbers and physical source line ranges.
 TSV uses tab separators and literal quotes (no CSV-style quoting). Plain-text formats require UTF-8; RST and AsciiDoc retain
