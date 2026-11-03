@@ -308,6 +308,6 @@ async function main() {
   } finally { await project.close(); }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === fileURLToPath(import.meta.url)) {
   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });
 }

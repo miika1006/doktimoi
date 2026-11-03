@@ -270,3 +270,16 @@ test('stemmed excerpts survive long words without reverting to unrelated heading
   assert.match(payload.results[0].text, /approved by the manager/);
   assert.ok(tokens(render(payload)) <= 300);
 });
+
+test('the CLI runs through the symlink used by npm executables', {
+  skip: process.platform === 'win32' && 'npm uses command shims rather than POSIX symlinks on Windows',
+}, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-cli-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const link = path.join(root, 'doktimoi');
+  await fs.symlink(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url), link);
+  await fs.writeFile(path.join(root, 'policy.md'), '# Policy\n\nSYMLINK_CLI requires approval.');
+  const output = execFileSync(process.execPath, [link, 'search', root, '--query', 'SYMLINK_CLI'], { encoding: 'utf8' });
+  assert.match(output, /policy.md:/);
+  assert.match(output, /SYMLINK_CLI requires approval/);
+});
