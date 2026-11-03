@@ -239,3 +239,26 @@ test('empty search output retains incomplete-extraction warnings', () => {
   assert.match(render({ results: [], note: 'OCR is disabled.' }), /OCR is disabled/);
   assert.match(render({ results: [], more: true, note: 'OCR is disabled.' }), /OCR is disabled/);
 });
+
+test('an incomplete database rebuild fails and retries after unreadable chunks recover', {
+  skip: process.platform === 'win32' && 'Windows chmod does not remove read access',
+}, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-skipped-'));
+  await fs.writeFile(path.join(root, 'policy.md'), '# Policy\n\nZEBRASKIPPED requires approval.');
+  let project = await openProject(root);
+  let chunk;
+  try {
+    const result = await project.search(['ZEBRASKIPPED']);
+    chunk = path.join(root, '.doktimoi/chunks', result.payload.results[0].id + '.md');
+  } finally { await project.close(); }
+  t.after(async () => { await fs.chmod(chunk, 0o600); await fs.rm(root, { recursive: true, force: true }); });
+  await fs.chmod(chunk, 0);
+  await fs.unlink(path.join(root, '.doktimoi/index.sqlite'));
+  project = await openProject(root);
+  try { await assert.rejects(project.search(['ZEBRASKIPPED']), /Index update skipped/); }
+  finally { await project.close(); }
+  await fs.chmod(chunk, 0o600);
+  project = await openProject(root);
+  try { assert.match((await project.search(['ZEBRASKIPPED'])).payload.results[0].text, /requires approval/); }
+  finally { await project.close(); }
+});

@@ -143,7 +143,8 @@ export async function openProject(directory) {
         for (const name of existing) {
           if (!wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name)) await fs.unlink(path.join(chunkDir, name));
         }
-        await store.update();
+        const indexed = await store.update();
+        if (indexed.skipped) throw new Error(`Index update skipped ${indexed.skipped} chunks; check cache readability and retry`);
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
         await fs.rm(path.join(cache, 'dirty'), { force: true });
         const visuals = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => c.visual).filter(Boolean)));
