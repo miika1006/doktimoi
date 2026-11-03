@@ -7,7 +7,8 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { createExtraction, legacyDoc, legacyOffice } from './extraction.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
-export const supported = new Set(['.md', '.markdown', '.txt', '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.csv', '.yaml', '.yml', '.json', '.pptx']);
+const textFormats = new Set(['.md', '.markdown', '.txt', '.text', '.rst', '.adoc', '.asciidoc']);
+export const supported = new Set([...textFormats, '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.csv', '.tsv', '.yaml', '.yml', '.json', '.pptx', '.html', '.htm']);
 const excluded = new Set(['node_modules', 'vendor', 'dist', 'build', 'coverage']);
 
 export async function safePath(root, relative) {
@@ -122,11 +123,16 @@ export async function convert(source, buffer, extraction) {
 
 async function convertWithContext(source, buffer, extraction) {
   const extension = path.extname(source).toLowerCase();
-  if (['.md', '.markdown', '.txt'].includes(extension)) {
+  if (textFormats.has(extension)) {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-    return { chunks: chunkMarkdown(text, source), warnings: [] };
+    return { chunks: chunkMarkdown(text, source), warnings: ['.rst', '.adoc', '.asciidoc'].includes(extension)
+      ? ['RST/AsciiDoc: indexed as source text; includes, substitutions and directives are not evaluated.'] : [] };
   }
-  if (extension === '.csv') return (await import('./structured.mjs')).csv(source, buffer);
+  if (extension === '.html' || extension === '.htm') {
+    const result = (await import('./html.mjs')).html(buffer);
+    return { chunks: chunkMarkdown(result.text, source, 'extracted-lines'), warnings: result.warnings };
+  }
+  if (extension === '.csv' || extension === '.tsv') return (await import('./structured.mjs')).csv(source, buffer);
   if (['.json', '.yaml', '.yml'].includes(extension)) return (await import('./structured.mjs')).structured(source, buffer, extension === '.json');
   if (extension === '.drawio' || source.toLowerCase().endsWith('.drawio.xml')) return (await import('./drawio.mjs')).drawio(source, buffer);
   if (extension === '.pptx') {

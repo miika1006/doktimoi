@@ -63,6 +63,73 @@ test('new text formats are searchable and references survive updates/deletions',
 const extended = new URL('../examples/extended/', import.meta.url);
 const mockOcr = { ocr: async () => ({ text: 'APPROVAL_CAP 8400 EUR. Do not approve your own request.', confidence: 98 }) };
 
+test('HTML preserves static documentation without scripts, styles or resource loading', async () => {
+  const result = await convert('guide.HTML', await fs.readFile(new URL('approval.html', extended)), {
+    ocr: async () => { throw new Error('HTML must not fetch images'); },
+  });
+  const text = result.chunks.map(c => c.text).join('\n');
+  assert.match(text, /Approval guide/);
+  assert.match(text, /Älä hyväksy omaa pyyntöäsi/);
+  assert.match(text, /R&D/);
+  assert.match(text, /security rules\]\(\.\.\/product\/security\.md#approval\)/);
+  assert.match(text, /if \(amount < 8400\) \{\n  requireManager\(\);/);
+  assert.match(text, /cell="Enterprise" cell="8400"/);
+  assert.match(text, /cell\(colspan=2\)="Proposal only"/);
+  assert.match(text, /~~Self approval allowed~~/);
+  assert.match(text, /Manager approval diagram/);
+  assert.match(text, /No exception for production/);
+  assert.doesNotMatch(text, /SCRIPT_NOISE|STYLE_NOISE|NOT_REAL_IMAGE/);
+  assert.ok(result.chunks.every(c => c.location.startsWith('extracted-lines:')));
+  assert.ok(result.warnings.some(w => w.includes('dynamic content')));
+  await assert.rejects(convert('bad.htm', Buffer.from([0xff, 0xfe, 0x80])), /encoded data/);
+});
+
+test('HTML and HTM index, refresh, expand citations and remove deleted evidence', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-html-'));
+  await fs.copyFile(new URL('approval.html', extended), path.join(root, 'guide.html'));
+  await fs.writeFile(path.join(root, 'legacy.HTM'), '<h1>Legacy guide</h1><p>HTM_MARKER</p>');
+  const project = await openProject(root);
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  for (const [term, source] of [['HTML_POLICY', 'guide.html'], ['HTM_MARKER', 'legacy.HTM']]) {
+    const { payload } = await project.search([term]);
+    const item = payload.results.find(r => r.source === source);
+    assert.ok(item);
+    assert.ok(tokens(render(payload)) <= 1600);
+    assert.ok((await project.read(reference(item))).text.replace(/\\_/g, '_').includes(term));
+  }
+  await fs.writeFile(path.join(root, 'guide.html'), '<h1>Changed</h1><p>HTML_REVISED</p>');
+  assert.ok((await project.search(['HTML_REVISED'])).payload.results.length);
+  assert.equal((await project.search(['HTML_POLICY'])).payload.results.length, 0);
+  await fs.unlink(path.join(root, 'legacy.HTM'));
+  assert.equal((await project.search(['HTM_MARKER'])).payload.results.length, 0);
+});
+
+test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-text-'));
+  const project = await openProject(root);
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  for (const ext of ['txt', 'text', 'rst', 'adoc', 'asciidoc', 'tsv']) {
+    const source = `guide.${ext}`, file = path.join(root, source);
+    const content = ext === 'tsv' ? 'Name, label, description\tValue\n0012\tTEXT_MARKER\n' : 'Policy\n======\n\nTEXT_MARKER: never self approve.\n';
+    await fs.writeFile(file, content);
+    const result = await project.search(['TEXT_MARKER']);
+    const item = result.payload.results.find(r => r.source === source);
+    assert.ok(item, source);
+    const read = await project.read(reference(item));
+    assert.match(read.text, /TEXT_MARKER/);
+    assert.ok(item.location.startsWith('lines:'));
+    if (ext === 'tsv') assert.match(read.text, /1="0012" \| 2="TEXT_MARKER"/);
+    await fs.writeFile(file, content.replace('TEXT_MARKER', 'CHANGED_MARKER'));
+    assert.ok((await project.search(['CHANGED_MARKER'])).payload.results.some(r => r.source === source));
+    assert.equal((await project.search(['TEXT_MARKER'])).payload.results.length, 0);
+    await fs.unlink(file);
+    const deleted = await project.search(['CHANGED_MARKER']);
+    assert.equal(deleted.payload.results.length, 0);
+    assert.equal(deleted.metrics.removed, 1);
+    assert.deepEqual(await fs.readdir(path.join(root, '.doktimoi/chunks')), []);
+  }
+});
+
 test('PowerPoint follows presentation order, preserves table rows/notes and OCRs embedded images', async () => {
   const result = await convert('policy.pptx', await fs.readFile(new URL('image-policy.pptx', extended)), mockOcr);
   assert.ok(result.chunks.some(c => c.location.startsWith('slide:1:image:') && c.text.includes('8400')));

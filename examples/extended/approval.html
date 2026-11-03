@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>Approval guide</title>
+  <style>.example { color: red; } /* STYLE_NOISE */</style>
+  <script>throw new Error('SCRIPT_NOISE');</script>
+</head>
+<body>
+  <h1>Hyväksyntä</h1>
+  <p>HTML_POLICY: Älä hyväksy omaa pyyntöäsi. R&amp;D needs manager approval.</p>
+  <h2>Rajapinta</h2>
+  <p>See <a href="../product/security.md#approval">security rules</a>.</p>
+  <pre><code>if (amount &lt; 8400) {
+  requireManager();
+}</code></pre>
+  <table>
+    <caption>Limits in EUR</caption>
+    <tr><th>Plan</th><th>Limit</th></tr>
+    <tr><td>Enterprise</td><td>8400</td></tr>
+  </table>
+  <table><tr><td colspan="2">Proposal only</td></tr><tr><td>Basic</td><td>1200</td></tr></table>
+  <p><del>Self approval allowed</del> Not permitted.</p>
+  <img src="approval.png" alt="Manager approval diagram">
+  <img src="data:image/png;base64,NOT_REAL_IMAGE" alt="Embedded example">
+  <details><summary>Exception</summary><p>No exception for production.</p></details>
+</body>
+</html>

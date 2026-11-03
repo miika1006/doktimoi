@@ -34,9 +34,10 @@ npm ci --prefix "<skill>"
 node "<skill>/scripts/doktimoi.mjs" build "<folder>"
 ```
 
-The program indexes `.md`, `.markdown`, `.txt`, `.docx`, `.doc`, `.xlsx`, `.xls`,
-`.pdf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.drawio`/`.drawio.xml`, `.csv`,
-`.yaml`/`.yml`, `.json`, and `.pptx`. It uses Mammoth for Word, SheetJS
+The program indexes `.md`, `.markdown`, `.txt`, `.text`, `.rst`, `.adoc`, `.asciidoc`,
+`.docx`, `.doc`, `.xlsx`, `.xls`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.webp`,
+`.drawio`/`.drawio.xml`, `.csv`, `.tsv`,
+`.yaml`/`.yml`, `.json`, `.pptx`, and `.html`/`.htm`. It uses Turndown for HTML, Mammoth for Word, SheetJS
 for XLS/XLSX, PDF.js for PDF text/rendering, Tesseract.js for OCR,
 and QMD/SQLite for search. Converters are loaded only when needed.
 It skips symlinks, hidden paths, dependency/build directories and ignored files.
@@ -74,6 +75,14 @@ reported but never downloaded. draw.io preserves labels and connector endpoints;
 arrow styles are not interpreted as process direction. JSON/YAML retain source
 ranges and structural paths; YAML aliases and tags are not evaluated. CSV fields
 remain strings, with column numbers and physical source line ranges.
+TSV uses tab separators. Plain-text formats require UTF-8; RST and AsciiDoc retain
+source text and line citations without evaluating includes, directives or substitutions.
+
+HTML/HTM support covers static UTF-8 documents: headings, text, code, tables,
+links and image alt text. Scripts/styles are excluded and linked resources are
+never fetched. Images, frames, CSS visibility and JavaScript-rendered content
+need original-page inspection. HTML citations address **extracted** lines, not
+physical HTML source lines; open the original file when exact markup matters.
 
 ## Ask about the local AI option
 

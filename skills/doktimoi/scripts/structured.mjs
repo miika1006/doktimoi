@@ -4,11 +4,12 @@ import { parseAllDocuments, LineCounter, isMap, isSeq, isScalar } from 'yaml';
 const decode = buffer => new TextDecoder('utf-8', { fatal: true }).decode(buffer);
 
 export function csv(source, buffer) {
+  const tsv = source.toLowerCase().endsWith('.tsv');
   let text = decode(buffer), offset = 0;
-  const directive = text.match(/^sep=([,;\t|])\r?\n/i);
+  const directive = !tsv && text.match(/^sep=([,;\t|])\r?\n/i);
   if (directive) { text = text.slice(directive[0].length); offset = 1; }
   // Probe complete records with a real CSV parser so quoted separators/newlines do not count.
-  let delimiter = directive?.[1];
+  let delimiter = tsv ? '\t' : directive?.[1];
   if (!delimiter) {
     const candidates = [',', ';', '\t', '|'].map(value => {
       try {
@@ -24,7 +25,7 @@ export function csv(source, buffer) {
   let group = [], first = 1 + offset, previous = offset, size = 0;
   function flush(last) {
     if (!group.length) return;
-    chunks.push({ source, location: `lines:${first}-${last}`, heading: 'CSV',
+    chunks.push({ source, location: `lines:${first}-${last}`, heading: tsv ? 'TSV' : 'CSV',
       text: `${first === 1 + offset ? '' : `columns: ${header}\n`}${group.join('\n')}` });
     group = []; size = 0;
   }
