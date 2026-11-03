@@ -1,0 +1,12 @@
+{
+  "name": "doktimoi",
+  "description": "Doktimoi documentation retrieval skill for Claude Code.",
+  "owner": { "name": "miika1006" },
+  "plugins": [
+    {
+      "name": "doktimoi",
+      "source": "./",
+      "description": "Local documentation retrieval for product questions, feature planning and gap analysis."
+    }
+  ]
+}

@@ -10,8 +10,10 @@ into another language or load machine indexes into context.
 
 ## Setup or /doktimoi
 
-For installation, initial indexing or `/doktimoi` (`$doktimoi` in Codex), read
-[index.md](references/index.md). Otherwise go straight to search below.
+For installation, first use, missing dependencies, or initial indexing, read
+[index.md](references/index.md). Invoke as `/doktimoi` standalone,
+`/doktimoi:doktimoi` via the Claude plugin, or `$doktimoi` in Codex.
+Otherwise go straight to search below.
 
 Use the requested folder, otherwise the working directory. Keep customer case
 material and product evidence distinguishable. `<skill>` below means this

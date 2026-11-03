@@ -2,6 +2,11 @@
 
 Requires Node.js 22+ and the dependencies in this skill's package-lock.json:
 
+The Claude marketplace installs the skill files, not npm packages. On first use,
+check `node --version` and install dependencies in this installed skill directory
+(the directory containing SKILL.md and package.json), then build the target folder.
+Use the same setup after a standalone URL installation if dependencies are absent.
+
 ```text
 npm ci --prefix <skill>
 node <skill>/scripts/doktimoi.mjs build <folder>

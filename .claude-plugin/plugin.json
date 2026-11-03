@@ -1,0 +1,7 @@
+{
+  "name": "doktimoi",
+  "version": "0.2.0",
+  "description": "Search local Markdown, Word and Excel with cited passages and a token budget, powered by QMD.",
+  "author": { "name": "miika1006" },
+  "repository": "https://github.com/miika1006/doktimoi"
+}
