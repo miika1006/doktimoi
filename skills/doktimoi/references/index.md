@@ -52,7 +52,8 @@ a particular backend is optimal for every corpus.
 
 Use the same quoted Node/npm commands in PowerShell, macOS or Linux terminals.
 Use Windows paths such as `"C:\Docs\Product"` for `<folder>`; do not require Bash.
-Legacy `.doc` and extracting drawings from legacy `.xls` need LibreOffice locally. Its standard Windows/macOS
+Legacy `.doc` needs LibreOffice Writer; extracting drawings from legacy `.xls`
+also needs LibreOffice Calc. Its standard Windows/macOS
 location is detected; otherwise set `DOKTIMOI_SOFFICE` to the executable path
 (`soffice.exe` on Windows). No Python installation is needed by the skill.
 
@@ -155,8 +156,12 @@ host settings, commit, push, or index linked repositories as part of skill setup
 ## Cache and updates
 
 `.doktimoi/index.sqlite` is QMD's index. `manifest.json` tracks source hashes and
-original locations. `chunks/` contains exact text blocks and structural context
-for the indexer; the assistant sees only selected evidence. JSON minification or
+original locations. `chunks/` contains source text or extracted records with structural context for
+QMD; citations still refer to original files. `visuals/` stores normalized images
+and rendered PDF pages for OCR and selective inspection, deduplicated by content.
+Embedded Office images require extraction; standalone images are currently also
+cached as PNG. These copies cost disk space, not model context: the assistant sees
+only selected evidence. JSON minification or
 cache file size is not a measure of model context consumption.
 
 Each search rescans the inventory and compares size, identity, modification and

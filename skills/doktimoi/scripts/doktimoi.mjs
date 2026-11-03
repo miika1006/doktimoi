@@ -56,7 +56,7 @@ export function render(payload) {
 
 export async function openProject(directory) {
   const root = await fs.realpath(directory);
-  const converterVersion = JSON.stringify({ version: 5, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 6, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {

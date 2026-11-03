@@ -19,14 +19,14 @@ export function drawio(source, buffer) {
       model = xml(expanded).documentElement;
       if (model.localName !== 'mxGraphModel') throw new Error('Invalid compressed draw.io page');
     }
-    const label = value => converter.turndown(value || '').trim();
+    const label = (value, cell) => /(?:^|;)html=1(?:;|$)/.test(cell.getAttribute('style') || '') ? converter.turndown(value || '').trim() : value || '';
     const cells = elements(model, 'mxCell');
     const byId = new Map();
     const records = cells.map(cell => {
       const object = cell.parentNode.localName !== 'root' ? cell.parentNode : null;
       const id = cell.getAttribute('id') || object?.getAttribute('id');
       if (!id || byId.has(id)) throw new Error('Missing or duplicate draw.io cell ID');
-      const text = label(object?.getAttribute('label') || cell.getAttribute('value'));
+      const text = label(object?.getAttribute('label') || cell.getAttribute('value'), cell);
       const record = { cell, object, id, text };
       byId.set(id, record); return record;
     });

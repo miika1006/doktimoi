@@ -155,7 +155,10 @@ export async function legacyOffice(buffer, extension) {
       if (e.code === 'ENOENT') throw new Error(`Legacy ${extension} requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable`);
       throw e;
     }
-    return await fs.readFile(path.join(temp, `input${conversion[1]}`));
+    return await fs.readFile(path.join(temp, `input${conversion[1]}`)).catch(error => {
+      if (error.code === 'ENOENT') throw new Error(`LibreOffice produced no ${conversion[1]} output; check the document and install LibreOffice ${extension === '.xls' ? 'Calc' : 'Writer'}`);
+      throw error;
+    });
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 }
 

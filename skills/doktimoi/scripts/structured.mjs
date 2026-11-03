@@ -48,22 +48,25 @@ export function structured(source, buffer, json = false) {
   const covered = [];
   for (const [index, document] of documents.entries()) {
     if (document.errors.length) throw new Error(`Invalid structured document: ${document.errors[0].message}`);
-    function visit(node, pointer, depth = 0) {
+    function visit(node, pointer, depth = 0, fieldStart, context = []) {
       if (!node?.range) return;
       if (depth > 100) throw new Error('Structured document nesting exceeds 100 levels');
-      const [start, , end] = node.range;
+      const start = fieldStart ?? node.range[0], end = node.range[2];
       const raw = text.slice(start, end);
       if (raw.length <= 1600 || (!isMap(node) && !isSeq(node)) || !node.items.length) {
-        const first = counter.linePos(start).line, last = counter.linePos(Math.max(start, end - 1)).line;
+        const first = counter.linePos(Math.min(start, ...context.map(c => c.start))).line, last = counter.linePos(Math.max(start, end - 1)).line;
         chunks.push({ source, location: `doc:${index + 1}:lines:${first}-${last}:path:${encodeURIComponent(pointer || '/')}`,
-          heading: `Document ${index + 1} ${pointer || '/'}`, text: raw });
-        covered.push([first, last]);
+          heading: `Document ${index + 1} ${pointer || '/'}`, text: (context.length ? `context:\n${context.map(c => c.text).join('\n')}\n` : '') + raw });
+        covered.push([counter.linePos(start).line, last]);
         return;
       }
+      const prefix = text.slice(start, node.range[0]).trim();
+      const inherited = prefix ? [...context, { text: prefix, start }] : context;
       for (const [i, child] of node.items.entries()) {
         if (isMap(node) && !isScalar(child.key)) throw new Error('Complex YAML mapping keys are not supported');
         const key = isMap(node) ? String(child.key.value) : String(i);
-        visit(isMap(node) ? child.value : child, `${pointer}/${key.replaceAll('~', '~0').replaceAll('/', '~1')}`, depth + 1);
+        visit(isMap(node) ? child.value : child, `${pointer}/${key.replaceAll('~', '~0').replaceAll('/', '~1')}`, depth + 1,
+          isMap(node) ? child.key.range[0] : undefined, inherited);
       }
     }
     visit(document.contents, '');

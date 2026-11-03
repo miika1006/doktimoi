@@ -107,16 +107,16 @@ export async function powerpoint(buffer, extraction) {
     if (!rel || rel.external) throw new Error('Invalid slide relationship');
     const slideDoc = await pkg.document(rel.path);
     const location = `slide:${index + 1}`;
-    const hidden = slideDoc.documentElement.getAttribute('show') === '0' ? ' (hidden)' : '';
+    const hidden = ['0', 'false'].includes(slideDoc.documentElement.getAttribute('show')) ? ' (hidden)' : '';
     const text = content(slideDoc);
     if (text) segments.push({ text, location: `${location}:extracted-lines`, heading: `Slide ${index + 1}${hidden}` });
-    segments.push(...await images(pkg, slideDoc, rel.path, location, extraction, warnings));
+    segments.push(...(await images(pkg, slideDoc, rel.path, location, extraction, warnings)).map(s => ({ ...s, heading: s.heading + hidden })));
     for (const note of (await pkg.relationships(rel.path)).values()) {
       if (note.type.endsWith('/notesSlide') && !note.external) {
         const notes = await pkg.document(note.path);
         const body = content(notes);
         if (body) segments.push({ text: body, location: `${location}:notes-lines`, heading: `Slide ${index + 1} speaker notes${hidden}` });
-        segments.push(...await images(pkg, notes, note.path, `${location}:notes`, extraction, warnings));
+        segments.push(...(await images(pkg, notes, note.path, `${location}:notes`, extraction, warnings)).map(s => ({ ...s, heading: s.heading + hidden })));
       }
     }
   }

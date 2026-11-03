@@ -7,7 +7,7 @@ import { deflateRawSync } from 'node:zlib';
 import { convert } from '../skills/doktimoi/scripts/sources.mjs';
 import { openProject, render, tokens, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
 
-const model = '<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="request" value="Request" vertex="1" parent="1"/><object id="manager" label="&lt;b&gt;Manager&lt;/b&gt;" rule="Not the requester"><mxCell vertex="1" parent="1"/></object><mxCell id="edge" value="requires approval" edge="1" source="request" target="manager" parent="1"/></root></mxGraphModel>';
+const model = '<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="request" value="Request" vertex="1" parent="1"/><object id="manager" label="&lt;b&gt;Manager&lt;/b&gt;" rule="Not the requester"><mxCell style="html=1" vertex="1" parent="1"/></object><mxCell id="edge" value="requires approval" edge="1" source="request" target="manager" parent="1"/></root></mxGraphModel>';
 
 test('draw.io compressed and plain pages preserve graph endpoints and object metadata', async () => {
   const packed = deflateRawSync(Buffer.from(encodeURIComponent(model))).toString('base64');
@@ -96,4 +96,29 @@ test('real PowerPoint and XLS/XLSX image evidence refreshes and remains source-b
   assert.equal((await project.sync()).ocrCalls, 0);
   await fs.unlink(path.join(root, 'image-policy.pptx'));
   assert.ok((await project.search(['8400'], { budget: 6000 })).payload.results.every(r => r.source !== 'image-policy.pptx'));
+});
+
+test('large YAML keeps inline policy qualifiers with their values', async () => {
+  const result = await convert('rules.yaml', Buffer.from('padding: ' + 'x'.repeat(1700) + '\nallow: # Only for sandbox, never production\n  true\n'));
+  const item = result.chunks.find(c => c.heading.endsWith('/allow'));
+  assert.match(item.text, /Only for sandbox, never production/);
+  assert.match(item.text, /true/);
+  const nested = await convert('rules.yaml', Buffer.from('policy: # Do not deploy this draft\n  padding: ' + 'x'.repeat(1700) + '\n  allow: true\n'));
+  assert.ok(nested.chunks.filter(c => c.heading.startsWith('Document 1 /policy/')).every(c => c.text.includes('Do not deploy this draft')));
+});
+
+test('plain draw.io labels retain angle-bracket placeholders', async () => {
+  const result = await convert('plain.drawio', Buffer.from('<mxGraphModel><root><mxCell id="token" vertex="1" style="text;html=0" value="Send &lt;secret-token&gt; to the gateway"/></root></mxGraphModel>'));
+  assert.match(result.chunks[0].text, /<secret-token>/);
+});
+
+test('PowerPoint hidden state covers XML booleans and image evidence', async () => {
+  const { default: JSZip } = await import('../skills/doktimoi/node_modules/jszip/lib/index.js');
+  for (const value of ['0', 'false']) {
+    const zip = await JSZip.loadAsync(await fs.readFile(new URL('image-policy.pptx', extended)));
+    const part = 'ppt/slides/slide2.xml';
+    zip.file(part, (await zip.file(part).async('string')).replace('<p:sld ', `<p:sld show="${value}" `));
+    const result = await convert('policy.pptx', await zip.generateAsync({ type: 'nodebuffer' }), mockOcr);
+    assert.ok(result.chunks.filter(c => c.location.startsWith('slide:1:')).every(c => c.heading.includes('(hidden)')));
+  }
 });
