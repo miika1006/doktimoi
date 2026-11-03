@@ -19,13 +19,24 @@ export function tokens(text) {
 
 export const reference = item => `${item.source}:${item.location.replace(/^lines:/, '')}`;
 
-export function excerpt(text, query, maxChars = 600) {
-  const hit = extractSnippet(text, query, maxChars);
+export function excerpt(text, query, maxChars = 600, db) {
+  const terms = (query.match(/[\p{L}\p{N}_]+/gu) ?? []).sort((a, b) => b.length - a.length);
+  if (db && terms.length) {
+    // Use the same Porter tokenizer as retrieval so inflected/prefix hits survive clipping.
+    db.exec("CREATE VIRTUAL TABLE IF NOT EXISTS temp.doktimoi_excerpt USING fts5(body, tokenize='porter unicode61')");
+    db.exec('DELETE FROM temp.doktimoi_excerpt');
+    try {
+      db.prepare('INSERT INTO temp.doktimoi_excerpt(body) VALUES (?)').run(text);
+      const row = db.prepare("SELECT snippet(doktimoi_excerpt, 0, '', '', ' … ', 48) AS text FROM temp.doktimoi_excerpt WHERE doktimoi_excerpt MATCH ?")
+        .get(terms.map(term => `"${term}"*`).join(' OR '));
+      if (row?.text && row.text.length <= maxChars) return row.text;
+    } finally { db.exec('DELETE FROM temp.doktimoi_excerpt'); }
+  }
+  const hit = extractSnippet(text, terms.join(' '), maxChars);
   const lines = text.split('\n');
   const window = lines.slice(Math.max(0, hit.line - 2), hit.line + 2).join('\n');
   if (window.length <= maxChars) return window;
   const line = lines[hit.line - 1];
-  const terms = (query.match(/[\p{L}\p{N}_]+/gu) ?? []).sort((a, b) => b.length - a.length);
   const lower = line.toLowerCase();
   const match = terms.map(term => lower.indexOf(term.toLowerCase())).find(index => index >= 0) ?? 0;
   const start = Math.max(0, match - Math.floor(maxChars / 3));
@@ -33,7 +44,7 @@ export function excerpt(text, query, maxChars = 600) {
 }
 
 export function render(payload) {
-  if (!payload.results.length) return payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.';
+  if (!payload.results.length) return (payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.') + (payload.note ? `\n[${payload.note}]` : '');
   let text = payload.results.map(item => {
     const heading = item.heading && (!item.text.startsWith('#') || item.heading.includes(' > ')) ? `${item.heading}\n` : '';
     return `${reference(item)}\n${heading}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.warning ? `\n[${item.warning}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
@@ -45,7 +56,7 @@ export function render(payload) {
 
 export async function openProject(directory) {
   const root = await fs.realpath(directory);
-  const converterVersion = JSON.stringify({ version: 3, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 4, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
@@ -205,7 +216,7 @@ export async function openProject(directory) {
           const item = await evidence(id);
           let candidate = item;
           if (tokens(render({ results: [...results, candidate] })) > budget - 100) {
-            candidate = { ...item, text: excerpt(item.text, queries.join(' ')), excerpt: true };
+            candidate = { ...item, text: excerpt(item.text, queries.join(' '), 600, store.internal.db), excerpt: true };
           }
           if (tokens(render({ results: [...results, candidate] })) > budget - 100) { omitted++; continue; }
           results.push(candidate);

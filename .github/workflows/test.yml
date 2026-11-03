@@ -1,0 +1,30 @@
+name: Test
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      DOKTIMOI_TEST_OCR: '1'
+      DOKTIMOI_OCR_CACHE: ${{ runner.temp }}/doktimoi-ocr
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: skills/doktimoi/package-lock.json
+      - run: npm ci --prefix skills/doktimoi
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libreoffice-writer
+      - if: runner.os == 'Windows'
+        run: choco install libreoffice-fresh --yes --no-progress
+      - run: node --test tests/retrieval.test.mjs tests/extraction.test.mjs
+      - run: npm audit --prefix skills/doktimoi --audit-level=moderate

@@ -171,7 +171,10 @@ async function convertWithContext(source, buffer, extraction) {
         ...(images.length ? ['Word images: OCR may misread text; inspect images for critical facts and diagram meaning.'] : []),
         ...result.messages.map(m => m.message)] };
   }
-  if (extension === '.xls') {
+  if (extension === '.xls' || extension === '.xlsx') {
+    if (extension === '.xlsx' && !buffer.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 3, 4]))) throw new Error('Invalid XLSX archive');
+    if (extension === '.xls' && !buffer.subarray(0, 8).equals(Buffer.from('d0cf11e0a1b11ae1', 'hex')) &&
+      !(buffer[0] === 9 && [0, 2, 4, 8].includes(buffer[1]))) throw new Error('Invalid XLS workbook');
     const XLSX = await import('xlsx');
     const workbook = XLSX.read(buffer, { type: 'buffer', cellFormula: true, cellNF: true, cellDates: true, bookVBA: false });
     const chunks = [];
@@ -185,7 +188,7 @@ async function convertWithContext(source, buffer, extraction) {
         const value = cell.f ? `formula=${cell.f}; cached=${JSON.stringify(cell.v ?? null)}` : cell.v;
         if (value === undefined) continue;
         const cells = rows.get(row) ?? [];
-        cells.push(`${address}=${JSON.stringify(value)}${cell.z ? ` [${cell.z}]` : ''}`);
+        cells.push(`${address}=${JSON.stringify(value)}${cell.z && cell.z !== 'General' ? ` [${cell.z}]` : ''}`);
         rows.set(row, cells);
       }
       const entries = [...rows].sort(([a], [b]) => a - b);
@@ -193,7 +196,7 @@ async function convertWithContext(source, buffer, extraction) {
       let group = [], length = 0;
       const flush = () => {
         if (!group.length) return;
-        chunks.push({ source, location: `${name}!rows:${group[0][0]}-${group.at(-1)[0]}`, heading: name,
+        chunks.push({ source, location: `${name}!rows:${group[0][0]}-${group.at(-1)[0]}`, heading: `${name}${workbook.Workbook?.Sheets?.find(s => s.name === name)?.Hidden ? ' (hidden)' : ''}`,
           text: `${group[0][0] === entries[0][0] ? '' : `context: ${header}\n`}${group.map(([, line]) => line).join('\n')}` });
         group = []; length = 0;
       };
@@ -204,40 +207,7 @@ async function convertWithContext(source, buffer, extraction) {
       }
       flush();
     }
-    return { chunks, warnings: ['XLS: formulas are not recalculated; images/charts are not indexed.'] };
+    return { chunks, warnings: ['Excel: formulas are not recalculated; cached results may be stale. Images/charts are not indexed.'] };
   }
-  const { default: ExcelJS } = await import('exceljs');
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
-  const chunks = [];
-  for (const sheet of workbook.worksheets) {
-    let rows = [];
-    let first = 0;
-    let last = 0;
-    let header = '';
-    function flush() {
-      if (!rows.length) return;
-      chunks.push({ source, location: `${sheet.name}!rows:${first}-${last}`,
-        heading: `${sheet.name} (${sheet.state})`, text: `${rows[0] === header ? '' : `context: ${header}\n`}${rows.join('\n')}` });
-      rows = [];
-    }
-    sheet.eachRow((row, rowNumber) => {
-      const cells = [];
-      row.eachCell(cell => {
-        if (cell.type === ExcelJS.ValueType.Merge) return;
-        let value = cell.text;
-        if (cell.value instanceof Date) value = cell.value.toISOString();
-        if (cell.formula) value = `formula=${cell.formula}; cached=${JSON.stringify(cell.result ?? null)}`;
-        cells.push(`${cell.address}=${JSON.stringify(value)}${cell.numFmt ? ` [${cell.numFmt}]` : ''}`);
-      });
-      const line = cells.join(' | ');
-      if (!header) header = line;
-      if (rows.join('\n').length + line.length > 2000) flush();
-      if (!rows.length) first = rowNumber;
-      rows.push(line);
-      last = rowNumber;
-    });
-    flush();
-  }
-  return { chunks, warnings: ['XLSX: formulas are not recalculated; cached results may be stale. Images/charts are not indexed.'] };
+  throw new Error(`Unsupported source format: ${extension}`);
 }

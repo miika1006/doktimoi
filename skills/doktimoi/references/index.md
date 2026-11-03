@@ -13,8 +13,8 @@ node "<skill>/scripts/doktimoi.mjs" build "<folder>"
 ```
 
 The program indexes `.md`, `.markdown`, `.txt`, `.docx`, `.doc`, `.xlsx`, `.xls`,
-`.pdf`, `.png`, `.jpg`, `.jpeg`, and `.webp`. It uses Mammoth for Word, ExcelJS
-for XLSX, SheetJS for XLS, PDF.js for PDF text/rendering, Tesseract.js for OCR,
+`.pdf`, `.png`, `.jpg`, `.jpeg`, and `.webp`. It uses Mammoth for Word, SheetJS
+for XLS/XLSX, PDF.js for PDF text/rendering, Tesseract.js for OCR,
 and QMD/SQLite for search. Converters are loaded only when needed.
 It skips symlinks, hidden paths, dependency/build directories and ignored files.
 Git's tracked/nonignored inventory is used within repositories. Unsupported

@@ -9,7 +9,7 @@ import { openProject, tokens, render, reference } from '../skills/doktimoi/scrip
 import { chunkMarkdown, safePath } from '../skills/doktimoi/scripts/sources.mjs';
 
 const require = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
-const ExcelJS = require('exceljs');
+const XLSX = require('xlsx');
 
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
@@ -148,13 +148,12 @@ test('Git subfolder inventory includes tracked files and excludes ignored direct
 
 test('Excel retains sheet, cell address, number format and cached formula result', async t => {
   const { root, project } = await fixture(t);
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Pricing');
-  sheet.addRow(['Product', 'Annual price']);
-  sheet.addRow(['Enterprise', 12000]);
-  sheet.getCell('B2').numFmt = '#,##0.00 "EUR"';
-  sheet.getCell('B3').value = { formula: 'B2*0.9', result: 10800 };
-  await workbook.xlsx.writeFile(path.join(root, 'pricing.xlsx'));
+  const workbook = XLSX.utils.book_new();
+  const sheet = XLSX.utils.aoa_to_sheet([['Product', 'Annual price'], ['Enterprise', 12000], ['', 10800]]);
+  sheet.B2.z = '#,##0.00 "EUR"';
+  sheet.B3.f = 'B2*0.9';
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Pricing');
+  XLSX.writeFile(workbook, path.join(root, 'pricing.xlsx'));
   const { payload } = await project.search(['Enterprise']);
   assert.match(payload.results[0].location, /Pricing!rows:/);
   assert.match(payload.results[0].text, /B2=.*12000/);
@@ -224,4 +223,19 @@ test('child ignore rules can restore files in non-Git documentation folders', as
   await fs.writeFile(path.join(root, 'sub/private.md'), 'EXCLUDED_MARKER');
   assert.equal((await project.search(['RESTORED_MARKER'])).payload.results.length, 1);
   assert.equal((await project.search(['EXCLUDED_MARKER'])).payload.results.length, 0);
+});
+
+test('small excerpts retain quoted and stemmed FTS matches', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'long.md'), '# Policy\n\n' + 'Ordinary introductory context. '.repeat(1000) + 'ZEBRALONGLINE requires 17 days notice. All requests must be approved by the manager.');
+  for (const query of ['approvals', '"ZEBRALONGLINE"']) {
+    const { payload } = await project.search([query], { budget: 300 });
+    assert.match(payload.results[0].text, /approved by the manager/);
+    assert.ok(tokens(render(payload)) <= 300);
+  }
+});
+
+test('empty search output retains incomplete-extraction warnings', () => {
+  assert.match(render({ results: [], note: 'OCR is disabled.' }), /OCR is disabled/);
+  assert.match(render({ results: [], more: true, note: 'OCR is disabled.' }), /OCR is disabled/);
 });
