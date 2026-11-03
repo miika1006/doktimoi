@@ -1,0 +1,23 @@
+{
+  "name": "doktimoi",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "doktimoi": "scripts/doktimoi.mjs"
+  },
+  "dependencies": {
+    "@tobilu/qmd": "2.8.3",
+    "exceljs": "4.4.0",
+    "ignore": "7.0.14",
+    "mammoth": "1.13.0",
+    "mdast-util-from-markdown": "2.1.0",
+    "proper-lockfile": "4.1.2",
+    "tiktoken": "1.0.22",
+    "turndown": "7.2.4",
+    "turndown-plugin-gfm": "1.0.2"
+  }
+}

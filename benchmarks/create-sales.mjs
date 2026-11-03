@@ -1,0 +1,17 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
+const ExcelJS = require('exceljs');
+const workbook = new ExcelJS.Workbook();
+const sheet = workbook.addWorksheet('Pricing');
+sheet.addRow(['Product / tuote', 'Annual price EUR excl. VAT', 'First-year discount', 'First-year price EUR']);
+sheet.addRow(['Enterprise', 24000, 0.15, { formula: 'B2*(1-C2)', result: 20400 }]);
+sheet.addRow(['Onboarding / käyttöönotto', 3000, 0, { formula: 'B3*(1-C3)', result: 3000 }]);
+sheet.getCell('B2').numFmt = '#,##0.00 "EUR"';
+sheet.getCell('C2').numFmt = '0%';
+sheet.getCell('D2').numFmt = '#,##0.00 "EUR"';
+const notes = workbook.addWorksheet('Conditions');
+notes.addRow(['Currency', 'EUR']);
+notes.addRow(['VAT', 'Excluded']);
+notes.addRow(['Discount condition', 'Sign before 2026-12-31']);
+await workbook.xlsx.writeFile(fileURLToPath(new URL('../examples/sales/pricing.xlsx', import.meta.url)));

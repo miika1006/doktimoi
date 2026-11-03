@@ -1,0 +1,1355 @@
+{
+  "createdAt": "2026-11-03T04:30:42.110Z",
+  "node": "v22.23.4",
+  "platform": "darwin/arm64",
+  "cpu": "Apple M1",
+  "semanticBackend": "auto",
+  "embeddingModel": "embeddinggemma-300M-Q8_0",
+  "tokenizer": "o200k_base",
+  "repetitions": 3,
+  "semantic": true,
+  "contextBudget": 1600,
+  "corpora": [
+    {
+      "corpus": "documentation",
+      "files": 12,
+      "chunks": 200,
+      "sourceBytes": 156794,
+      "fullContextTokens": 37511,
+      "buildMs": 309.32,
+      "embedMs": 13131.15,
+      "embeddingChunks": 201,
+      "semanticFirstQueryMs": 56.76,
+      "freshProcessLexicalMs": 332.15,
+      "freshProcessHybridMs": 1942.2
+    },
+    {
+      "corpus": "office",
+      "files": 2,
+      "chunks": 8,
+      "sourceBytes": 147386,
+      "fullContextTokens": 1945,
+      "buildMs": 436.95,
+      "embedMs": 2180.9,
+      "embeddingChunks": 8,
+      "semanticFirstQueryMs": 44.1,
+      "freshProcessLexicalMs": 298.03,
+      "freshProcessHybridMs": 1974.74
+    },
+    {
+      "corpus": "sales",
+      "files": 3,
+      "chunks": 10,
+      "sourceBytes": 8888,
+      "fullContextTokens": 560,
+      "buildMs": 72.32,
+      "embedMs": 1846.58,
+      "embeddingChunks": 10,
+      "semanticFirstQueryMs": 35.35,
+      "freshProcessLexicalMs": 297.53,
+      "freshProcessHybridMs": 2019.45
+    },
+    {
+      "corpus": "product",
+      "files": 5,
+      "chunks": 16,
+      "sourceBytes": 3509,
+      "fullContextTokens": 676,
+      "buildMs": 34.19,
+      "embedMs": 1566.12,
+      "embeddingChunks": 16,
+      "semanticFirstQueryMs": 38.35,
+      "freshProcessLexicalMs": 294.6,
+      "freshProcessHybridMs": 2049.68
+    }
+  ],
+  "runs": [
+    {
+      "id": "timeout",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 39.63,
+      "tokens": 693,
+      "jsonTokens": 892,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/transports.md",
+        "httpx/timeouts.md",
+        "httpx/timeouts.md",
+        "httpx/quickstart.md"
+      ]
+    },
+    {
+      "id": "pool-fi",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 31.03,
+      "tokens": 158,
+      "jsonTokens": 208,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/resource-limits.md"
+      ]
+    },
+    {
+      "id": "tls",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 32.51,
+      "tokens": 701,
+      "jsonTokens": 907,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md"
+      ]
+    },
+    {
+      "id": "proxy-fi",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 33.29,
+      "tokens": 539,
+      "jsonTokens": 729,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "markitdown/README.md",
+        "httpx/proxies.md",
+        "httpx/transports.md",
+        "httpx/transports.md"
+      ]
+    },
+    {
+      "id": "async",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 33.06,
+      "tokens": 520,
+      "jsonTokens": 697,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md"
+      ]
+    },
+    {
+      "id": "reuse-fi",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 35.37,
+      "tokens": 1228,
+      "jsonTokens": 1483,
+      "evidenceFound": false,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/transports.md",
+        "httpx/quickstart.md",
+        "httpx/transports.md",
+        "httpx/clients.md"
+      ]
+    },
+    {
+      "id": "socks",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 30.92,
+      "tokens": 113,
+      "jsonTokens": 171,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/proxies.md"
+      ]
+    },
+    {
+      "id": "asgi",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 31.15,
+      "tokens": 429,
+      "jsonTokens": 592,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/async.md",
+        "httpx/transports.md",
+        "httpx/transports.md"
+      ]
+    },
+    {
+      "id": "qmd-local-fi",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 32.88,
+      "tokens": 1460,
+      "jsonTokens": 1650,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "qmd-modes",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 32.67,
+      "tokens": 916,
+      "jsonTokens": 1115,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "markitdown-office",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 33.01,
+      "tokens": 474,
+      "jsonTokens": 630,
+      "evidenceFound": false,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md"
+      ]
+    },
+    {
+      "id": "no-answer",
+      "corpus": "documentation",
+      "mode": "rg-prepared",
+      "ms": 30.3,
+      "tokens": 4,
+      "jsonTokens": 8,
+      "evidenceFound": null,
+      "unanswerableReturnedCandidates": false,
+      "sources": []
+    },
+    {
+      "id": "timeout",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 13.97,
+      "tokens": 469,
+      "jsonTokens": 650,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/timeouts.md",
+        "httpx/quickstart.md",
+        "httpx/timeouts.md",
+        "httpx/timeouts.md"
+      ]
+    },
+    {
+      "id": "pool-fi",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 10.84,
+      "tokens": 158,
+      "jsonTokens": 208,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/resource-limits.md"
+      ]
+    },
+    {
+      "id": "tls",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 14.12,
+      "tokens": 601,
+      "jsonTokens": 794,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md"
+      ]
+    },
+    {
+      "id": "proxy-fi",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 15.81,
+      "tokens": 625,
+      "jsonTokens": 831,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/transports.md",
+        "httpx/proxies.md",
+        "httpx/transports.md",
+        "httpx/transports.md"
+      ]
+    },
+    {
+      "id": "async",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 15.8,
+      "tokens": 569,
+      "jsonTokens": 752,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md"
+      ]
+    },
+    {
+      "id": "reuse-fi",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 18.64,
+      "tokens": 936,
+      "jsonTokens": 1159,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/clients.md",
+        "httpx/async.md",
+        "httpx/clients.md",
+        "httpx/timeouts.md"
+      ]
+    },
+    {
+      "id": "socks",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 18.47,
+      "tokens": 878,
+      "jsonTokens": 1095,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/proxies.md",
+        "httpx/transports.md",
+        "httpx/async.md",
+        "httpx/timeouts.md"
+      ]
+    },
+    {
+      "id": "asgi",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 16.31,
+      "tokens": 429,
+      "jsonTokens": 592,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/async.md",
+        "httpx/transports.md",
+        "httpx/transports.md"
+      ]
+    },
+    {
+      "id": "qmd-local-fi",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 22.72,
+      "tokens": 1461,
+      "jsonTokens": 1650,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "qmd-modes",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 27.66,
+      "tokens": 1475,
+      "jsonTokens": 1712,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "markitdown-office",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 23.33,
+      "tokens": 786,
+      "jsonTokens": 952,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md"
+      ]
+    },
+    {
+      "id": "no-answer",
+      "corpus": "documentation",
+      "mode": "lexical-prepared",
+      "ms": 14.64,
+      "tokens": 4,
+      "jsonTokens": 8,
+      "evidenceFound": null,
+      "unanswerableReturnedCandidates": false,
+      "sources": []
+    },
+    {
+      "id": "timeout",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 39.68,
+      "tokens": 399,
+      "jsonTokens": 560,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/timeouts.md",
+        "httpx/quickstart.md",
+        "httpx/timeouts.md",
+        "httpx/compatibility.md"
+      ]
+    },
+    {
+      "id": "pool-fi",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 44.14,
+      "tokens": 773,
+      "jsonTokens": 959,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/resource-limits.md",
+        "httpx/timeouts.md",
+        "httpx/compatibility.md",
+        "httpx/quickstart.md"
+      ]
+    },
+    {
+      "id": "tls",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 40.73,
+      "tokens": 614,
+      "jsonTokens": 828,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md",
+        "httpx/ssl.md"
+      ]
+    },
+    {
+      "id": "proxy-fi",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 40.55,
+      "tokens": 511,
+      "jsonTokens": 681,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/proxies.md",
+        "httpx/transports.md",
+        "httpx/transports.md",
+        "httpx/transports.md"
+      ]
+    },
+    {
+      "id": "async",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 40.4,
+      "tokens": 505,
+      "jsonTokens": 683,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md",
+        "httpx/async.md"
+      ]
+    },
+    {
+      "id": "reuse-fi",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 39.44,
+      "tokens": 808,
+      "jsonTokens": 1060,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/clients.md",
+        "httpx/compatibility.md",
+        "httpx/clients.md",
+        "httpx/clients.md"
+      ]
+    },
+    {
+      "id": "socks",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 43.84,
+      "tokens": 794,
+      "jsonTokens": 1000,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/proxies.md",
+        "httpx/proxies.md",
+        "httpx/proxies.md",
+        "httpx/proxies.md"
+      ]
+    },
+    {
+      "id": "asgi",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 40.21,
+      "tokens": 512,
+      "jsonTokens": 713,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "httpx/transports.md",
+        "httpx/transports.md",
+        "httpx/transports.md",
+        "httpx/async.md"
+      ]
+    },
+    {
+      "id": "qmd-local-fi",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 47.88,
+      "tokens": 787,
+      "jsonTokens": 948,
+      "evidenceFound": false,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md"
+      ]
+    },
+    {
+      "id": "qmd-modes",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 44.09,
+      "tokens": 1225,
+      "jsonTokens": 1466,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "markitdown-office",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 45.2,
+      "tokens": 1048,
+      "jsonTokens": 1239,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md",
+        "markitdown/README.md"
+      ]
+    },
+    {
+      "id": "no-answer",
+      "corpus": "documentation",
+      "mode": "hybrid-natural",
+      "ms": 42.5,
+      "tokens": 1255,
+      "jsonTokens": 1476,
+      "evidenceFound": null,
+      "unanswerableReturnedCandidates": true,
+      "sources": [
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md",
+        "qmd/README.md"
+      ]
+    },
+    {
+      "id": "word-fi",
+      "corpus": "office",
+      "mode": "rg-prepared",
+      "ms": 35.77,
+      "tokens": 903,
+      "jsonTokens": 1045,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.docx",
+        "example.docx",
+        "example.docx",
+        "example.docx"
+      ]
+    },
+    {
+      "id": "office-id",
+      "corpus": "office",
+      "mode": "rg-prepared",
+      "ms": 24.83,
+      "tokens": 592,
+      "jsonTokens": 657,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.xlsx"
+      ]
+    },
+    {
+      "id": "word-fi",
+      "corpus": "office",
+      "mode": "lexical-prepared",
+      "ms": 20.6,
+      "tokens": 904,
+      "jsonTokens": 1045,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.docx",
+        "example.docx",
+        "example.docx",
+        "example.docx"
+      ]
+    },
+    {
+      "id": "office-id",
+      "corpus": "office",
+      "mode": "lexical-prepared",
+      "ms": 11.4,
+      "tokens": 603,
+      "jsonTokens": 670,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.xlsx"
+      ]
+    },
+    {
+      "id": "word-fi",
+      "corpus": "office",
+      "mode": "hybrid-natural",
+      "ms": 35.2,
+      "tokens": 909,
+      "jsonTokens": 1045,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.docx",
+        "example.docx",
+        "example.docx",
+        "example.docx"
+      ]
+    },
+    {
+      "id": "office-id",
+      "corpus": "office",
+      "mode": "hybrid-natural",
+      "ms": 41.73,
+      "tokens": 1274,
+      "jsonTokens": 1438,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "example.docx",
+        "example.xlsx",
+        "example.xlsx",
+        "example.docx"
+      ]
+    },
+    {
+      "id": "sales-start",
+      "corpus": "sales",
+      "mode": "rg-prepared",
+      "ms": 25.76,
+      "tokens": 350,
+      "jsonTokens": 456,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "case.md",
+        "pricing.xlsx"
+      ]
+    },
+    {
+      "id": "sales-notice",
+      "corpus": "sales",
+      "mode": "rg-prepared",
+      "ms": 20.9,
+      "tokens": 70,
+      "jsonTokens": 111,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-refund",
+      "corpus": "sales",
+      "mode": "rg-prepared",
+      "ms": 19.25,
+      "tokens": 70,
+      "jsonTokens": 111,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-price",
+      "corpus": "sales",
+      "mode": "rg-prepared",
+      "ms": 17.94,
+      "tokens": 256,
+      "jsonTokens": 331,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "pricing.xlsx"
+      ]
+    },
+    {
+      "id": "sales-export",
+      "corpus": "sales",
+      "mode": "rg-prepared",
+      "ms": 19.81,
+      "tokens": 59,
+      "jsonTokens": 99,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-start",
+      "corpus": "sales",
+      "mode": "lexical-prepared",
+      "ms": 13.38,
+      "tokens": 361,
+      "jsonTokens": 469,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "case.md",
+        "pricing.xlsx"
+      ]
+    },
+    {
+      "id": "sales-notice",
+      "corpus": "sales",
+      "mode": "lexical-prepared",
+      "ms": 10.67,
+      "tokens": 70,
+      "jsonTokens": 111,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-refund",
+      "corpus": "sales",
+      "mode": "lexical-prepared",
+      "ms": 10.47,
+      "tokens": 70,
+      "jsonTokens": 111,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-price",
+      "corpus": "sales",
+      "mode": "lexical-prepared",
+      "ms": 11.95,
+      "tokens": 267,
+      "jsonTokens": 344,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "pricing.xlsx"
+      ]
+    },
+    {
+      "id": "sales-export",
+      "corpus": "sales",
+      "mode": "lexical-prepared",
+      "ms": 11.94,
+      "tokens": 59,
+      "jsonTokens": 99,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-start",
+      "corpus": "sales",
+      "mode": "hybrid-natural",
+      "ms": 30.8,
+      "tokens": 291,
+      "jsonTokens": 422,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "contract.md",
+        "case.md",
+        "contract.md"
+      ]
+    },
+    {
+      "id": "sales-notice",
+      "corpus": "sales",
+      "mode": "hybrid-natural",
+      "ms": 28.6,
+      "tokens": 299,
+      "jsonTokens": 430,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md",
+        "contract.md",
+        "case.md",
+        "case.md"
+      ]
+    },
+    {
+      "id": "sales-refund",
+      "corpus": "sales",
+      "mode": "hybrid-natural",
+      "ms": 31.89,
+      "tokens": 256,
+      "jsonTokens": 387,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md",
+        "contract.md",
+        "contract.md",
+        "case.md"
+      ]
+    },
+    {
+      "id": "sales-price",
+      "corpus": "sales",
+      "mode": "hybrid-natural",
+      "ms": 33.77,
+      "tokens": 437,
+      "jsonTokens": 573,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "case.md",
+        "pricing.xlsx",
+        "case.md",
+        "case.md"
+      ]
+    },
+    {
+      "id": "sales-export",
+      "corpus": "sales",
+      "mode": "hybrid-natural",
+      "ms": 34.61,
+      "tokens": 299,
+      "jsonTokens": 430,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "contract.md",
+        "contract.md",
+        "case.md",
+        "case.md"
+      ]
+    },
+    {
+      "id": "product-offline",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 22.94,
+      "tokens": 192,
+      "jsonTokens": 272,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md",
+        "architecture.md"
+      ]
+    },
+    {
+      "id": "product-repos",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 23.01,
+      "tokens": 113,
+      "jsonTokens": 156,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md"
+      ]
+    },
+    {
+      "id": "product-oidc",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 22.15,
+      "tokens": 122,
+      "jsonTokens": 202,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "roadmap.md",
+        "integrations.md"
+      ]
+    },
+    {
+      "id": "product-erp",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 21.47,
+      "tokens": 83,
+      "jsonTokens": 124,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "integrations.md"
+      ]
+    },
+    {
+      "id": "product-audit",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 21.88,
+      "tokens": 64,
+      "jsonTokens": 107,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "security.md"
+      ]
+    },
+    {
+      "id": "product-unknown",
+      "corpus": "product",
+      "mode": "rg-prepared",
+      "ms": 23.23,
+      "tokens": 84,
+      "jsonTokens": 129,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "overview.md"
+      ]
+    },
+    {
+      "id": "product-offline",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 15.59,
+      "tokens": 241,
+      "jsonTokens": 359,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md",
+        "architecture.md",
+        "roadmap.md"
+      ]
+    },
+    {
+      "id": "product-repos",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 12.31,
+      "tokens": 113,
+      "jsonTokens": 156,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md"
+      ]
+    },
+    {
+      "id": "product-oidc",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 14.43,
+      "tokens": 122,
+      "jsonTokens": 202,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "integrations.md",
+        "roadmap.md"
+      ]
+    },
+    {
+      "id": "product-erp",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 15,
+      "tokens": 83,
+      "jsonTokens": 124,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "integrations.md"
+      ]
+    },
+    {
+      "id": "product-audit",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 14.16,
+      "tokens": 143,
+      "jsonTokens": 223,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "security.md",
+        "architecture.md"
+      ]
+    },
+    {
+      "id": "product-unknown",
+      "corpus": "product",
+      "mode": "lexical-prepared",
+      "ms": 12.33,
+      "tokens": 84,
+      "jsonTokens": 129,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "overview.md"
+      ]
+    },
+    {
+      "id": "product-offline",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 31.31,
+      "tokens": 272,
+      "jsonTokens": 418,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md",
+        "security.md",
+        "roadmap.md",
+        "overview.md"
+      ]
+    },
+    {
+      "id": "product-repos",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 29.94,
+      "tokens": 310,
+      "jsonTokens": 456,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "architecture.md",
+        "architecture.md",
+        "architecture.md",
+        "overview.md"
+      ]
+    },
+    {
+      "id": "product-oidc",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 30.95,
+      "tokens": 277,
+      "jsonTokens": 426,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "roadmap.md",
+        "integrations.md",
+        "overview.md",
+        "overview.md"
+      ]
+    },
+    {
+      "id": "product-erp",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 31.93,
+      "tokens": 280,
+      "jsonTokens": 420,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "integrations.md",
+        "security.md",
+        "architecture.md",
+        "roadmap.md"
+      ]
+    },
+    {
+      "id": "product-audit",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 30.24,
+      "tokens": 270,
+      "jsonTokens": 416,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "security.md",
+        "architecture.md",
+        "roadmap.md",
+        "integrations.md"
+      ]
+    },
+    {
+      "id": "product-unknown",
+      "corpus": "product",
+      "mode": "hybrid-natural",
+      "ms": 40.06,
+      "tokens": 281,
+      "jsonTokens": 430,
+      "evidenceFound": true,
+      "unanswerableReturnedCandidates": null,
+      "sources": [
+        "overview.md",
+        "architecture.md",
+        "security.md",
+        "roadmap.md"
+      ]
+    }
+  ],
+  "updates": [
+    {
+      "corpus": "documentation",
+      "action": "add",
+      "ms": 63.42,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "documentation",
+      "action": "semantic-add",
+      "ms": 72.67,
+      "ok": true
+    },
+    {
+      "corpus": "documentation",
+      "action": "modify",
+      "ms": 65.99,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "documentation",
+      "action": "semantic-modify",
+      "ms": 62.18,
+      "ok": true
+    },
+    {
+      "corpus": "documentation",
+      "action": "delete",
+      "ms": 61.67,
+      "changed": 0,
+      "removed": 1,
+      "ok": true
+    },
+    {
+      "corpus": "documentation",
+      "action": "semantic-delete",
+      "ms": 44.47,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "add",
+      "ms": 20.2,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "semantic-add",
+      "ms": 67.64,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "modify",
+      "ms": 18.4,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "semantic-modify",
+      "ms": 66.46,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "delete",
+      "ms": 17.96,
+      "changed": 0,
+      "removed": 1,
+      "ok": true
+    },
+    {
+      "corpus": "office",
+      "action": "semantic-delete",
+      "ms": 32.59,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "add",
+      "ms": 21.52,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "semantic-add",
+      "ms": 60.75,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "modify",
+      "ms": 20.1,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "semantic-modify",
+      "ms": 57.62,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "delete",
+      "ms": 17.84,
+      "changed": 0,
+      "removed": 1,
+      "ok": true
+    },
+    {
+      "corpus": "sales",
+      "action": "semantic-delete",
+      "ms": 28.93,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "add",
+      "ms": 19.76,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "semantic-add",
+      "ms": 64.34,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "modify",
+      "ms": 21.95,
+      "changed": 1,
+      "removed": 0,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "semantic-modify",
+      "ms": 57.4,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "delete",
+      "ms": 20.31,
+      "changed": 0,
+      "removed": 1,
+      "ok": true
+    },
+    {
+      "corpus": "product",
+      "action": "semantic-delete",
+      "ms": 29.33,
+      "ok": true
+    }
+  ]
+}
