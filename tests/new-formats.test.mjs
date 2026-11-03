@@ -129,6 +129,15 @@ test('HTML ordered lists keep explicit values, reverse order and nested numberin
   for (const expected of ['400. Bad request', '403. Forbidden', '404. Not found', '2. Latest', '1. Previous', '0. Nested zero']) assert.ok(text.includes(expected), expected);
 });
 
+test('bare HTML pre blocks preserve code and its governing restriction', async () => {
+  const code = '#!/bin/sh\n# Remove scratch files\nrm *.tmp\n# literal fence: ```';
+  const result = await convert('commands.html', Buffer.from(`<h1>Do not run in production</h1><pre>${code}</pre>`));
+  assert.equal(result.chunks.length, 1);
+  assert.equal(result.chunks[0].heading, 'Do not run in production');
+  assert.ok(result.chunks[0].text.includes(code));
+  assert.match(result.chunks[0].text, /````\n#!/);
+});
+
 test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-text-'));
   const project = await openProject(root);

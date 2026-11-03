@@ -11,6 +11,14 @@ export function html(buffer) {
     replacement: (content, node) => `<${node.nodeName.toLowerCase()}>${content}</${node.nodeName.toLowerCase()}>`,
   });
   converter.addRule('math', { filter: 'math', replacement: (_, node) => node.outerHTML });
+  converter.addRule('bare-pre', {
+    filter: node => node.nodeName === 'PRE' && node.firstChild?.nodeName !== 'CODE',
+    replacement: (_, node) => {
+      const code = node.textContent;
+      const fence = '`'.repeat(Math.max(3, ...Array.from(code.matchAll(/`+/g), match => match[0].length + 1)));
+      return `\n\n${fence}\n${code.replace(/\n$/, '')}\n${fence}\n\n`;
+    },
+  });
   const ordinals = new WeakMap();
   const integer = value => /^[+-]?\d+$/.test(value?.trim() || '') ? BigInt(value.trim()) : null;
   converter.addRule('ordered-item', {
