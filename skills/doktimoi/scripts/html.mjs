@@ -1,5 +1,22 @@
 import Turndown from 'turndown';
 
+function listLabel(number, type) {
+  if (number < 1n) return String(number);
+  if (type === 'a' || type === 'A') {
+    let label = '';
+    while (number) { number--; label = String.fromCharCode(65 + Number(number % 26n)) + label; number /= 26n; }
+    return type === 'a' ? label.toLowerCase() : label;
+  }
+  if ((type === 'i' || type === 'I') && number <= 3999n) {
+    let label = '';
+    for (const [value, symbol] of [[1000n, 'M'], [900n, 'CM'], [500n, 'D'], [400n, 'CD'], [100n, 'C'], [90n, 'XC'], [50n, 'L'], [40n, 'XL'], [10n, 'X'], [9n, 'IX'], [5n, 'V'], [4n, 'IV'], [1n, 'I']]) {
+      while (number >= value) { label += symbol; number -= value; }
+    }
+    return type === 'i' ? label.toLowerCase() : label;
+  }
+  return String(number);
+}
+
 // Parse static HTML without running scripts or loading linked resources.
 export function html(buffer) {
   const converter = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
@@ -33,7 +50,7 @@ export function html(buffer) {
           ordinals.set(item, number); number += step;
         }
       }
-      const prefix = `${ordinals.get(node)}. `;
+      const prefix = `${listLabel(ordinals.get(node), node.getAttribute('type') || node.parentNode.getAttribute('type'))}. `;
       return prefix + content.replace(/^\n+|\n+$/g, '').replace(/\n/g, '\n' + ' '.repeat(prefix.length)) + '\n';
     },
   });

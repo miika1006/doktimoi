@@ -127,6 +127,9 @@ test('HTML ordered lists keep explicit values, reverse order and nested numberin
   const result = await convert('codes.html', Buffer.from('<ol start="400"><li>Bad request</li><li value="403">Forbidden</li><li>Not found</li></ol><ol reversed><li>Latest<ol start="0"><li>Nested zero</li></ol></li><li>Previous</li></ol>'));
   const text = result.chunks.map(c => c.text).join('\n');
   for (const expected of ['400. Bad request', '403. Forbidden', '404. Not found', '2. Latest', '1. Previous', '0. Nested zero']) assert.ok(text.includes(expected), expected);
+  const typed = await convert('clauses.html', Buffer.from('<p>Clause B requires approval.</p><ol type="A"><li>Routine</li><li>Emergency</li><li value="26">Last letter</li><li>Next label</li></ol><ol type="i" start="4"><li>Roman four</li><li type="I">Upper five</li></ol>'));
+  const labels = typed.chunks.map(c => c.text).join('\n');
+  for (const expected of ['A. Routine', 'B. Emergency', 'Z. Last letter', 'AA. Next label', 'iv. Roman four', 'V. Upper five']) assert.ok(labels.includes(expected), expected);
 });
 
 test('bare HTML pre blocks preserve code and its governing restriction', async () => {
