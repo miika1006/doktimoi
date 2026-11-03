@@ -34,6 +34,18 @@ test('CSV preserves quoted newlines, leading zeroes, formulas as text and physic
   await assert.rejects(convert('broken.csv', Buffer.from('ID,Note\n1,"unterminated')));
 });
 
+test('CSV keeps quotes inside unquoted fields and build errors name the failing file', async t => {
+  const result = await convert('results.csv', Buffer.from('﻿Case;Status;Notes;Images\n002;PARTIAL;Main menu "V1 | TEST" was open;\n'));
+  assert.equal(result.chunks[0].location, 'lines:1-2');
+  assert.match(result.chunks[0].text, /3="Main menu \\"V1 \| TEST\\" was open"/);
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-csv-error-'));
+  const project = await openProject(root);
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  await fs.mkdir(path.join(root, 'runs'));
+  await fs.writeFile(path.join(root, 'runs', 'broken.csv'), 'ID,Note\n1,"unterminated');
+  await assert.rejects(project.search(['unterminated']), /^Error: runs\/broken\.csv: /);
+});
+
 test('JSON/YAML split large structures with parent paths and preserve exact scalar values', async () => {
   const result = await convert('config.json', Buffer.from('{"padding":"' + 'x'.repeat(1800) + '","production":{"quota":9007199254740993,"allowSelfApproval":false}}'));
   const policy = result.chunks.find(c => c.heading.includes('/production'));
@@ -205,6 +217,15 @@ test('Office XML BOMs preserve cell, slide and image evidence and allow CLI buil
   const built = JSON.parse(execFileSync(process.execPath, [cli, 'build', root], options));
   assert.equal(built.files, 2);
   assert.match(execFileSync(process.execPath, [cli, 'search', root, '--query', 'NATIVE_XLSX_MARKER'], options), /NATIVE_XLSX_MARKER/);
+});
+
+test('CLI runs when Windows invokes it with differently cased directories', { skip: process.platform !== 'win32' && 'Windows paths are case-insensitive' }, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-cli-case-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.writeFile(path.join(root, 'note.md'), '# Note\n\nCASE_MARKER\n');
+  const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
+  const recased = path.join(path.dirname(cli).toUpperCase(), path.basename(cli));
+  assert.equal(JSON.parse(execFileSync(process.execPath, [recased, 'build', root], { encoding: 'utf8' })).files, 1);
 });
 
 test('XML strips only the leading BOM and still rejects malformed or unsafe XML', async () => {

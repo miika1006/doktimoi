@@ -13,13 +13,13 @@ export function csv(source, buffer) {
   if (!delimiter) {
     const candidates = [',', ';', '\t', '|'].map(value => {
       try {
-        const rows = parse(text, { delimiter: value, bom: true, to: 1, skip_empty_lines: true });
+        const rows = parse(text, { delimiter: value, bom: true, relax_quotes: true, to: 1, skip_empty_lines: true });
         return { value, width: rows[0]?.length ?? 0 };
       } catch { return { value, width: 0 }; }
     });
     delimiter = candidates.sort((a, b) => b.width - a.width)[0].value;
   }
-  const records = parse(text, { delimiter, quote: tsv ? false : '"', bom: true, info: true, skip_empty_lines: true, cast: false });
+  const records = parse(text, { delimiter, quote: tsv ? false : '"', bom: true, relax_quotes: true, info: true, skip_empty_lines: true, cast: false });
   const chunks = [];
   const header = records[0]?.record.map((value, i) => `${i + 1}=${JSON.stringify(value)}`).join(' | ') ?? '';
   let group = [], first = 1 + offset, previous = offset, size = 0;

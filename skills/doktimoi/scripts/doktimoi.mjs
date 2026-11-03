@@ -116,7 +116,7 @@ export async function openProject(directory) {
           if (old.stamp !== signature) touched++;
           continue;
         }
-        const result = await convert(source, raw, extraction);
+        const result = await convert(source, raw, extraction).catch(error => { throw new Error(`${source}: ${error.message}`, { cause: error }); });
         next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, warnings: result.warnings, chunks: result.chunks.map(chunk => {
           const body = `# ${source} | ${chunk.heading}\n\n${chunk.text}`;
           const id = hash(`${source}\0${chunk.location}\0${body}`).slice(0, 32);
@@ -308,6 +308,6 @@ async function main() {
   } finally { await project.close(); }
 }
 
-if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await fs.realpath(fileURLToPath(import.meta.url))) {
   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });
 }
