@@ -10,14 +10,18 @@
     "doktimoi": "scripts/doktimoi.mjs"
   },
   "dependencies": {
+    "@napi-rs/canvas": "1.1.0",
     "@tobilu/qmd": "2.8.3",
     "exceljs": "4.4.0",
     "ignore": "7.0.14",
     "mammoth": "1.13.0",
     "mdast-util-from-markdown": "2.1.0",
+    "pdfjs-dist": "6.5.438",
     "proper-lockfile": "4.1.2",
+    "tesseract.js": "7.0.0",
     "tiktoken": "1.0.22",
     "turndown": "7.2.4",
-    "turndown-plugin-gfm": "1.0.2"
+    "turndown-plugin-gfm": "1.0.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

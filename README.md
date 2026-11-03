@@ -18,8 +18,7 @@ Built on **[QMD](https://github.com/tobi/qmd)**, a local search engine with keyw
   customer requirements, and unknowns when planning features or assessing gaps.
 
 QMD already provides search, citations, and selective reading. For Markdown-only
-collections, its own skill may be enough; Doktimoi has not been benchmarked
-head-to-head against it.
+collections, its own skill may be enough.
 
 ## Example uses
 

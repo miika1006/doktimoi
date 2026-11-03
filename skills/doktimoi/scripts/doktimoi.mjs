@@ -8,9 +8,10 @@ import lockfile from 'proper-lockfile';
 import { createStore, extractSnippet } from '@tobilu/qmd';
 import { get_encoding } from 'tiktoken';
 import { atomicWrite, convert, hash, inventory, safePath } from './sources.mjs';
+import { createExtraction, extractionConfig } from './extraction.mjs';
 
 let encoder;
-const converterVersion = 1;
+const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
 export function tokens(text) {
   encoder ??= get_encoding('o200k_base');
   return encoder.encode(text, [], []).length;
@@ -22,7 +23,7 @@ export function render(payload) {
   if (!payload.results.length) return payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.';
   let text = payload.results.map(item => {
     const heading = item.heading && (!item.text.startsWith('#') || item.heading.includes(' > ')) ? `${item.heading}\n` : '';
-    return `${reference(item)}\n${heading}${item.text}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
+    return `${reference(item)}\n${heading}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
   }).join('\n\n');
   if (payload.more) text += '\n[More matches available.]';
   if (payload.note) text += `\n[${payload.note}]`;
@@ -31,9 +32,10 @@ export function render(payload) {
 
 export async function openProject(directory) {
   const root = await fs.realpath(directory);
+  const converterVersion = JSON.stringify({ version: 2, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
-  for (const name of ['chunks', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
+  for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
     await safePath(cache, name);
   }
   const release = await lockfile.lock(root, {
@@ -57,39 +59,47 @@ export async function openProject(directory) {
       for (const [source, file] of Object.entries(manifest.files)) {
         for (const chunk of file.chunks) {
           if (!/^[a-f0-9]{32}$/.test(chunk.id)) throw new Error('Invalid cached chunk ID');
+          if (chunk.visual && !/^\.doktimoi\/visuals\/[a-f0-9]{64}\.png$/.test(chunk.visual)) throw new Error('Invalid visual reference');
           metadata.set(chunk.id, { ...chunk, source, hash: file.hash });
         }
       }
     };
     indexMetadata();
 
-    async function sync() {
+    async function sync({ verify = false } = {}) {
       const started = performance.now();
       const listing = await inventory(root);
       const next = { version: 2, converter: converterVersion, files: {} };
       const writes = [];
-      let changed = 0;
+      let changed = 0, touched = 0, hashedBytes = 0;
+      const extraction = createExtraction(path.join(cache, 'visuals'));
+      try {
       for (const source of listing.files) {
         const file = await safePath(root, source);
-        const before = await fs.stat(file);
-        const raw = await fs.readFile(file);
-        const after = await fs.stat(file);
-        if (before.mtimeMs !== after.mtimeMs || before.size !== after.size) throw new Error(`Source changed while reading: ${source}; retry`);
-        const digest = hash(raw);
+        const before = await fs.stat(file, { bigint: true });
+        const signature = stamp(before);
         const old = manifest.converter === converterVersion ? manifest.files[source] : undefined;
+        if (!verify && old?.stamp === signature) { next.files[source] = old; continue; }
+        const raw = await fs.readFile(file);
+        hashedBytes += raw.length;
+        const after = await fs.stat(file, { bigint: true });
+        if (signature !== stamp(after)) throw new Error(`Source changed while reading: ${source}; retry`);
+        const digest = hash(raw);
         if (old?.hash === digest) {
-          next.files[source] = old;
+          next.files[source] = { ...old, stamp: signature };
+          if (old.stamp !== signature) touched++;
           continue;
         }
-        const result = await convert(source, raw);
-        next.files[source] = { hash: digest, bytes: raw.length, warnings: result.warnings, chunks: result.chunks.map(chunk => {
+        const result = await convert(source, raw, extraction);
+        next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, warnings: result.warnings, chunks: result.chunks.map(chunk => {
           const body = `# ${source} | ${chunk.heading}\n\n${chunk.text}`;
           const id = hash(`${source}\0${chunk.location}\0${body}`).slice(0, 32);
           writes.push({ id, body });
-          return { id, location: chunk.location, heading: chunk.heading };
+          return { id, location: chunk.location, heading: chunk.heading, visual: chunk.visual };
         }) };
         changed++;
       }
+      } finally { await extraction.close(); }
       const removed = Object.keys(manifest.files).filter(source => !next.files[source]).length;
       const dirty = await fs.stat(path.join(cache, 'dirty')).then(() => true, e => { if (e.code !== 'ENOENT') throw e; return false; });
       const wanted = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => `${c.id}.md`)));
@@ -110,10 +120,17 @@ export async function openProject(directory) {
         await store.update();
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
         await fs.rm(path.join(cache, 'dirty'), { force: true });
+        const visuals = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => c.visual).filter(Boolean)));
+        const visualDir = path.join(cache, 'visuals');
+        for (const name of await fs.readdir(visualDir).catch(e => { if (e.code !== 'ENOENT') throw e; return []; })) {
+          if (/^[a-f0-9]{64}\.png$/.test(name) && !visuals.has(`.doktimoi/visuals/${name}`)) await fs.unlink(path.join(visualDir, name));
+        }
+      } else if (touched) {
+        await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
       }
       manifest = next;
       indexMetadata();
-      return { files: listing.files.length, chunks: metadata.size, changed, removed,
+      return { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
         unsupported: listing.unsupported, warnings: Object.entries(next.files).flatMap(([file, value]) => value.warnings.map(warning => ({ file, warning }))),
         ms: Math.round((performance.now() - started) * 100) / 100 };
     }
@@ -125,16 +142,17 @@ export async function openProject(directory) {
       if (hash(await fs.readFile(sourcePath)) !== entry.hash) throw new Error(`Source changed during search: ${entry.source}; retry`);
       const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8');
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
-      return { id, source: entry.source, location: entry.location, heading: entry.heading, text: body.slice(body.indexOf('\n\n') + 2) };
+      if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
+      return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, text: body.slice(body.indexOf('\n\n') + 2) };
     }
 
     return {
       sync,
-      async search(queries, { mode = 'lexical', limit = 4, budget = 1600 } = {}) {
+      async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false } = {}) {
         if (!['lexical', 'hybrid'].includes(mode)) throw new Error('mode must be lexical or hybrid');
-        if (!queries.length || queries.length > 4 || queries.some(q => !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
+        if (!Array.isArray(queries) || !queries.length || queries.length > 4 || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
         if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
-        const update = await sync();
+        const update = await sync({ verify });
         const started = performance.now();
         if (mode !== 'lexical') {
           const health = await store.getStatus();
@@ -172,10 +190,10 @@ export async function openProject(directory) {
           results.push(candidate);
         }
         const payload = { results, more: omitted > 0 || found.length > results.length };
-        if (results.some(r => r.source.toLowerCase().endsWith('.xlsx'))) payload.note = 'Excel formula results are cached, not recalculated.';
+        if (results.some(r => /\.xlsx?$/i.test(r.source))) payload.note = 'Excel formula results are cached, not recalculated.';
         return { payload, metrics: { updateMs: update.ms, searchMs: Math.round((performance.now() - started) * 100) / 100,
           resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
-          unsupportedCount: update.unsupported.length, warningCount: update.warnings.length } };
+          unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
       },
       async read(id, from = 1, lines = 40, budget = 1600) {
         if (!Number.isInteger(from) || from < 1 || !Number.isInteger(lines) || lines < 1 || lines > 200) throw new Error('from >= 1; lines 1–200');
@@ -214,22 +232,40 @@ async function main() {
     budget: { type: 'string', default: '1600' }, limit: { type: 'string', default: '4' },
     from: { type: 'string', default: '1' }, lines: { type: 'string', default: '40' },
     metrics: { type: 'boolean', default: false },
+    verify: { type: 'boolean', default: false },
   } });
   const [command, root, id] = positionals;
-  if (!['build', 'search', 'read', 'embed'].includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|search|read|embed ROOT [CHUNK_ID] [--query TERMS] [--mode lexical|hybrid]');
+  if (!['build', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
+    throw new Error('Usage: node doktimoi.mjs build|search|batch|read|embed ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
   }
   const project = await openProject(root);
   try {
     let result;
-    if (command === 'build') result = await project.sync();
+    if (command === 'build') result = await project.sync({ verify: true });
     if (command === 'embed') result = await project.embed();
+    if (command === 'batch') {
+      const parts = []; let bytes = 0;
+      for await (const part of process.stdin) {
+        bytes += part.length;
+        if (bytes > 1024 * 1024) throw new Error('Batch input exceeds 1 MB');
+        parts.push(part);
+      }
+      const requests = JSON.parse(Buffer.concat(parts).toString('utf8'));
+      if (!Array.isArray(requests) || requests.length < 1 || requests.length > 20) throw new Error('Batch requires 1–20 search requests');
+      const outputs = [];
+      for (const [index, request] of requests.entries()) {
+        const found = await project.search(request.queries, { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), ...request });
+        outputs.push(`Q${index + 1}\n${render(found.payload)}`);
+        if (values.metrics) console.error(JSON.stringify({ query: index + 1, ...found.metrics }));
+      }
+      result = outputs.join('\n\n');
+    }
     if (command === 'read') {
       const item = await project.read(id, Number(values.from), Number(values.lines), Number(values.budget));
-      result = render({ results: [item], note: item.source.toLowerCase().endsWith('.xlsx') ? 'Excel formula results are cached, not recalculated.' : undefined });
+      result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? 'Excel formula results are cached, not recalculated.' : undefined });
     }
     if (command === 'search') {
-      const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit) });
+      const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
       result = render(search.payload);
       if (values.metrics) console.error(JSON.stringify(search.metrics));
       if (search.metrics.unsupportedCount) console.error(`Skipped ${search.metrics.unsupportedCount} unsupported files; build lists them.`);

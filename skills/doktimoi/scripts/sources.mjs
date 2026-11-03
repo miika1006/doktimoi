@@ -4,13 +4,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import ignore from 'ignore';
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { createExtraction, legacyDoc } from './extraction.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
-export const supported = new Set(['.md', '.markdown', '.txt', '.docx', '.xlsx']);
+export const supported = new Set(['.md', '.markdown', '.txt', '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp']);
 const excluded = new Set(['node_modules', 'vendor', 'dist', 'build', 'coverage']);
 
 export async function safePath(root, relative) {
-  if (!relative || relative.includes('\\') || relative.split('/').some(p => !p || p === '.' || p === '..')) {
+  if (!relative || /^[a-z]:/i.test(relative) || relative.includes('\\') || relative.split('/').some(p => !p || p === '.' || p === '..')) {
     throw new Error('Expected a relative path inside the selected directory');
   }
   let current = root;
@@ -59,7 +60,7 @@ export async function inventory(root) {
     });
     const localRules = [...rules, { base: relativeDir, matcher: ignore().add(text) }];
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith('.') || excluded.has(entry.name) || entry.isSymbolicLink()) continue;
+      if (entry.name.startsWith('.') || entry.name.startsWith('~$') || excluded.has(entry.name) || entry.isSymbolicLink()) continue;
       const relative = [relativeDir, entry.name].filter(Boolean).join('/');
       if (!gitFiles && localRules.some(({ base, matcher }) =>
         matcher.ignores((base ? relative.slice(base.length + 1) : relative) + (entry.isDirectory() ? '/' : '')))) continue;
@@ -99,7 +100,7 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
       headings[node.depth - 1] = text.slice(node.position.start.offset, node.position.end.offset).replace(/^#+\s*/, '');
     }
     const size = node.position.end.offset - node.position.start.offset;
-    if (length + size > 2400 && pending.length) flush();
+    if (length + size > 1200 && pending.some(block => block.type !== 'heading')) flush();
     pending.push(node);
     length += size;
   }
@@ -107,27 +108,92 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
   return chunks;
 }
 
-export async function convert(source, buffer) {
+export async function convert(source, buffer, extraction) {
+  const context = extraction ?? createExtraction();
+  try { return await convertWithContext(source, buffer, context); }
+  finally { if (!extraction) await context.close(); }
+}
+
+async function convertWithContext(source, buffer, extraction) {
   const extension = path.extname(source).toLowerCase();
   if (['.md', '.markdown', '.txt'].includes(extension)) {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
     return { chunks: chunkMarkdown(text, source), warnings: [] };
   }
-  if (extension === '.docx') {
+  if (extension === '.pdf') {
+    const result = await extraction.pdf(buffer);
+    return { chunks: result.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
+      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))), warnings: result.warnings };
+  }
+  if (['.png', '.jpg', '.jpeg', '.webp'].includes(extension)) {
+    const result = await extraction.ocr(buffer);
+    const text = result.text || '[Visual content; no readable text detected. Inspect the image.]';
+    return { chunks: chunkMarkdown(text, source, 'ocr-lines').map(c => ({ ...c,
+      heading: `Image OCR (confidence ${Math.round(result.confidence ?? 0)})`, visual: result.visual })),
+      warnings: [result.disabled ? 'Image OCR is disabled.' : 'Image: OCR may misread text; diagrams require visual inspection.'] };
+  }
+  if (extension === '.docx' || extension === '.doc') {
+    if (extension === '.doc') buffer = await legacyDoc(buffer);
     const [{ default: mammoth }, { default: Turndown }, { default: gfm }] = await Promise.all([
       import('mammoth'), import('turndown'), import('turndown-plugin-gfm'),
     ]);
+    const images = [];
     const result = await mammoth.convertToHtml({ buffer }, {
       externalFileAccess: false,
       includeEmbeddedStyleMap: false,
-      convertImage: () => [],
+      convertImage: mammoth.images.imgElement(async image => {
+        const entry = { number: images.length + 1 };
+        images.push(entry);
+        const raw = await image.readAsBuffer();
+        Object.assign(entry, await extraction.ocr(raw));
+        return { src: `doktimoi-image:${entry.number}`, alt: `Image ${entry.number}; OCR indexed separately` };
+      }),
     });
     const converter = new Turndown({ headingStyle: 'atx' });
     converter.use(gfm.gfm);
+    converter.addRule('image-reference', { filter: 'img', replacement: (_, node) => `[${node.getAttribute('alt')}]` });
     const text = converter.turndown(result.value);
-    return { chunks: chunkMarkdown(text, source, 'extracted-lines'),
-      warnings: ['DOCX: images/OCR, layout and tracked changes are not fully represented.',
+    return { chunks: [...chunkMarkdown(text, source, 'extracted-lines'), ...images.flatMap(image =>
+      chunkMarkdown(image.text || '[Visual content; no readable text detected. Inspect the image.]', source, `image:${image.number}:ocr-lines`)
+        .map(c => ({ ...c, heading: `Image ${image.number} OCR (confidence ${Math.round(image.confidence ?? 0)})`, visual: image.visual })))],
+      warnings: ['Word: layout and tracked changes are not fully represented.',
+        ...(images.length ? ['Word images: OCR may misread text; inspect images for critical facts and diagram meaning.'] : []),
         ...result.messages.map(m => m.message)] };
+  }
+  if (extension === '.xls') {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.read(buffer, { type: 'buffer', cellFormula: true, cellNF: true, cellDates: true, bookVBA: false });
+    const chunks = [];
+    for (const name of workbook.SheetNames) {
+      const sheet = workbook.Sheets[name];
+      const rows = new Map();
+      // Enumerate populated cells, not a potentially enormous sparse !ref rectangle.
+      for (const address of Object.keys(sheet).filter(k => /^[A-Z]+[1-9]\d*$/.test(k))) {
+        const cell = sheet[address];
+        const row = XLSX.utils.decode_cell(address).r + 1;
+        const value = cell.f ? `formula=${cell.f}; cached=${JSON.stringify(cell.v ?? null)}` : cell.v;
+        if (value === undefined) continue;
+        const cells = rows.get(row) ?? [];
+        cells.push(`${address}=${JSON.stringify(value)}${cell.z ? ` [${cell.z}]` : ''}`);
+        rows.set(row, cells);
+      }
+      const entries = [...rows].sort(([a], [b]) => a - b);
+      const header = entries[0]?.[1].join(' | ') ?? '';
+      let group = [], length = 0;
+      const flush = () => {
+        if (!group.length) return;
+        chunks.push({ source, location: `${name}!rows:${group[0][0]}-${group.at(-1)[0]}`, heading: name,
+          text: `${group[0][0] === entries[0][0] ? '' : `context: ${header}\n`}${group.map(([, line]) => line).join('\n')}` });
+        group = []; length = 0;
+      };
+      for (const [row, cells] of entries) {
+        const line = cells.join(' | ');
+        if (length + line.length > 2000) flush();
+        group.push([row, line]); length += line.length;
+      }
+      flush();
+    }
+    return { chunks, warnings: ['XLS: formulas are not recalculated; images/charts are not indexed.'] };
   }
   const { default: ExcelJS } = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
