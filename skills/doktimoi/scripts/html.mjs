@@ -6,6 +6,10 @@ export function html(buffer) {
   converter.remove(['script', 'style', 'template']);
   converter.addRule('title', { filter: 'title', replacement: content => `\n\n# ${content}\n\n` });
   converter.addRule('deleted', { filter: ['del', 's', 'strike'], replacement: content => `~~${content}~~` });
+  converter.addRule('checkbox', {
+    filter: node => node.nodeName === 'INPUT' && node.type === 'checkbox',
+    replacement: (_, node) => node.hasAttribute('checked') ? '[x] ' : '[ ] ',
+  });
   // HTML tables need not have headers; keep cell boundaries and merged-cell metadata.
   converter.addRule('cell', {
     filter: ['td', 'th'],

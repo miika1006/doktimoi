@@ -75,7 +75,7 @@ reported but never downloaded. draw.io preserves labels and connector endpoints;
 arrow styles are not interpreted as process direction. JSON/YAML retain source
 ranges and structural paths; YAML aliases and tags are not evaluated. CSV fields
 remain strings, with column numbers and physical source line ranges.
-TSV uses tab separators. Plain-text formats require UTF-8; RST and AsciiDoc retain
+TSV uses tab separators and literal quotes (no CSV-style quoting). Plain-text formats require UTF-8; RST and AsciiDoc retain
 source text and line citations without evaluating includes, directives or substitutions.
 
 HTML/HTM support covers static UTF-8 documents: headings, text, code, tables,

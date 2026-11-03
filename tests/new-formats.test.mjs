@@ -104,6 +104,16 @@ test('HTML and HTM index, refresh, expand citations and remove deleted evidence'
   assert.equal((await project.search(['HTM_MARKER'])).payload.results.length, 0);
 });
 
+test('TSV keeps literal quotes and HTML task lists retain checked states', async () => {
+  const tsv = await convert('equipment.tsv', Buffer.from('Name\tDescription\nBasic\tSupports 6" displays\nPro\t"Quoted" label\n'));
+  assert.match(tsv.chunks[0].text, /Supports 6\\" displays/);
+  assert.match(tsv.chunks[0].text, /\\"Quoted\\" label/);
+  assert.equal(tsv.chunks[0].location, 'lines:1-3');
+  const result = await convert('checklist.html', Buffer.from('<ul><li><input type="checkbox" checked disabled>Reviewed</li><li><input type="checkbox" disabled>Approved</li></ul>'));
+  assert.match(result.chunks[0].text, /\[x\] Reviewed/);
+  assert.match(result.chunks[0].text, /\[ \] Approved/);
+});
+
 test('plain documentation and TSV refresh additions, changes, deletions and cached chunks', async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-text-'));
   const project = await openProject(root);

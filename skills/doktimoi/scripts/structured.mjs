@@ -19,7 +19,7 @@ export function csv(source, buffer) {
     });
     delimiter = candidates.sort((a, b) => b.width - a.width)[0].value;
   }
-  const records = parse(text, { delimiter, bom: true, info: true, skip_empty_lines: true, cast: false });
+  const records = parse(text, { delimiter, quote: tsv ? false : '"', bom: true, info: true, skip_empty_lines: true, cast: false });
   const chunks = [];
   const header = records[0]?.record.map((value, i) => `${i + 1}=${JSON.stringify(value)}`).join(' | ') ?? '';
   let group = [], first = 1 + offset, previous = offset, size = 0;
