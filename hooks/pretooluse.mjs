@@ -39,7 +39,7 @@ function remindOnFolderGrep(input, pluginRoot) {
   if (isFile(target)) return null;
   const root = indexedRoot(target);
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups and fact checks here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**

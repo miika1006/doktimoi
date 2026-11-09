@@ -22,8 +22,8 @@ change ACLs, bypass execution policy or switch administrator accounts. `npm.cmd`
 works if only the PowerShell npm wrapper is blocked. Recheck versions afterwards;
 reopen the terminal/IDE if PATH is stale. Index without elevation.
 
-Install dependencies in the installed skill directory (containing SKILL.md,
-package.json, `.npmrc` and the lockfile), then build:
+Install dependencies in the installed skill directory (containing SKILL.md and
+package.json), preserving its `.npmrc` and lockfile, then build:
 
 ```text
 npm ci --prefix "<skill>"
@@ -41,8 +41,8 @@ may be cheaper; decide by content volume and question, not file count.
 
 Use the same quoted commands in PowerShell, macOS or Linux, with Windows paths such
 as `"C:\Docs\Product"`; Bash and Python are not required. Legacy `.doc` (and images
-in legacy `.xls`) need LibreOffice; set `DOKTIMOI_SOFFICE` to `soffice` if it is
-not in the standard location.
+in legacy `.xls`) need LibreOffice; if it is not in the standard Windows/macOS
+location, set `DOKTIMOI_SOFFICE` to the executable path (`soffice.exe` on Windows).
 
 OCR (`DOKTIMOI_OCR_LANGUAGES`, default `eng+fin`) downloads recognition data on
 first use, then runs locally; `DOKTIMOI_OCR_CACHE` selects its cache. `DOKTIMOI_OCR`

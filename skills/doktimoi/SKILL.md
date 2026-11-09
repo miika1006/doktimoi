@@ -23,8 +23,8 @@ Read the first existing instruction file: `AGENTS.md`/`Agents.md`, else `CLAUDE.
 else `.github/copilot-instructions.md` (or root `copilot-instructions.md`). Respect
 it and its recorded search choice unless higher-priority instructions differ. If its
 `doktimoi:start` block differs from the setup guide's, replace the block with the
-current text, keep the recorded choice and tell the user. Never create parallel
-instruction files.
+current text, keep the recorded choice and tell the user. The setup guide covers
+missing files and case variants; never create parallel instruction files.
 
 ## Search
 
