@@ -50,7 +50,7 @@ Put independent questions in one search, separated by `--next` (own `Q1`, `Q2`
 sections; other options apply to all), and all ranges you need in one `read`
 (up to 20, shared 6000-token cap; `[Output cap reached; not read: ...]` lists
 the rest). For names, numbers or phrases use `--mode exact` instead of `grep`:
-it lists every matching line, Office/PDF/OCR text included, as the file, then
+up to 20 `--query` phrases are alternatives, and it lists every matching line, Office/PDF/OCR text included, as the file, then
 `N: line` (read `file:N`) or `LOCATION: line` (read `file:LOCATION`). To read a
 whole Markdown file, read `file.md:1-99999 --budget 6000` and follow `Continue`.
 

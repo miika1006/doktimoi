@@ -701,6 +701,10 @@ test('exact mode lists matching lines of every format, readable by reference, sc
   assert.equal(await exact(['log.rest', 'exact_term'], { exclude: ['guide.md'] }), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
   assert.equal(await exact(['log.rest', 'exact_term'], { scope: 'sub' }), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
   assert.equal(await exact(['Log.Rest'], { paths: ['example.docx'] }), 'No matching evidence.');
+  const phrases = [...Array.from({ length: 19 }, (_, i) => `absent_${i}`), 'exact_term'];
+  assert.equal(await exact(phrases), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
+  await assert.rejects(exact([...phrases, 'one_more']), /1–20 single-line phrases in exact mode/);
+  await assert.rejects(project.search(phrases.slice(0, 5)), /1–4 single-line queries per question; put other questions after --next/);
   await fs.writeFile(path.join(root, 'many.md'), `# Many\n\n${Array.from({ length: 400 }, (_, i) => `MANY_TERM line ${i} ${'filler words '.repeat(8)}`).join('\n')}\n`);
   const capped = await exact(['many_term'], { budget: 1000 });
   assert.ok(tokens(capped) <= 1000, `${tokens(capped)} tokens`);

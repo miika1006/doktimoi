@@ -549,7 +549,11 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
        */
       async search(queries, { mode = 'lexical', brief = false, limit = brief ? 10 : 4, budget = brief ? 800 : 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
         if (!['lexical', 'hybrid', 'exact'].includes(mode)) throw new Error('mode must be lexical, hybrid or exact');
-        if (!Array.isArray(queries) || !queries.length || queries.length > 4 || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
+        const maxQueries = mode === 'exact' ? MAX_EXACT_PHRASES : MAX_PHRASINGS;
+        if (!Array.isArray(queries) || !queries.length || queries.length > maxQueries || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) {
+          throw new Error(mode === 'exact' ? `Provide 1–${MAX_EXACT_PHRASES} single-line phrases in exact mode`
+            : `Provide 1–${MAX_PHRASINGS} single-line queries per question; put other questions after --next, or list up to ${MAX_EXACT_PHRASES} names or phrases with --mode exact`);
+        }
         if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
         budget = Math.min(budget, MAX_BUDGET);
         const update = await prepare({ verify, hybrid: mode === 'hybrid' });
@@ -1259,6 +1263,8 @@ async function scriptPath() { return fs.realpath(fileURLToPath(import.meta.url))
 
 const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
 const MAX_QUESTIONS = 20;
+const MAX_PHRASINGS = 4;
+const MAX_EXACT_PHRASES = 20;
 const CLI_COMMANDS = ['build', 'sync', 'search', 'batch', 'read', 'embed', 'status', 'disable-semantic', 'stop'];
 const USAGE = `Usage: node doktimoi.mjs COMMAND ROOT [REFERENCE] [options]
 
@@ -1279,7 +1285,7 @@ Commands:
   help                       Show this text (also --help or -h with any command)
 
 Options:
-  --query TERMS    search: 1-4 single-line queries (repeat the option); terms in a query are
+  --query TERMS    search: 1-${MAX_PHRASINGS} single-line queries (exact mode 1-${MAX_EXACT_PHRASES}; repeat the option); terms in a query are
                    ANDed; when no passage has them all, results matching some terms are labeled
   --next           search: starts the next question; each gets its own section (Q1, Q2, …) and
                    a share of the output cap; other options apply to every question
