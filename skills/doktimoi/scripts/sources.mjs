@@ -26,7 +26,7 @@ export async function inventory(root) {
   let gitFiles = null;
   try {
     gitFiles = new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '.'],
-      { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 }).split('\0'));
+      { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024, windowsHide: true }).split('\0'));
   } catch (error) {
     if (error.code !== 'ENOENT' && error.status !== 128) throw error;
   }
