@@ -43,6 +43,8 @@ async function retryOnSourceChange(run) {
 
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
 const SOURCE_CHANGE_ATTEMPTS = 4;
+const LOCK_BUSY = 'Index busy: other doktimoi processes (parallel searches, hybrid model loading or a background index update) held the index lock for over 5 minutes. Run fewer searches at once, or retry later.';
+const LOST_LOCK = 'Index lock lost: this doktimoi process stalled for over 60 s (parallel hybrid searches loading the model, or a busy machine) and another process took over the index. Nothing more was written; retry the search.';
 
 /** Deletes `*.tmp` files left by a process that died mid atomicWrite; call only while holding the lock. */
 async function removeOrphanTemps(dir) {
@@ -94,14 +96,19 @@ export async function openProject(directory) {
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
     await safePath(cache, name);
   }
+  let lostLock = null;
+  const assertLock = () => { if (lostLock) throw lostLock; };
   const release = await lockfile.lock(root, {
+    // The default throws from a timer and kills the process mid-write; instead block further index writes.
+    onCompromised: error => { lostLock = new Error(LOST_LOCK, { cause: error }); },
     // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
     // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
     // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
     realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
     // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
     retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
-  });
+  }).catch(error => { throw error.code === 'ELOCKED' ? new Error(LOCK_BUSY, { cause: error }) : error; });
+  const releaseLock = () => release().catch(error => { if (!lostLock) throw error; });
   let store;
   try {
     const chunkDir = path.join(cache, 'chunks');
@@ -172,22 +179,25 @@ export async function openProject(directory) {
       // Missing unchanged chunks require regeneration; never query a partial cache.
       if ([...wanted].some(name => !present.has(name))) throw new Error('Cached chunks are missing. Remove the disposable cache and build again.');
       if (changed || removed || dirty || existing.some(name => !wanted.has(name)) || !Object.keys(manifest.files).length) {
+        assertLock();
         await fs.writeFile(path.join(cache, 'dirty'), 'updating\n');
-        for (const { id, body } of writes) await atomicWrite(path.join(chunkDir, `${id}.md`), body);
+        for (const { id, body } of writes) { assertLock(); await atomicWrite(path.join(chunkDir, `${id}.md`), body); }
         for (const name of existing) {
-          if (!wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name)) await fs.unlink(path.join(chunkDir, name));
+          if (!wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name)) { assertLock(); await fs.unlink(path.join(chunkDir, name)); }
         }
         const indexed = await store.update();
         if (indexed.skipped) throw new Error(`Index update skipped ${indexed.skipped} chunks; check cache readability and retry`);
+        assertLock();
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
         await fs.rm(path.join(cache, 'dirty'), { force: true });
         const visuals = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => c.visual).filter(Boolean)));
         for (const [dir, pattern] of [['visuals', /^[a-f0-9]{64}\.png$/], ['ocr', /^[a-f0-9]{64}-[a-z+]+\.json$/]]) {
           for (const name of await ifMissing(fs.readdir(path.join(cache, dir)), [])) {
-            if (pattern.test(name) && !visuals.has(`.doktimoi/visuals/${name.slice(0, 64)}.png`)) await fs.unlink(path.join(cache, dir, name));
+            if (pattern.test(name) && !visuals.has(`.doktimoi/visuals/${name.slice(0, 64)}.png`)) { assertLock(); await fs.unlink(path.join(cache, dir, name)); }
           }
         }
       } else if (touched) {
+        assertLock();
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
       }
       manifest = next;
@@ -308,7 +318,7 @@ export async function openProject(directory) {
         const update = await sync();
         return { update, embeddings: await embed('Embedding failed; semantic index is incomplete') };
       },
-      async close() { try { await store.close(); } finally { await release(); } },
+      async close() { try { await store.close(); } finally { await releaseLock(); } },
     };
     for (const name of ['sync', 'search', 'read', 'refresh', 'embed']) {
       const once = api[name];
@@ -316,7 +326,7 @@ export async function openProject(directory) {
     }
     return api;
   } catch (error) {
-    try { if (store) await store.close(); } finally { await release(); }
+    try { if (store) await store.close(); } finally { await releaseLock(); }
     throw error;
   }
 }

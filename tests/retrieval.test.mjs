@@ -326,7 +326,11 @@ test('search succeeds while another writer keeps changing the matching source', 
     for (let i = 1; writing; i++) {
       // Replace atomically: a truncate-then-write could let sync index an empty draft and make the test flaky.
       await fs.writeFile(`${file}.next`, `# Draft\n\nWRITER_TOKEN version ${i}.`);
-      await fs.rename(`${file}.next`, file);
+      // Windows refuses to replace a file another handle (sync reading it) has open; retry briefly.
+      for (let attempt = 1; ; attempt++) {
+        try { await fs.rename(`${file}.next`, file); break; }
+        catch (error) { if (error.code !== 'EPERM' || attempt > 50) throw error; await new Promise(resolve => setTimeout(resolve, 10)); }
+      }
       await new Promise(resolve => setTimeout(resolve, 150));
     }
   })();
@@ -336,4 +340,18 @@ test('search succeeds while another writer keeps changing the matching source', 
       assert.match(result.payload.results[0].text, /WRITER_TOKEN version \d+/);
     }
   } finally { writing = false; await writer; }
+});
+
+test('a lost index lock blocks further index writes with an explanatory error instead of crashing', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nLOCK_TOKEN one.');
+  const project = await openProject(root);
+  try {
+    await project.search(['LOCK_TOKEN']);
+    await fs.rm(path.join(root, '.doktimoi', 'write.lock'), { recursive: true, force: true });
+    await new Promise(resolve => setTimeout(resolve, 6000));
+    await fs.writeFile(path.join(root, 'a.md'), '# A\n\nLOCK_TOKEN two.');
+    await assert.rejects(project.search(['LOCK_TOKEN']), /Index lock lost: .*parallel hybrid searches/);
+  } finally { await project.close(); }
 });
