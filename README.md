@@ -100,4 +100,4 @@ Search checks file metadata and verifies returned sources against their hashes;
 
 [Setup and CLI](skills/doktimoi/references/index.md) ·
 [Search workflow](skills/doktimoi/SKILL.md) ·
-[Benchmarks](benchmarks/RESULTS.md) · [Example sources](examples/README.md)
+[Test fixtures](examples/README.md)

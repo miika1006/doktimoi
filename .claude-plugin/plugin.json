@@ -1,6 +1,6 @@
 {
   "name": "doktimoi",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Search local documents, PDFs and images with OCR, source citations and a token budget, powered by QMD.",
   "author": {
     "name": "miika1006"
