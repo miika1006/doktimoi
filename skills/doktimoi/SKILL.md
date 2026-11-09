@@ -1,6 +1,6 @@
 ---
 name: doktimoi
-description: Search local product documentation, Office files, PDFs and images with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder. In a folder with a .doktimoi index, use it instead of Grep or whole-file reads for every content lookup, including fact checks and verification while editing or maintaining files.
+description: Search local product documentation, Office files, PDFs and images with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder. In a folder with a .doktimoi index, use it instead of Grep, shell searches (grep -r, rg, findstr, Select-String) or whole-file reads for every content lookup, including fact checks and verification while editing or maintaining files, and tell subagents that search there to do the same.
 ---
 
 # Doktimoi
