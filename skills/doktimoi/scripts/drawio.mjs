@@ -1,9 +1,10 @@
 import { inflateRawSync } from 'node:zlib';
 import Turndown from 'turndown';
 import { xml, elements } from './office.mjs';
+import { utf8 } from './extraction.mjs';
 
 export function drawio(source, buffer) {
-  const doc = xml(new TextDecoder('utf-8', { fatal: true }).decode(buffer));
+  const doc = xml(utf8(buffer));
   const root = doc.documentElement;
   if (!['mxfile', 'mxGraphModel'].includes(root.localName)) throw new Error('Expected draw.io mxfile or mxGraphModel');
   const pages = root.localName === 'mxGraphModel' ? [root] : elements(root, 'diagram');

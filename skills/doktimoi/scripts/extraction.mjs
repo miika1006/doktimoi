@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { execFile } from 'node:child_process';
@@ -9,6 +9,20 @@ import { promisify } from 'node:util';
 
 const run = promisify(execFile);
 const require = createRequire(import.meta.url);
+export const NO_TEXT = '[Visual content; no readable text detected. Inspect the image.]';
+export const hash = value => createHash('sha256').update(value).digest('hex');
+export const utf8 = buffer => new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+export const ifMissing = (promise, fallback) => promise.catch(error => { if (error.code !== 'ENOENT') throw error; return fallback; });
+
+export async function atomicWrite(file, content) {
+  const temp = `${file}.${randomUUID()}.tmp`;
+  try {
+    await fs.writeFile(temp, content, { flag: 'wx' });
+    await fs.rename(temp, file);
+  } finally {
+    await fs.rm(temp, { force: true });
+  }
+}
 
 export function additionalOcrLines(ocrText, nativeText) {
   const normalize = text => text.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -29,8 +43,13 @@ export function createExtraction(assetDir) {
   let queue = Promise.resolve();
   const stats = { ocrCalls: 0, ocrCacheHits: 0 };
   const seen = new Map();
+  const unlinked = async (file, cache) => {
+    const stat = await ifMissing(fs.lstat(file));
+    if (stat?.isSymbolicLink()) throw new Error(`Symlink in ${cache} cache`);
+    return stat;
+  };
   async function ocr(buffer) {
-    const digest = createHash('sha256').update(buffer).digest('hex');
+    const digest = hash(buffer);
     if (seen.has(digest)) { stats.ocrCacheHits++; return seen.get(digest); }
     let visual, cacheFile;
     if (assetDir) {
@@ -42,18 +61,14 @@ export function createExtraction(assetDir) {
       const canvas = createCanvas(image.width, image.height);
       canvas.getContext('2d').drawImage(image, 0, 0);
       buffer = canvas.toBuffer('image/png');
-      const imageHash = createHash('sha256').update(buffer).digest('hex');
+      const imageHash = hash(buffer);
       visual = `.doktimoi/visuals/${imageHash}.png`;
       const dest = path.join(assetDir, `${imageHash}.png`);
-      const stat = await fs.lstat(dest).catch(e => { if (e.code !== 'ENOENT') throw e; });
-      if (stat?.isSymbolicLink()) throw new Error('Symlink in visual cache');
-      if (!stat) await fs.writeFile(dest, buffer, { flag: 'wx' });
+      if (!await unlinked(dest, 'visual')) await fs.writeFile(dest, buffer, { flag: 'wx' });
       const cacheDir = path.join(path.dirname(assetDir), 'ocr');
       await fs.mkdir(cacheDir, { recursive: true });
       cacheFile = path.join(cacheDir, `${imageHash}-${languages}.json`);
-      const cachedStat = await fs.lstat(cacheFile).catch(e => { if (e.code !== 'ENOENT') throw e; });
-      if (cachedStat?.isSymbolicLink()) throw new Error('Symlink in OCR cache');
-      if (cachedStat && mode !== 'off') {
+      if (await unlinked(cacheFile, 'OCR') && mode !== 'off') {
         const cached = JSON.parse(await fs.readFile(cacheFile, 'utf8'));
         if (cached.version === 1 && typeof cached.text === 'string' && Number.isFinite(cached.confidence)) {
           const result = { text: cached.text, confidence: cached.confidence, visual };
@@ -71,13 +86,7 @@ export function createExtraction(assetDir) {
     stats.ocrCalls++;
     const { data } = await worker.recognize(buffer, {}, { text: true });
     const result = { text: data.text.trim(), confidence: data.confidence, visual };
-    if (cacheFile) {
-      const temporary = `${cacheFile}.${process.pid}.tmp`;
-      try {
-        await fs.writeFile(temporary, JSON.stringify({ version: 1, text: result.text, confidence: result.confidence }), { flag: 'wx' });
-        await fs.rename(temporary, cacheFile);
-      } finally { await fs.rm(temporary, { force: true }); }
-    }
+    if (cacheFile) await atomicWrite(cacheFile, JSON.stringify({ version: 1, text: result.text, confidence: result.confidence }));
     seen.set(digest, result);
     return result;
   }
@@ -113,7 +122,7 @@ export function createExtraction(assetDir) {
             const result = await ocr(surface.canvas.toBuffer('image/png'));
             // Avoid repeating the native text layer when OCR sees the same lines.
             const extra = additionalOcrLines(result.text, text);
-            if (extra || !text) segments.push({ text: extra || '[Visual content; no readable text detected. Inspect the image.]',
+            if (extra || !text) segments.push({ text: extra || NO_TEXT,
               location: `page:${number}:ocr-lines`, heading: `Page ${number} OCR (confidence ${Math.round(result.confidence ?? 0)})`, visual: result.visual });
             else segments.at(-1).visual = result.visual;
             if (extra || !text) warnings.push(`PDF page ${number}: OCR may misread text; check the page for critical facts.`);
@@ -135,8 +144,6 @@ export function createExtraction(assetDir) {
 }
 
 // Use a private profile with macros disabled, so an open LibreOffice cannot intercept conversion.
-export const legacyDoc = buffer => legacyOffice(buffer, ".doc");
-
 export async function legacyOffice(buffer, extension) {
   const conversion = { ".doc": ["docx:Office Open XML Text", ".docx"], ".xls": ["xlsx:Calc MS Excel 2007 XML", ".xlsx"] }[extension];
   if (!conversion) throw new Error("Unsupported legacy Office conversion");

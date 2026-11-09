@@ -1,7 +1,8 @@
 import { parse } from 'csv-parse/sync';
 import { parseAllDocuments, LineCounter, isMap, isSeq, isScalar } from 'yaml';
+import { utf8 as decode } from './extraction.mjs';
 
-const decode = buffer => new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+const fields = record => record.map((value, i) => `${i + 1}=${JSON.stringify(value)}`).join(' | ');
 
 export function csv(source, buffer) {
   const tsv = source.toLowerCase().endsWith('.tsv');
@@ -21,7 +22,7 @@ export function csv(source, buffer) {
   }
   const records = parse(text, { delimiter, quote: tsv ? false : '"', bom: true, relax_quotes: true, info: true, skip_empty_lines: true, cast: false });
   const chunks = [];
-  const header = records[0]?.record.map((value, i) => `${i + 1}=${JSON.stringify(value)}`).join(' | ') ?? '';
+  const header = records[0] ? fields(records[0].record) : '';
   let group = [], first = 1 + offset, previous = offset, size = 0;
   function flush(last) {
     if (!group.length) return;
@@ -30,7 +31,7 @@ export function csv(source, buffer) {
     group = []; size = 0;
   }
   for (const [index, { record, info }] of records.entries()) {
-    const line = `row ${index + 1}: ` + record.map((value, i) => `${i + 1}=${JSON.stringify(value)}`).join(' | ');
+    const line = `row ${index + 1}: ${fields(record)}`;
     if (size + line.length > 1600) flush(previous);
     if (!group.length) first = previous + 1;
     group.push(line); size += line.length;
@@ -47,6 +48,7 @@ export function structured(source, buffer, json = false) {
   const documents = parseAllDocuments(text, { lineCounter: counter, keepSourceTokens: true, uniqueKeys: true });
   const chunks = [];
   const covered = [];
+  const isCovered = line => covered.some(([a, b]) => line >= a && line <= b);
   for (const [index, document] of documents.entries()) {
     if (document.errors.length) throw new Error(`Invalid structured document: ${document.errors[0].message}`);
     function visit(node, pointer, depth = 0, fieldStart, context = []) {
@@ -75,9 +77,9 @@ export function structured(source, buffer, json = false) {
   if (!json) {
     const lines = text.split(/\r?\n/);
     for (let i = 0; i < lines.length; i++) {
-      if (!/^\s*#/.test(lines[i]) || covered.some(([a, b]) => i + 1 >= a && i + 1 <= b)) continue;
+      if (!/^\s*#/.test(lines[i]) || isCovered(i + 1)) continue;
       const first = i;
-      while (i + 1 < lines.length && /^\s*#/.test(lines[i + 1]) && !covered.some(([a, b]) => i + 2 >= a && i + 2 <= b)) i++;
+      while (i + 1 < lines.length && /^\s*#/.test(lines[i + 1]) && !isCovered(i + 2)) i++;
       chunks.push({ source, location: `lines:${first + 1}-${i + 1}`, heading: 'YAML comments', text: lines.slice(first, i + 1).join('\n') });
     }
   }

@@ -1,4 +1,5 @@
 import Turndown from 'turndown';
+import { utf8 } from './extraction.mjs';
 
 function listLabel(number, type) {
   if (number < 1n) return String(number);
@@ -78,7 +79,7 @@ export function html(buffer) {
     },
   });
   return {
-    text: converter.turndown(new TextDecoder('utf-8', { fatal: true }).decode(buffer)),
+    text: converter.turndown(utf8(buffer)),
     warnings: ['HTML: static UTF-8 text only; scripts/styles are excluded. Linked/embedded images, frames, CSS visibility and dynamic content require original-page inspection; no resources are fetched. Citations use extracted lines, not HTML source lines.'],
   };
 }

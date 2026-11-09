@@ -1,6 +1,7 @@
 import path from 'node:path';
 import JSZip from 'jszip';
 import { DOMParser } from '@xmldom/xmldom';
+import { NO_TEXT } from './extraction.mjs';
 
 const MAX_PART = 64 * 1024 * 1024;
 export const elements = (node, name) => Array.from(node.getElementsByTagName('*')).filter(n => n.localName === name);
@@ -71,7 +72,7 @@ function content(doc) {
   return prose.join('\n');
 }
 
-async function images(pkg, doc, part, location, extraction, warnings) {
+async function images(pkg, doc, part, location, extraction, warnings, suffix = '') {
   const rels = await pkg.relationships(part);
   const chunks = [];
   for (const [index, blip] of elements(doc, 'blip').entries()) {
@@ -92,8 +93,8 @@ async function images(pkg, doc, part, location, extraction, warnings) {
     }
     const result = await extraction.ocr(await pkg.read(rel.path));
     chunks.push({ location: `${location}${cell}:image:${index + 1}:ocr-lines`,
-      heading: `${location}${cell} image ${index + 1} OCR (confidence ${Math.round(result.confidence ?? 0)})`,
-      text: result.text || '[Visual content; no readable text detected. Inspect the image.]', visual: result.visual });
+      heading: `${location}${cell} image ${index + 1} OCR (confidence ${Math.round(result.confidence ?? 0)})${suffix}`,
+      text: result.text || NO_TEXT, visual: result.visual });
     warnings.push(result.disabled ? `Image OCR disabled: ${location}` : `Image OCR may misread text: ${location}; inspect visuals for critical facts.`);
   }
   return chunks;
@@ -111,13 +112,13 @@ export async function powerpoint(buffer, extraction) {
     const hidden = ['0', 'false'].includes(slideDoc.documentElement.getAttribute('show')) ? ' (hidden)' : '';
     const text = content(slideDoc);
     if (text) segments.push({ text, location: `${location}:extracted-lines`, heading: `Slide ${index + 1}${hidden}` });
-    segments.push(...(await images(pkg, slideDoc, rel.path, location, extraction, warnings)).map(s => ({ ...s, heading: s.heading + hidden })));
+    segments.push(...await images(pkg, slideDoc, rel.path, location, extraction, warnings, hidden));
     for (const note of (await pkg.relationships(rel.path)).values()) {
       if (note.type.endsWith('/notesSlide') && !note.external) {
         const notes = await pkg.document(note.path);
         const body = content(notes);
         if (body) segments.push({ text: body, location: `${location}:notes-lines`, heading: `Slide ${index + 1} speaker notes${hidden}` });
-        segments.push(...(await images(pkg, notes, note.path, `${location}:notes`, extraction, warnings)).map(s => ({ ...s, heading: s.heading + hidden })));
+        segments.push(...await images(pkg, notes, note.path, `${location}:notes`, extraction, warnings, hidden));
       }
     }
   }

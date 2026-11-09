@@ -1,12 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import ignore from 'ignore';
 import { fromMarkdown } from 'mdast-util-from-markdown';
-import { createExtraction, legacyDoc, legacyOffice } from './extraction.mjs';
+import { NO_TEXT, createExtraction, ifMissing, legacyOffice, utf8 } from './extraction.mjs';
 
-export const hash = value => createHash('sha256').update(value).digest('hex');
 const textFormats = new Set(['.md', '.markdown', '.txt', '.text', '.rst', '.adoc', '.asciidoc']);
 export const supported = new Set([...textFormats, '.docx', '.xlsx', '.doc', '.xls', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.drawio', '.svg', '.mmd', '.csv', '.tsv', '.yaml', '.yml', '.json', '.pptx', '.html', '.htm']);
 const excluded = new Set(['node_modules', 'vendor', 'dist', 'build', 'coverage']);
@@ -18,23 +16,10 @@ export async function safePath(root, relative) {
   let current = root;
   for (const part of relative.split('/')) {
     current = path.join(current, part);
-    const stat = await fs.lstat(current).catch(error => {
-      if (error.code !== 'ENOENT') throw error;
-      return null;
-    });
+    const stat = await ifMissing(fs.lstat(current));
     if (stat?.isSymbolicLink()) throw new Error(`Symlink refused: ${relative}`);
   }
   return current;
-}
-
-export async function atomicWrite(file, content) {
-  const temp = `${file}.${randomUUID()}.tmp`;
-  try {
-    await fs.writeFile(temp, content, { flag: 'wx' });
-    await fs.rename(temp, file);
-  } finally {
-    await fs.rm(temp, { force: true });
-  }
 }
 
 export async function inventory(root) {
@@ -55,10 +40,7 @@ export async function inventory(root) {
   async function visit(dir, rules) {
     const relativeDir = path.relative(root, dir).split(path.sep).join('/');
     const ignoreFile = await safePath(root, [relativeDir, '.gitignore'].filter(Boolean).join('/'));
-    const text = await fs.readFile(ignoreFile, 'utf8').catch(error => {
-      if (error.code !== 'ENOENT') throw error;
-      return '';
-    });
+    const text = await ifMissing(fs.readFile(ignoreFile, 'utf8'), '');
     const localRules = [...rules, { base: relativeDir, matcher: ignore().add(text) }];
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || entry.name.startsWith('~$') || excluded.has(entry.name) || entry.isSymbolicLink()) continue;
@@ -115,17 +97,17 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
   return chunks;
 }
 
-export async function convert(source, buffer, extraction) {
-  const context = extraction ?? createExtraction();
-  try { return await convertWithContext(source, buffer, context); }
-  finally { if (!extraction) await context.close(); }
-}
+const segmentChunks = (source, segments) => segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
+  .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual })));
 
-async function convertWithContext(source, buffer, extraction) {
+export async function convert(source, buffer, extraction) {
+  if (!extraction) {
+    const context = createExtraction();
+    try { return await convert(source, buffer, context); } finally { await context.close(); }
+  }
   const extension = path.extname(source).toLowerCase();
   if (textFormats.has(extension)) {
-    const text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-    return { chunks: chunkMarkdown(text, source), warnings: ['.rst', '.adoc', '.asciidoc'].includes(extension)
+    return { chunks: chunkMarkdown(utf8(buffer), source), warnings: ['.rst', '.adoc', '.asciidoc'].includes(extension)
       ? ['RST/AsciiDoc: indexed as source text; includes, substitutions and directives are not evaluated.'] : [] };
   }
   if (extension === '.html' || extension === '.htm') {
@@ -140,25 +122,18 @@ async function convertWithContext(source, buffer, extraction) {
     const result = (await import('./svg.mjs')).svg(source, buffer);
     return result.chunks ? result : { chunks: chunkMarkdown(result.text, source, 'extracted-lines'), warnings: result.warnings };
   }
-  if (extension === '.pptx') {
-    const result = await (await import('./office.mjs')).powerpoint(buffer, extraction);
-    return { chunks: result.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
-      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))), warnings: result.warnings };
-  }
-  if (extension === '.pdf') {
-    const result = await extraction.pdf(buffer);
-    return { chunks: result.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
-      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))), warnings: result.warnings };
+  if (extension === '.pptx' || extension === '.pdf') {
+    const result = extension === '.pdf' ? await extraction.pdf(buffer) : await (await import('./office.mjs')).powerpoint(buffer, extraction);
+    return { chunks: segmentChunks(source, result.segments), warnings: result.warnings };
   }
   if (['.png', '.jpg', '.jpeg', '.webp'].includes(extension)) {
     const result = await extraction.ocr(buffer);
-    const text = result.text || '[Visual content; no readable text detected. Inspect the image.]';
-    return { chunks: chunkMarkdown(text, source, 'ocr-lines').map(c => ({ ...c,
-      heading: `Image OCR (confidence ${Math.round(result.confidence ?? 0)})`, visual: result.visual })),
+    return { chunks: segmentChunks(source, [{ text: result.text || NO_TEXT, location: 'ocr-lines',
+      heading: `Image OCR (confidence ${Math.round(result.confidence ?? 0)})`, visual: result.visual }]),
       warnings: [result.disabled ? 'Image OCR is disabled.' : 'Image: OCR may misread text; diagrams require visual inspection.'] };
   }
   if (extension === '.docx' || extension === '.doc') {
-    if (extension === '.doc') buffer = await legacyDoc(buffer);
+    if (extension === '.doc') buffer = await legacyOffice(buffer, '.doc');
     const [{ default: mammoth }, { default: Turndown }, { default: gfm }] = await Promise.all([
       import('mammoth'), import('turndown'), import('turndown-plugin-gfm'),
     ]);
@@ -183,9 +158,8 @@ async function convertWithContext(source, buffer, extraction) {
     converter.use(gfm.gfm);
     converter.addRule('image-reference', { filter: 'img', replacement: (_, node) => `[${node.getAttribute('alt')}]` });
     const text = converter.turndown(result.value);
-    return { chunks: [...chunkMarkdown(text, source, 'extracted-lines'), ...images.flatMap(image =>
-      chunkMarkdown(image.text || '[Visual content; no readable text detected. Inspect the image.]', source, `image:${image.number}:ocr-lines`)
-        .map(c => ({ ...c, heading: `Image ${image.number} OCR (confidence ${Math.round(image.confidence ?? 0)})`, visual: image.visual })))],
+    return { chunks: [...chunkMarkdown(text, source, 'extracted-lines'), ...segmentChunks(source, images.map(image => ({ text: image.text || NO_TEXT,
+      location: `image:${image.number}:ocr-lines`, heading: `Image ${image.number} OCR (confidence ${Math.round(image.confidence ?? 0)})`, visual: image.visual })))],
       warnings: ['Word: layout and tracked changes are not fully represented.',
         ...(images.length ? ['Word images: OCR may misread text; inspect images for critical facts and diagram meaning.'] : []),
         ...result.messages.map(m => m.message)] };
@@ -229,8 +203,7 @@ async function convertWithContext(source, buffer, extraction) {
     const { spreadsheetImages, legacyHasDrawings } = await import('./office.mjs');
     const drawings = extension === '.xlsx' || legacyHasDrawings(buffer, XLSX);
     const images = drawings ? await spreadsheetImages(extension === '.xls' ? await legacyOffice(buffer, '.xls') : buffer, extraction) : { segments: [], warnings: [] };
-    chunks.push(...images.segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
-      .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual }))));
+    chunks.push(...segmentChunks(source, images.segments));
     return { chunks, warnings: ['Excel: formulas are not recalculated; cached results may be stale. Charts, in-cell rich-data images and embedded objects may need inspection.', ...images.warnings] };
   }
   throw new Error(`Unsupported source format: ${extension}`);

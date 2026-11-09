@@ -7,11 +7,13 @@ import { performance } from 'node:perf_hooks';
 import lockfile from 'proper-lockfile';
 import { createStore, extractSnippet } from '@tobilu/qmd';
 import { get_encoding } from 'tiktoken';
-import { atomicWrite, convert, hash, inventory, safePath } from './sources.mjs';
-import { createExtraction, extractionConfig } from './extraction.mjs';
+import { convert, inventory, safePath } from './sources.mjs';
+import { atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
 let encoder;
 const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
+const since = started => Math.round((performance.now() - started) * 100) / 100;
+const EXCEL_NOTE = 'Excel formula results are cached, not recalculated.';
 export function tokens(text) {
   encoder ??= get_encoding('o200k_base');
   return encoder.encode(text, [], []).length;
@@ -71,16 +73,13 @@ export async function openProject(directory) {
   try {
     const chunkDir = path.join(cache, 'chunks');
     await fs.mkdir(chunkDir, { recursive: true });
-    const databaseExists = await fs.stat(path.join(cache, 'index.sqlite')).then(() => true, e => { if (e.code !== 'ENOENT') throw e; return false; });
-    if (!databaseExists) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
+    if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
     store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
       collections: { docs: { path: chunkDir, pattern: '*.md' } },
     } });
-    let manifest = { version: 2, files: {} };
-    try { manifest = JSON.parse(await fs.readFile(path.join(cache, 'manifest.json'), 'utf8')); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    let manifest = JSON.parse(await ifMissing(fs.readFile(path.join(cache, 'manifest.json'), 'utf8'), '{"version":2,"files":{}}'));
     if (manifest.version !== 2 || !manifest.files || typeof manifest.files !== 'object') throw new Error('Unsupported cache; rebuild in a fresh .doktimoi directory');
-    let metadata = new Map();
+    let metadata;
     const indexMetadata = () => {
       metadata = new Map();
       for (const [source, file] of Object.entries(manifest.files)) {
@@ -128,16 +127,12 @@ export async function openProject(directory) {
       }
       } finally { await extraction.close(); }
       const removed = Object.keys(manifest.files).filter(source => !next.files[source]).length;
-      const dirty = await fs.stat(path.join(cache, 'dirty')).then(() => true, e => { if (e.code !== 'ENOENT') throw e; return false; });
+      const dirty = await ifMissing(fs.stat(path.join(cache, 'dirty')), false);
       const wanted = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => `${c.id}.md`)));
       const existing = await fs.readdir(chunkDir);
-      const existingSet = new Set(existing);
-      const written = new Set(writes.map(w => `${w.id}.md`));
-      const missing = [...wanted].filter(name => !existingSet.has(name));
+      const present = new Set([...existing, ...writes.map(w => `${w.id}.md`)]);
       // Missing unchanged chunks require regeneration; never query a partial cache.
-      if (missing.some(name => !written.has(name))) {
-        throw new Error('Cached chunks are missing. Remove the disposable cache and build again.');
-      }
+      if ([...wanted].some(name => !present.has(name))) throw new Error('Cached chunks are missing. Remove the disposable cache and build again.');
       if (changed || removed || dirty || existing.some(name => !wanted.has(name)) || !Object.keys(manifest.files).length) {
         await fs.writeFile(path.join(cache, 'dirty'), 'updating\n');
         for (const { id, body } of writes) await atomicWrite(path.join(chunkDir, `${id}.md`), body);
@@ -149,13 +144,10 @@ export async function openProject(directory) {
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
         await fs.rm(path.join(cache, 'dirty'), { force: true });
         const visuals = new Set(Object.values(next.files).flatMap(f => f.chunks.map(c => c.visual).filter(Boolean)));
-        const visualDir = path.join(cache, 'visuals');
-        for (const name of await fs.readdir(visualDir).catch(e => { if (e.code !== 'ENOENT') throw e; return []; })) {
-          if (/^[a-f0-9]{64}\.png$/.test(name) && !visuals.has(`.doktimoi/visuals/${name}`)) await fs.unlink(path.join(visualDir, name));
-        }
-        const ocrDir = path.join(cache, 'ocr');
-        for (const name of await fs.readdir(ocrDir).catch(e => { if (e.code !== 'ENOENT') throw e; return []; })) {
-          if (/^[a-f0-9]{64}-[a-z+]+\.json$/.test(name) && !visuals.has(`.doktimoi/visuals/${name.slice(0, 64)}.png`)) await fs.unlink(path.join(ocrDir, name));
+        for (const [dir, pattern] of [['visuals', /^[a-f0-9]{64}\.png$/], ['ocr', /^[a-f0-9]{64}-[a-z+]+\.json$/]]) {
+          for (const name of await ifMissing(fs.readdir(path.join(cache, dir)), [])) {
+            if (pattern.test(name) && !visuals.has(`.doktimoi/visuals/${name.slice(0, 64)}.png`)) await fs.unlink(path.join(cache, dir, name));
+          }
         }
       } else if (touched) {
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
@@ -164,7 +156,7 @@ export async function openProject(directory) {
       indexMetadata();
       return { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
         unsupported: listing.unsupported, warnings: Object.entries(next.files).flatMap(([file, value]) => value.warnings.map(warning => ({ file, warning }))),
-        ms: Math.round((performance.now() - started) * 100) / 100 };
+        ms: since(started) };
     }
 
     async function evidence(id) {
@@ -180,6 +172,12 @@ export async function openProject(directory) {
       return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, warning, text: body.slice(body.indexOf('\n\n') + 2) };
     }
 
+    async function embed(failure) {
+      const embeddings = await store.embed();
+      if (embeddings.errors) throw new Error(failure);
+      return embeddings;
+    }
+
     return {
       sync,
       async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false } = {}) {
@@ -191,10 +189,7 @@ export async function openProject(directory) {
         if (mode !== 'lexical') {
           const health = await store.getStatus();
           if (!health.hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
-          if (health.needsEmbedding) {
-            const embedded = await store.embed();
-            if (embedded.errors) throw new Error('Incremental embedding failed; use lexical search or retry');
-          }
+          if (health.needsEmbedding) await embed('Incremental embedding failed; use lexical search or retry');
         }
         const lists = [];
         for (const query of queries) lists.push(await store.searchLex(query, { collection: 'docs', limit: 20 }));
@@ -224,9 +219,9 @@ export async function openProject(directory) {
           results.push(candidate);
         }
         const payload = { results, more: omitted > 0 || found.length > results.length };
-        if (results.some(r => /\.xlsx?$/i.test(r.source))) payload.note = 'Excel formula results are cached, not recalculated.';
+        if (results.some(r => /\.xlsx?$/i.test(r.source))) payload.note = EXCEL_NOTE;
         if (update.warnings.length) payload.note = [payload.note, `Extraction may be incomplete (${update.warnings.length} warnings); run build for details.`].filter(Boolean).join(' ');
-        return { payload, metrics: { updateMs: update.ms, searchMs: Math.round((performance.now() - started) * 100) / 100,
+        return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
           resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
           unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
       },
@@ -251,15 +246,11 @@ export async function openProject(directory) {
         const update = await sync();
         const health = await store.getStatus();
         if (!health.hasVectorIndex || !health.needsEmbedding) return { update };
-        const embeddings = await store.embed();
-        if (embeddings.errors) throw new Error('Incremental embedding failed; semantic index is incomplete');
-        return { update, embeddings };
+        return { update, embeddings: await embed('Incremental embedding failed; semantic index is incomplete') };
       },
       async embed() {
         const update = await sync();
-        const embeddings = await store.embed();
-        if (embeddings.errors) throw new Error('Embedding failed; semantic index is incomplete');
-        return { update, embeddings };
+        return { update, embeddings: await embed('Embedding failed; semantic index is incomplete') };
       },
       async close() { try { await store.close(); } finally { await release(); } },
     };
@@ -306,7 +297,7 @@ async function main() {
     }
     if (command === 'read') {
       const item = await project.read(id, Number(values.from), Number(values.lines), Number(values.budget));
-      result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? 'Excel formula results are cached, not recalculated.' : undefined });
+      result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? EXCEL_NOTE : undefined });
     }
     if (command === 'search') {
       const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
