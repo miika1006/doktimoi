@@ -24,9 +24,15 @@ export function decide(input, pluginRoot) {
   return null;
 }
 
-/** Returns an allow decision when the command is a single safe doktimoi search/read. */
+/**
+ * Returns an allow decision when the command is a single safe doktimoi search/read.
+ * In Git Bash it also rewrites unquoted Windows paths, whose backslashes Bash would
+ * strip (C:\Users -> C:Users), so the approved command does not fail with MODULE_NOT_FOUND.
+ */
 function approveDoktimoiCommand(input, pluginRoot) {
-  const words = splitCommand(String(input.tool_input?.command ?? '').trim());
+  const original = String(input.tool_input?.command ?? '').trim();
+  const line = input.tool_name === 'Bash' && process.platform === 'win32' ? slashUnquotedPaths(original) : original;
+  const words = splitCommand(line);
   if (!words || words.length < 4 || !/^node(\.exe)?$/i.test(words[0])) return null;
   if (!samePath(words[1], scriptPath(pluginRoot), input.cwd)) return null;
   const [, , command, root, ...rest] = words;
@@ -35,7 +41,16 @@ function approveDoktimoiCommand(input, pluginRoot) {
   if (!options || !['lexical', 'hybrid'].includes(options.values.mode)) return null;
   if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;
   if (!indexedRoot(resolvePath(root, input.cwd), true)) return null;
-  return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder` });
+  const updated = line === original ? {} : { updatedInput: { ...input.tool_input, command: line } };
+  return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder`, ...updated });
+}
+
+/**
+ * Replaces backslashes in unquoted words with forward slashes; quoted parts stay as written.
+ * @example slashUnquotedPaths('node C:\\a\\d.mjs search "C:\\b"') // 'node C:/a/d.mjs search "C:\\b"'
+ */
+export function slashUnquotedPaths(command) {
+  return command.replace(/"[^"]*"|'[^']*'|[^"']+/g, part => /^["']/.test(part) ? part : part.replace(/\\/g, '/'));
 }
 
 /** Returns a reminder when Grep searches a folder (not a single file) inside a doktimoi index. */

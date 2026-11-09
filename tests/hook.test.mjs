@@ -50,6 +50,15 @@ test('accepts the Git Bash form of Windows paths', { skip: process.platform !== 
   assert.ok(allowed(decide(bash(`node ${gitBash(script)} search ${gitBash(indexed)} --query x`, indexed), pluginRoot)));
 });
 
+test('rewrites unquoted backslash paths that Git Bash would strip', { skip: process.platform !== 'win32' }, async t => {
+  const { indexed } = await folders(t);
+  const result = decide(bash(`node ${script} search ${indexed} --query "ä\\ö"`, indexed), pluginRoot);
+  assert.ok(allowed(result));
+  assert.equal(result.hookSpecificOutput.updatedInput.command, `node ${script.replaceAll('\\', '/')} search ${indexed.replaceAll('\\', '/')} --query "ä\\ö"`);
+  assert.equal(decide(bash(`node "${script}" search "${indexed}" --query x`, indexed), pluginRoot).hookSpecificOutput.updatedInput, undefined);
+  assert.equal(decide({ tool_name: 'PowerShell', tool_input: { command: `node ${script} search ${indexed} --query x` }, cwd: indexed }, pluginRoot).hookSpecificOutput.updatedInput, undefined);
+});
+
 test('leaves everything else to the normal permission flow', async t => {
   const { indexed, plain } = await folders(t);
   const rejected = [

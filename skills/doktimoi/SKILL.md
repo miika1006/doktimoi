@@ -29,9 +29,11 @@ missing files and case variants; never create parallel instruction files.
 ## Search
 
 ```text
-node <skill>/scripts/doktimoi.mjs search <folder> --query "distinctive terms" --budget 1600
+node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "distinctive terms" --budget 1600
 ```
 
+Always double-quote both paths: Bash (also Git Bash on Windows) strips unquoted
+backslashes, so `node C:\Users\...` fails with `MODULE_NOT_FOUND`.
 Run each search or read as one command with absolute or folder-relative paths: no
 `cd`, variables, `;`, `&&`, pipes or redirection. In Claude Code the plugin hook
 then approves it without a permission prompt for an indexed folder in lexical or
@@ -59,7 +61,7 @@ critical image facts, diagrams or unclear OCR. When missing evidence matters, ch
 the extraction warnings in `build` output. Expand an incomplete excerpt:
 
 ```text
-node <skill>/scripts/doktimoi.mjs read <folder> "path.md:20-45" --from 1 --lines 40
+node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:20-45" --from 1 --lines 40
 ```
 
 Copy the reference from the search result; `--from` counts lines within that chunk.
