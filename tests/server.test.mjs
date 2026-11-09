@@ -80,6 +80,23 @@ test('a lexical-only folder never starts a server, from searches or the session-
   assert.equal(await readInfo(root), null);
 });
 
+test('while the index lock is held, the server and in-process searches answer alike from the current index', async t => {
+  const root = await folder(t, true);
+  await fs.writeFile(path.join(root, 'notes.md'), '# Notes\n\nSERVER_TOKEN appears in notes.');
+  const search = ['search', root, '--query', 'SERVER_TOKEN'];
+  assert.equal(run(search).status, 0);
+  const info = await readInfo(root);
+  await fs.writeFile(path.join(root, 'guide.md'), '# Guide\n\nSERVER_TOKEN changed meanwhile.');
+  const release = await lockfile.lock(root, { realpath: false, lockfilePath: path.join(root, '.doktimoi', 'write.lock') });
+  try {
+    const served = run(search);
+    assert.equal(served.stdout, 'notes.md:1-3\n# Notes\n\nSERVER_TOKEN appears in notes.\n[Index update in progress; very recent changes may be missing. 1 match was left out: their sources changed after indexing; search again shortly.]\n');
+    assert.deepEqual(served, run(search, { DOKTIMOI_NO_SERVER: '1' }));
+    assert.equal((await readInfo(root)).pid, info.pid);
+  } finally { await release(); }
+  assert.match(run(search).stdout, /SERVER_TOKEN changed meanwhile\.\n\nnotes\.md|notes\.md[\s\S]*SERVER_TOKEN changed meanwhile/);
+});
+
 test('searches and reads in a semantic folder go through one server with the same output', async t => {
   const root = await folder(t, true);
   const direct = { DOKTIMOI_NO_SERVER: '1' };
@@ -154,10 +171,13 @@ test('status reports a semantic folder server, its busy request and the held loc
   assert.match(idle, /^ {2}Embedding model: not loaded; idle, exits when idle at \d{4}-\d\d-\d\dT[\d:]{8}[+-]\d\d:\d\d$/m);
   await new Promise(resolve => setTimeout(resolve, 1100));
   assert.equal(run(['status', root]).stdout, idle, 'status must not reset the idle timer');
-  // After a change, holding the index lock keeps the server's next search waiting to sync, so status sees it busy.
+  // 0.8.0 clients print the `queued` count of a newer server.
+  assert.equal(JSON.parse((await request(info, { command: 'status', token: info.token })).output).queued, 0);
+  // Holding the index lock keeps the server's next --verify search waiting to sync (a plain search
+  // would answer from the current index), so status sees it busy.
   await fs.writeFile(path.join(root, 'guide.md'), '# Guide\n\nSERVER_TOKEN needs approval again.');
   const release = await lockfile.lock(root, { realpath: false, lockfilePath: path.join(root, '.doktimoi', 'write.lock') });
-  const search = new Promise(resolve => spawn(process.execPath, [cli, 'search', root, '--query', 'SERVER_TOKEN'], { stdio: 'ignore', windowsHide: true }).on('exit', resolve));
+  const search = new Promise(resolve => spawn(process.execPath, [cli, 'search', root, '--query', 'SERVER_TOKEN', '--verify'], { stdio: 'ignore', windowsHide: true }).on('exit', resolve));
   let status = '';
   for (let i = 0; i < 100 && !/busy with search/.test(status); i++) {
     await new Promise(resolve => setTimeout(resolve, 100));

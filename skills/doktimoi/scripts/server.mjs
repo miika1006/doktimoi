@@ -93,7 +93,8 @@ export async function serve(root, script, version, run, close, describe, idleMs 
   /** Describes this server for the `status` request; `busy` is its oldest running request. */
   const state = () => {
     const oldest = active.values().next().value;
-    return { pid: process.pid, version, script, idleExitAt: idleAt, running: active.size,
+    // `queued` keeps 0.8.0 clients, which read it instead of `running`, from printing "undefined queued".
+    return { pid: process.pid, version, script, idleExitAt: idleAt, running: active.size, queued: Math.max(0, active.size - 1),
       busy: oldest && { command: oldest.command, ms: Date.now() - oldest.started }, ...describe() };
   };
 

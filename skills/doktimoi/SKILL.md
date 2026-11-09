@@ -83,5 +83,6 @@ Pass these to subagents that search:
   one call (up to four `--query`) instead of separate calls.
 - Output is capped at 6000 tokens and about 20 KB per call; page with `Continue`
   instead of raising `--budget`. Token counts are `o200k_base` estimates.
+- `--verify` waits for a running index update instead of answering with a note.
 - `Index busy` (waited 5 minutes) or `Index lock lost` (stalled over 60 s): retry
   once, run fewer searches at once, never loop with sleeps.

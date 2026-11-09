@@ -107,6 +107,11 @@ const LINE_SPAN = /^(lines:)(\d+)-(\d+)$/;
 // Git rewrites its own files during our inventory; .doktimoi is written by the index itself.
 const IGNORED_CHANGE = /^\.(doktimoi|git)([\\/]|$)/;
 const LOCK_BUSY = 'Index busy: other doktimoi processes (parallel searches, hybrid model loading or a background index update) held the index lock for over 5 minutes. Run fewer searches at once, or retry later.';
+const BUSY = Symbol('index busy');
+// How long a query with a usable index waits for an index update before answering from the index as it is.
+const BUSY_WAIT_MS = 1000;
+const UPDATING_NOTE = 'Index update in progress; very recent changes may be missing.';
+const SKIPPED_NOTE = 'their sources changed after indexing; search again shortly.';
 const LOST_LOCK = 'Index lock lost: this doktimoi process stalled for over 60 s (parallel hybrid searches loading the model, or a busy machine) and another process took over the index. Nothing more was written; retry the search.';
 
 /** Deletes `*.tmp` files left by a process that died mid atomicWrite; call only while holding the lock. */
@@ -181,6 +186,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     import('proper-lockfile'), import('@tobilu/qmd'), import('./sources.mjs')]);
   extractSnippet = qmd.extractSnippet;
   const root = await fs.realpath(directory);
+  const qmdStore = await qmdInternals();
   const converterVersion = JSON.stringify({ version: 15, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
@@ -196,18 +202,26 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
    * Runs `work` holding the index write lock, released afterwards so that a long-lived process
    * (the search server) leaves the index to hooks and other sessions between operations.
    */
-  async function locked(work) {
+  async function locked(work, { wait = true } = {}) {
     const current = held = { lost: null };
-    const release = await lockfile.lock(root, {
-      // The default throws from a timer and kills the process mid-write; instead block further index writes.
-      onCompromised: error => { current.lost = new Error(LOST_LOCK, { cause: error }); },
-      // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
-      // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
-      // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
-      realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
-      // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
-      retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
-    }).catch(error => { throw error.code === 'ELOCKED' ? new Error(LOCK_BUSY, { cause: error }) : error; });
+    let release;
+    try {
+      release = await lockfile.lock(root, {
+        // The default throws from a timer and kills the process mid-write; instead block further index writes.
+        onCompromised: error => { current.lost = new Error(LOST_LOCK, { cause: error }); },
+        // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
+        // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
+        // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
+        realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
+        // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes,
+        // or about a second when the caller can answer from the current index instead.
+        retries: wait ? { retries: 300, minTimeout: 100, maxTimeout: 1000 } : { retries: 4, minTimeout: 100, maxTimeout: 400 },
+      });
+    } catch (error) {
+      if (error.code !== 'ELOCKED') throw error;
+      if (!wait) return BUSY;
+      throw new Error(LOCK_BUSY, { cause: error });
+    }
     try {
       for (const dir of [cache, chunkDir, path.join(cache, 'visuals'), path.join(cache, 'ocr')]) await removeOrphanTemps(dir);
       return await work();
@@ -215,9 +229,10 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
   }
 
   const gate = createGate();
-  const changes = watchSources ? watchFolder(root) : null;
+  // fs.watch misses changes on network and WSL shares (\\server\share, \\wsl.localhost\...); sync on every call there.
+  const changes = watchSources && !root.startsWith('\\\\') ? watchFolder(root) : null;
 
-  let store, manifest, manifestStamp, metadata, lastUpdate;
+  let store, manifest, manifestStamp, metadata, lastUpdate, incremental, syncing = null, syncStartedAt = 0;
   const queryEmbeddings = new Map();
   let embedding = Promise.resolve();
   const manifestSignature = async () => { const stat = await ifMissing(fs.stat(manifestFile, { bigint: true }), null); return stat && stamp(stat); };
@@ -240,25 +255,35 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       for (const chunk of file.chunks) {
         if (!/^[a-f0-9]{32}$/.test(chunk.id)) throw new Error('Invalid cached chunk ID');
         if (chunk.visual && !/^\.doktimoi\/visuals\/[a-f0-9]{64}\.png$/.test(chunk.visual)) throw new Error('Invalid visual reference');
-        metadata.set(chunk.id, { ...chunk, source, hash: file.hash });
+        metadata.set(chunk.id, { ...chunk, source, hash: file.hash, warnings: file.warnings });
       }
     }
   }
 
   try {
-    await locked(async () => {
-      await fs.mkdir(chunkDir, { recursive: true });
-      if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
+    /** Opens QMD's database and reads the manifest. */
+    async function openStore() {
       store = await qmd.createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
         collections: { docs: { path: chunkDir, pattern: '*.md' } },
       } });
       // QMD unloads the embedding model after 5 idle minutes; the search server keeps it for its own lifetime.
       if (modelIdleMs) store.internal.llm.inactivityTimeoutMs = modelIdleMs;
+      incremental = await supportsIncrementalUpdate(qmdStore, store.internal.db);
       await loadManifest();
-    });
+    }
+
+    // A built index opens without the lock while another process updates it (SQLite's WAL lets readers in), so queries need not wait.
+    const built = await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false) && await ifMissing(fs.stat(manifestFile), false);
+    const opened = await locked(async () => {
+      await fs.mkdir(chunkDir, { recursive: true });
+      if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
+      await openStore();
+    }, { wait: !built });
+    if (opened === BUSY) await openStore();
 
     async function sync({ verify = false } = {}) {
       const started = performance.now();
+      syncStartedAt = Date.now();
       const listing = await inventory(root);
       const next = { version: 2, converter: converterVersion, files: {} };
       const writes = [];
@@ -302,15 +327,20 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       const present = new Set([...existing, ...writes.map(w => `${w.id}.md`)]);
       // Missing unchanged chunks require regeneration; never query a partial cache.
       if ([...wanted].some(name => !present.has(name))) throw new Error('Cached chunks are missing. Stop the search server (doktimoi.mjs stop ROOT), remove the disposable cache and build again.');
+      let indexMode;
       if (changed || removed || dirty || existing.some(name => !wanted.has(name)) || !Object.keys(manifest.files).length) {
+        // A first build, a converter change, build itself and an interrupted update rescan every chunk.
+        const full = verify || !!dirty || manifest.converter !== converterVersion || !Object.keys(manifest.files).length;
         assertLock();
         await fs.writeFile(path.join(cache, 'dirty'), 'updating\n');
-        for (const { id, body } of writes) { assertLock(); await atomicWrite(path.join(chunkDir, `${id}.md`), body); }
-        for (const name of existing) {
-          if (!wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name)) { assertLock(); await fs.unlink(path.join(chunkDir, name)); }
+        // A chunk's name hashes its text, so an existing file already holds it; a full update rewrites all.
+        const kept = new Set(full ? [] : existing);
+        for (const { id, body } of writes) {
+          if (!kept.has(`${id}.md`)) { assertLock(); await atomicWrite(path.join(chunkDir, `${id}.md`), body); }
         }
-        const indexed = await store.update();
-        if (indexed.skipped) throw new Error(`Index update skipped ${indexed.skipped} chunks; check cache readability and retry`);
+        const obsolete = existing.filter(name => !wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name));
+        for (const name of obsolete) { assertLock(); await fs.unlink(path.join(chunkDir, name)); }
+        indexMode = await updateIndex(full, writes, obsolete, wanted.size);
         assertLock();
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
         await fs.rm(path.join(cache, 'dirty'), { force: true });
@@ -327,9 +357,49 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       manifest = next;
       manifestStamp = await manifestSignature();
       indexMetadata();
-      return lastUpdate = { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
+      return lastUpdate = { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...indexMode, ...extraction.stats,
         unsupported: listing.unsupported, warnings: Object.entries(next.files).flatMap(([file, value]) => value.warnings.map(warning => ({ file, warning }))),
         ms: since(started) };
+    }
+
+    /**
+     * Brings QMD's tables in line with the chunk folder: only the written and removed chunks when
+     * possible, else (or when that fails) QMD's full rescan of every chunk file. The caller has set
+     * the dirty marker, so an interrupted update of either kind is redone in full by the next sync.
+     * @returns {Promise<{ index: 'incremental' | 'full', indexFallback?: string }>}
+     */
+    async function updateIndex(full, writes, obsolete, expected) {
+      let indexFallback;
+      if (!full && incremental) {
+        try { indexChunks(writes, obsolete, expected); return { index: 'incremental' }; }
+        catch (error) { indexFallback = error.message; }
+      }
+      const indexed = await store.update();
+      if (indexed.skipped) throw new Error(`Index update skipped ${indexed.skipped} chunks; check cache readability and retry`);
+      return { index: 'full', ...(indexFallback && { indexFallback }) };
+    }
+
+    /**
+     * Indexes written chunks and deactivates removed ones in one SQLite transaction, as QMD's
+     * update would for those files, and fails (rolling back) unless exactly `expected` chunks end active.
+     */
+    function indexChunks(writes, obsolete, expected) {
+      const db = store.internal.db;
+      const now = new Date().toISOString();
+      db.transaction(() => {
+        for (const { id, body } of writes) {
+          // QMD hashes the text as it reads it back from the UTF-8 file, with lone surrogates replaced.
+          const content = Buffer.from(body).toString('utf8');
+          const digest = hash(content);
+          const name = `${id}.md`;
+          if (qmdStore.findActiveDocument(db, 'docs', name)?.hash === digest) continue;
+          qmdStore.insertContent(db, digest, content, now);
+          qmdStore.insertDocument(db, 'docs', name, qmdStore.extractTitle(content, name), digest, now, now);
+        }
+        for (const name of obsolete) qmdStore.deactivateDocument(db, 'docs', name);
+        const active = db.prepare("SELECT COUNT(*) AS n FROM documents WHERE collection = 'docs' AND active = 1").get().n;
+        if (active !== expected) throw new Error(`Incremental index update left ${active} active chunks instead of ${expected}`);
+      }).immediate();
     }
 
     /**
@@ -373,14 +443,15 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
      */
     async function evidence(id, verified = new Map()) {
       const entry = metadata.get(id);
-      if (!entry) throw new Error(`Unknown or obsolete chunk: ${id}`);
+      // Callers resolve IDs from the metadata first, so only a read answered during this process's sync gets here.
+      if (!entry) throw sourceChanged(`Index changed during read: ${id}; retry`);
       const sourcePath = await safePath(root, entry.source);
       if (!verified.has(entry.source)) verified.set(entry.source, ifMissing(fs.readFile(sourcePath), null).then(current => !!current && hash(current) === entry.hash));
       if (!await verified.get(entry.source)) throw sourceChanged(`Source changed during search: ${entry.source}; retry`);
       const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8').catch(vanished(entry.source));
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
       if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
-      const warnings = manifest.files[entry.source].warnings;
+      const warnings = entry.warnings;
       const warning = warnings.length ? `Extraction: ${warnings.join(' ').slice(0, 240)}${warnings.join(' ').length > 240 ? '… (build lists details)' : ''}` : undefined;
       return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, warning, text: body.slice(body.indexOf('\n\n') + 2) };
     }
@@ -446,11 +517,12 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         const update = await prepare({ verify, hybrid: mode !== 'lexical' });
         return gate.read(async () => {
           const started = performance.now();
-          const payload = await find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes });
+          const payload = await find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale: update.stale });
           return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
             resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
-            unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
-        });
+            unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes,
+            ...(update.stale && { stale: true }) } };
+        }, { wait: !update.stale });
       },
       /**
        * Returns the text of a chunk ID or reference (see chunksForReference) from line `from` of
@@ -462,8 +534,8 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       async read(ref, from = 1, lines, budget = 1600) {
         if (!Number.isInteger(from) || from < 1 || (lines !== undefined && (!Number.isInteger(lines) || lines < 1))) throw new Error('from >= 1; lines >= 1');
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
-        await prepare();
-        return gate.read(() => readReference(ref, from, lines, Math.min(budget, MAX_BUDGET)));
+        const update = await prepare();
+        return gate.read(() => readReference(ref, from, lines, Math.min(budget, MAX_BUDGET)), { wait: !update.stale });
       },
       async refresh() {
         const update = await sync();
@@ -499,27 +571,78 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     return api;
 
     /** Runs an index update in this process alone, under the index lock, on the current manifest. */
-    function indexWrite(work) {
-      return gate.write(() => locked(async () => { await loadManifest(); return work(); }));
+    function indexWrite(work, options) {
+      return gate.write(() => locked(async () => { await loadManifest(); return work(); }, options));
     }
 
     /**
      * Brings the index up to date before a search or read: syncs under the lock unless the folder
      * watcher saw no change since the last sync, else reloads a manifest another process rewrote;
-     * hybrid search also embeds new chunks. Returns the sync result, or the last one when skipped.
+     * hybrid search also embeds new chunks. While another process or this one updates a usable
+     * index for longer than about a second, answers from the current index instead (`stale`).
+     * Returns the sync result, or the last one when skipped.
      */
     async function prepare({ verify = false, hybrid = false } = {}) {
       let update;
       // Without a finished sync there is no result to report; a parallel first sync may still fail.
-      if (verify || !changes?.fresh() || !lastUpdate) {
-        changes?.syncing();
-        update = await indexWrite(() => sync({ verify })).catch(error => { changes?.changed(); throw error; });
-      } else if (await manifestSignature() !== manifestStamp) await gate.write(loadManifest);
-      if (hybrid) {
+      if (verify || syncing || !changes?.fresh() || !lastUpdate) update = await syncForQuery(verify);
+      else if (await manifestSignature() !== manifestStamp) await gate.write(loadManifest);
+      if (hybrid && !update?.stale) {
         const health = await store.getStatus();
-        if (health.hasVectorIndex && health.needsEmbedding) await indexWrite(() => embed('Incremental embedding failed; use lexical search or retry'));
+        if (health.hasVectorIndex && health.needsEmbedding) {
+          const embedded = await indexWrite(() => embed('Incremental embedding failed; use lexical search or retry'), { wait: !usable() });
+          if (embedded === BUSY) update = staleUpdate();
+        }
       }
       return update ?? { ...lastUpdate, changed: 0, removed: 0, hashedBytes: 0, ms: 0 };
+    }
+
+    /**
+     * Syncs for a search or read. Concurrent callers share one sync, unless the folder watcher saw
+     * a change after it started (then the next sync queues behind it); with a usable index they
+     * wait for a running sync, or for the lock another process holds, only briefly. A verified
+     * search waits like an index command, since it promises to see every change.
+     */
+    async function syncForQuery(verify) {
+      const wait = verify || !usable();
+      const running = !verify && syncing;
+      const run = running && changes?.fresh() !== false ? running : syncOrStale(verify, wait);
+      if (!verify && run !== running) {
+        syncing = run;
+        run.finally(() => { if (syncing === run) syncing = null; }).catch(() => {});
+      }
+      return running && !wait ? Promise.race([run, delay(BUSY_WAIT_MS).then(staleUpdate)]) : run;
+    }
+
+    /** Syncs under the lock; when another process holds it (and `wait` is off), returns a stale update instead. */
+    async function syncOrStale(verify, wait) {
+      changes?.syncing();
+      const update = await indexWrite(() => sync({ verify }), { wait }).catch(error => { changes?.changed(); throw error; });
+      if (update !== BUSY) return update;
+      changes?.changed();
+      if (await manifestSignature() !== manifestStamp) await gate.write(loadManifest);
+      return staleUpdate();
+    }
+
+    /** Tells whether the index has been built, so a query may use it while it is being updated. */
+    function usable() { return Object.keys(manifest.files).length > 0; }
+
+    /** The update result of a query answered from the index as it is, during another update. */
+    function staleUpdate() {
+      const base = lastUpdate ?? { files: Object.keys(manifest.files).length, chunks: metadata.size, unsupported: [], warnings: [] };
+      return { ...base, changed: 0, removed: 0, hashedBytes: 0, ms: 0, stale: true };
+    }
+
+    /**
+     * Tells whether a read reference names a source file that is not indexed but was written since
+     * the last sync started, i.e. a new file whose watcher event this process has not seen yet.
+     */
+    async function createdSinceSync(ref) {
+      const source = /^(.+?)(?::\d+(?:-\d+)?)?$/.exec(ref)?.[1];
+      if (!source || manifest.files[source]) return false;
+      const stat = await safePath(root, source).then(file => fs.stat(file)).catch(() => null);
+      // ctime, unlike mtime, also moves when a file is copied or moved in with its old mtime.
+      return !!stat?.isFile() && stat.ctimeMs >= syncStartedAt;
     }
 
     /**
@@ -550,7 +673,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     }
 
     /** Ranks chunks for the queries and renders as many as fit the budget (see search). */
-    async function find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes }) {
+    async function find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale }) {
       const wanted = sourceFilter(scope, paths, exclude);
       // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
       // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
@@ -577,15 +700,17 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       });
       const found = [...fused.values()].sort((a, b) => b.rank - a.rank).map(x => x.row);
       const results = [];
-      let omitted = 0;
+      let omitted = 0, skipped = 0;
       const query = queries.join(' ');
       const verified = new Map();
       for (const row of found) {
         if (results.length >= limit) break;
         const id = path.posix.basename(row.displayPath, '.md');
-        // A lock-free query can meet an index another process is rewriting; retry after syncing.
-        if (!metadata.has(id)) throw sourceChanged(`Index changed during search: ${id}; retry`);
-        const item = await evidence(id, verified);
+        // A lock-free query can meet an index another process is rewriting; retry after syncing,
+        // or, while an update runs, leave out what changed rather than wait for it.
+        if (!metadata.has(id) && !stale) throw sourceChanged(`Index changed during search: ${id}; retry`);
+        const item = metadata.has(id) && await evidence(id, verified).catch(error => { if (stale && error.code === SOURCE_CHANGED) return null; throw error; });
+        if (!item) { skipped++; continue; }
         let candidate = brief ? { ...item, text: snippet(item.text, query) } : item;
         const fitting = list => fits(render({ brief, results: list }), budget - 100, maxBytes - 400);
         if (!brief && !fitting(mergeAdjacent([...results, candidate]))) {
@@ -594,8 +719,9 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         if (!fitting(brief ? [...results, candidate] : mergeAdjacent([...results, candidate]))) { omitted++; continue; }
         results.push(candidate);
       }
-      const payload = { ...(brief && { brief }), results: brief ? results : mergeAdjacent(results), more: omitted > 0 || found.length > results.length };
-      payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note].filter(Boolean).join(' ') || undefined;
+      const payload = { ...(brief && { brief }), results: brief ? results : mergeAdjacent(results), more: omitted > 0 || found.length - skipped > results.length };
+      const updating = stale && `${UPDATING_NOTE}${skipped ? ` ${skipped} ${skipped === 1 ? 'match was' : 'matches were'} left out: ${SKIPPED_NOTE}` : ''}`;
+      payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note, updating].filter(Boolean).join(' ') || undefined;
       return payload;
     }
 
@@ -623,7 +749,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     /** Tells whether `after` holds the full, unexcerpted chunk that directly follows `before` in its source. */
     function follows(before, after) {
       if (before.source !== after.source || before.excerpt || after.excerpt || !LINE_SPAN.test(before.location) || !LINE_SPAN.test(after.location)) return false;
-      const chunks = manifest.files[before.source].chunks;
+      const chunks = manifest.files[before.source]?.chunks ?? [];
       const index = chunks.findIndex(chunk => chunk.id === idsOf(before).at(-1));
       return index >= 0 && chunks[index + 1]?.id === idsOf(after)[0];
     }
@@ -639,6 +765,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     /** Reads a reference for read(), on an up-to-date index. */
     async function readReference(ref, from, lines, budget) {
       const chunks = chunksForReference(ref);
+      if (!chunks.length && await createdSinceSync(ref)) throw sourceChanged(`Source not indexed yet: ${ref}; retry`);
       if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
       const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
       const item = chunks.range ? clipLines(joined, chunks.range) : joined;
@@ -678,8 +805,31 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
 }
 
 /**
+ * Loads QMD's store module, whose document functions the incremental index update calls; null
+ * when a QMD version no longer has it where expected.
+ */
+async function qmdInternals() {
+  return import(new URL('./store.js', import.meta.resolve('@tobilu/qmd'))).catch(() => null);
+}
+
+/**
+ * Tells whether this QMD still offers what the incremental index update relies on: its document
+ * functions, its content hash (SHA-256 of the text) and the trigger that drops deactivated
+ * documents from full-text search. Otherwise every index update rescans all chunks.
+ */
+async function supportsIncrementalUpdate(qmdStore, db) {
+  const functions = ['hashContent', 'extractTitle', 'insertContent', 'insertDocument', 'deactivateDocument', 'findActiveDocument'];
+  if (!qmdStore || functions.some(name => typeof qmdStore[name] !== 'function')) return false;
+  if (await qmdStore.hashContent('doktimoi ä') !== hash('doktimoi ä')) return false;
+  return !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name = 'documents_au'").get();
+}
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
  * Lets this process's searches and reads run together while its index updates run alone: an
  * update waits for running queries, and queries wait for queued updates, so they never starve.
+ * A read with `wait: false` answers from the index as it is during an update.
  */
 function createGate() {
   let tail = Promise.resolve(), writers = 0;
@@ -694,8 +844,8 @@ function createGate() {
       tail = run.catch(() => {});
       return run;
     },
-    async read(work) {
-      while (writers) await tail;
+    async read(work, { wait = true } = {}) {
+      while (wait && writers) await tail;
       const run = work();
       readers.add(run);
       try { return await run; } finally { readers.delete(run); }

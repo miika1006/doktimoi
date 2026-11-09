@@ -81,7 +81,8 @@ The Claude Code plugin also ships hooks:
 - `SessionStart` and `PostToolUse` (Edit/Write) refresh an existing index's changed
   files in the background. They never create an index and leave embeddings to
   hybrid search, so the lock is held briefly. A search that starts during a
-  refresh waits for it. In a folder with semantic search enabled, `SessionStart`
+  refresh waits about a second for it, then answers from the current index with a
+  note and leaves out sources changed since. In a folder with semantic search enabled, `SessionStart`
   also starts the search server (below) and has it load the embedding model in the
   background.
 

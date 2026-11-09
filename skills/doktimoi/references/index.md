@@ -157,8 +157,11 @@ repositories during setup.
 `.doktimoi/` holds QMD's `index.sqlite`, `manifest.json` (source hashes and
 locations), `chunks/` and `visuals/` (normalized images and rendered PDF pages);
 it costs disk, not context. Searches rescan metadata, reconvert only changed
-files, update embeddings when a semantic index exists and fail rather than return
-stale evidence; a per-folder lock serializes index updates, while searches run
+files, update embeddings when a semantic index exists and never return evidence that does not match its source:
+while another update holds the per-folder lock for over a second, a search answers
+from the current index with a note and leaves out sources changed since (`--verify`
+waits instead). The lock serializes index updates, which re-index only changed
+chunks (a first build, `build` and an interrupted update rescan all); searches run
 without it (the background server rescans only after a file change, or once a
 minute). `build` rehashes every source, and the first search after a plugin update
 that changes chunking reconverts every source once (unchanged passages keep their
