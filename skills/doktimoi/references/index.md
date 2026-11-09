@@ -153,8 +153,12 @@ Append this block once, replacing `<choice>` with the user's actual selection
 
 ```markdown
 <!-- doktimoi:start -->
-For documentation questions, use the installed doktimoi skill to search this
-folder. Retrieve cited originals; do not load .doktimoi machine indexes.
+This folder is indexed by doktimoi. For every content lookup here, including fact
+checks while editing or maintaining files, search first with the installed
+doktimoi skill, not Grep or whole-file reads. Use Grep only for file names or exact
+edit locations in a file doktimoi already returned. Run each doktimoi search as a
+single command without cd or chaining. Retrieve cited originals; do not load
+.doktimoi machine indexes.
 Local AI search choice: <choice>. Do not enable embeddings without consent.
 <!-- doktimoi:end -->
 ```

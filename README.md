@@ -62,6 +62,13 @@ Then open your documentation folder in Claude Code and run `/doktimoi:doktimoi`.
 The skill guides the assistant through dependency installation and initial indexing
 on first use. Marketplace installation alone does not install npm dependencies.
 
+The Claude Code plugin also ships a `PreToolUse` hook. It approves the skill's own
+read-only `search` and `read` commands without a permission prompt when they run as
+a single command in lexical mode against a folder that already has a `.doktimoi`
+index (search may refresh that index). Folder-wide Grep calls inside an indexed
+folder get a reminder to use doktimoi. Other commands, `build`, `embed`, hybrid
+mode and unindexed folders go through the normal permission flow.
+
 With a standalone skill installation, use `/doktimoi` in Claude Code or `$doktimoi`
 in Codex. If the skill does not appear, restart the assistant.
 

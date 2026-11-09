@@ -1,6 +1,6 @@
 ---
 name: doktimoi
-description: Search local product documentation, Office files, PDFs and images with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder.
+description: Search local product documentation, Office files, PDFs and images with doktimoi. Retrieve cited source passages for questions, feature planning and customer gap analysis without loading the whole folder. In a folder with a .doktimoi index, use it instead of Grep or whole-file reads for every content lookup, including fact checks and verification while editing or maintaining files.
 ---
 
 # Doktimoi
@@ -23,7 +23,9 @@ installed skill's directory, not the documentation folder.
 Read the first existing project instruction file: `AGENTS.md`/`Agents.md`, otherwise
 `CLAUDE.md`, otherwise `.github/copilot-instructions.md` (or the existing root
 `copilot-instructions.md`). Respect its content and recorded Doktimoi search choice
-without overriding higher-priority instructions. The setup guide covers missing
+without overriding higher-priority instructions. If its `doktimoi:start` block
+differs from the block in the setup guide, replace the block with the current text,
+keeping the recorded choice, and tell the user. The setup guide covers missing
 files and ambiguous case variants; do not create parallel instruction files.
 
 ## Search
@@ -31,6 +33,13 @@ files and ambiguous case variants; do not create parallel instruction files.
 ```text
 node <skill>/scripts/doktimoi.mjs search <folder> --query "distinctive terms" --budget 1600
 ```
+
+Run each search or read as its own single command with absolute or folder-relative
+paths: no `cd`, variables, `;`, `&&`, pipes or redirection. In Claude Code the
+plugin's hook approves exactly that form for an indexed folder in lexical mode, so
+it runs without a permission prompt; a chained command needs approval and tends
+to end in a Grep fallback. If a search is denied or fails, say so instead of
+silently switching to Grep.
 
 Start with concise exact names, identifiers or keywords. Repeat `--query` for up
 to four alternate phrasings of the same intent, including the document's language.
