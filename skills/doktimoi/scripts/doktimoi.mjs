@@ -21,6 +21,29 @@ export function tokens(text) {
 
 export const reference = item => `${item.source}:${item.location.replace(/^lines:/, '')}`;
 
+/** Creates the retryable error for a source written by someone else while it was being read. */
+function sourceChanged(message) { return Object.assign(new Error(message), { code: SOURCE_CHANGED }); }
+
+/** Turns ENOENT from a source deleted between listing and reading into the retryable source-changed error. */
+const vanished = source => error => { throw error.code === 'ENOENT' ? sourceChanged(`Source removed while reading: ${source}; retry`) : error; };
+
+/**
+ * Runs a search or read again (it syncs first) when another writer changed or deleted a source
+ * meanwhile; agents writing documents while others search hit this routinely.
+ */
+async function retryOnSourceChange(run) {
+  for (let attempt = 1; ; attempt++) {
+    try { return await run(); }
+    catch (error) {
+      if (error.code !== SOURCE_CHANGED || attempt >= SOURCE_CHANGE_ATTEMPTS) throw error;
+      await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+    }
+  }
+}
+
+const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
+const SOURCE_CHANGE_ATTEMPTS = 4;
+
 /** Deletes `*.tmp` files left by a process that died mid atomicWrite; call only while holding the lock. */
 async function removeOrphanTemps(dir) {
   for (const name of await ifMissing(fs.readdir(dir), [])) {
@@ -113,14 +136,14 @@ export async function openProject(directory) {
       try {
       for (const source of listing.files) {
         const file = await safePath(root, source);
-        const before = await fs.stat(file, { bigint: true });
+        const before = await fs.stat(file, { bigint: true }).catch(vanished(source));
         const signature = stamp(before);
         const old = manifest.converter === converterVersion ? manifest.files[source] : undefined;
         if (!verify && old?.stamp === signature) { next.files[source] = old; continue; }
-        const raw = await fs.readFile(file);
+        const raw = await fs.readFile(file).catch(vanished(source));
         hashedBytes += raw.length;
-        const after = await fs.stat(file, { bigint: true });
-        if (signature !== stamp(after)) throw new Error(`Source changed while reading: ${source}; retry`);
+        const after = await fs.stat(file, { bigint: true }).catch(vanished(source));
+        if (signature !== stamp(after)) throw sourceChanged(`Source changed while reading: ${source}; retry`);
         const digest = hash(raw);
         // build (verify) retries files skipped for a missing converter, e.g. after LibreOffice was installed.
         if (old?.hash === digest && !(verify && old.skipped)) {
@@ -195,7 +218,8 @@ export async function openProject(directory) {
       const entry = metadata.get(id);
       if (!entry) throw new Error(`Unknown or obsolete chunk: ${id}`);
       const sourcePath = await safePath(root, entry.source);
-      if (hash(await fs.readFile(sourcePath)) !== entry.hash) throw new Error(`Source changed during search: ${entry.source}; retry`);
+      const current = await ifMissing(fs.readFile(sourcePath), null);
+      if (!current || hash(current) !== entry.hash) throw sourceChanged(`Source changed during search: ${entry.source}; retry`);
       const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8');
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
       if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
@@ -210,7 +234,7 @@ export async function openProject(directory) {
       return embeddings;
     }
 
-    return {
+    const api = {
       sync,
       async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false } = {}) {
         if (!['lexical', 'hybrid'].includes(mode)) throw new Error('mode must be lexical or hybrid');
@@ -286,6 +310,11 @@ export async function openProject(directory) {
       },
       async close() { try { await store.close(); } finally { await release(); } },
     };
+    for (const name of ['sync', 'search', 'read', 'refresh', 'embed']) {
+      const once = api[name];
+      api[name] = (...args) => retryOnSourceChange(() => once(...args));
+    }
+    return api;
   } catch (error) {
     try { if (store) await store.close(); } finally { await release(); }
     throw error;

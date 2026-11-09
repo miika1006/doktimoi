@@ -316,3 +316,24 @@ test('read accepts a line range inside a chunk and open removes orphaned temp fi
     await assert.rejects(project.read('guide.md:500-600'), /Unknown or obsolete chunk/);
   } finally { await project.close(); }
 });
+
+test('search succeeds while another writer keeps changing the matching source', async t => {
+  const { root, project } = await fixture(t);
+  const file = path.join(root, 'draft.md');
+  await fs.writeFile(file, '# Draft\n\nWRITER_TOKEN version 0.');
+  let writing = true;
+  const writer = (async () => {
+    for (let i = 1; writing; i++) {
+      // Replace atomically: a truncate-then-write could let sync index an empty draft and make the test flaky.
+      await fs.writeFile(`${file}.next`, `# Draft\n\nWRITER_TOKEN version ${i}.`);
+      await fs.rename(`${file}.next`, file);
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+  })();
+  try {
+    for (let i = 0; i < 20; i++) {
+      const result = await project.search(['WRITER_TOKEN']);
+      assert.match(result.payload.results[0].text, /WRITER_TOKEN version \d+/);
+    }
+  } finally { writing = false; await writer; }
+});
