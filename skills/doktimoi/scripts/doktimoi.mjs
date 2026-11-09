@@ -102,6 +102,12 @@ const SOURCE_CHANGE_ATTEMPTS = 6;
 const SAFETY_SYNC_MS = 60000;
 const QUERY_CACHE_SIZE = 200;
 const BRIEF_CHARS = 120;
+const MATCH_CHARS = 200;
+const MAX_REFS = 20;
+// Room kept in a multi-reference read for the notes after the last reference.
+const MULTI_READ_RESERVE = { tokens: 300, bytes: 1200 };
+// Backslash escapes that HTML and Office conversion add to Markdown punctuation (turndown).
+const MARKDOWN_ESCAPE = /\\([\\`*_{}[\]()#+\-.!|~<>=])/g;
 // Only source-line chunks merge: read resolves a joined range for `lines:` alone, other kinds need an exact chunk reference.
 const LINE_SPAN = /^(lines:)(\d+)-(\d+)$/;
 // Git rewrites its own files during our inventory; .doktimoi is written by the index itself.
@@ -113,6 +119,24 @@ const BUSY_WAIT_MS = 1000;
 const UPDATING_NOTE = 'Index update in progress; very recent changes may be missing.';
 const SKIPPED_NOTE = 'their sources changed after indexing; search again shortly.';
 const LOST_LOCK = 'Index lock lost: this doktimoi process stalled for over 60 s (parallel hybrid searches loading the model, or a busy machine) and another process took over the index. Nothing more was written; retry the search.';
+
+/** Says that results come from an index being updated and how many matches that left out. */
+const updatingNote = skipped => `${UPDATING_NOTE}${skipped ? ` ${skipped} ${skipped === 1 ? 'match was' : 'matches were'} left out: ${SKIPPED_NOTE}` : ''}`;
+
+/** Renders one read result with its notes; `extra` is a call-wide note placed before the continuation. */
+function renderRead(item, extra) {
+  return render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, extra, item.continuation].filter(Boolean).join(' ') || undefined });
+}
+
+/**
+ * Trims a line and cuts it to MATCH_CHARS characters around the match at `at`, marking cuts with an ellipsis.
+ * @example clipAround('  short line ', 2) // 'short line'
+ */
+function clipAround(line, at) {
+  if (line.trim().length <= MATCH_CHARS) return line.trim();
+  const start = Math.max(0, Math.min(at - 60, line.length - MATCH_CHARS));
+  return `${start ? '…' : ''}${line.slice(start, start + MATCH_CHARS).trim()}${start + MATCH_CHARS < line.length ? '…' : ''}`;
+}
 
 /** Deletes `*.tmp` files left by a process that died mid atomicWrite; call only while holding the lock. */
 async function removeOrphanTemps(dir) {
@@ -147,6 +171,7 @@ export function excerpt(text, query, maxChars = 600, db, words = 48) {
 
 export function render(payload) {
   if (!payload.results.length) return (payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.') + (payload.note ? `\n[${payload.note}]` : '');
+  if (payload.exact) return renderMatches(payload);
   // Brief results keep the two innermost headings: the outer ones repeat the document title on every hit.
   let text = payload.brief ? payload.results.map(item => `${reference(item)}${item.heading ? ` — ${item.heading.split(' > ').slice(-2).join(' > ')}` : ''}\n  ${item.text}`).join('\n') : payload.results.map(item => {
     const heading = breadcrumb(item);
@@ -156,6 +181,19 @@ export function render(payload) {
   if (payload.note) text += `\n[${payload.note}]`;
   return text;
 }
+
+/**
+ * Renders an exact listing like `rg -n`: each file once, then its matching lines.
+ * @example renderMatches({ results: [{ source: 'a.md', lines: [{ at: 12, text: 'Log.Rest stays' }] }], more: 0 }) // 'a.md\n  12: Log.Rest stays'
+ */
+function renderMatches(payload) {
+  const text = payload.results.map(file => `${file.source}\n${file.lines.map(matchLine).join('\n')}`).join('\n');
+  const more = payload.more ? `\n[${payload.more} more matching ${payload.more === 1 ? 'line' : 'lines'} not shown; narrow with --path, --exclude or a longer phrase.]` : '';
+  return `${text}${more}${payload.note ? `\n[${payload.note}]` : ''}`;
+}
+
+/** One line of an exact listing: its source line number or chunk location, then its text. */
+const matchLine = line => `  ${line.at}: ${line.text}`;
 
 /**
  * Returns the heading path of a result without the trailing headings its text already starts
@@ -510,14 +548,15 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
        * file prefixes; `maxBytes` caps the rendered results so batch searches can share one output.
        */
       async search(queries, { mode = 'lexical', brief = false, limit = brief ? 10 : 4, budget = brief ? 800 : 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
-        if (!['lexical', 'hybrid'].includes(mode)) throw new Error('mode must be lexical or hybrid');
+        if (!['lexical', 'hybrid', 'exact'].includes(mode)) throw new Error('mode must be lexical, hybrid or exact');
         if (!Array.isArray(queries) || !queries.length || queries.length > 4 || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
         if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
         budget = Math.min(budget, MAX_BUDGET);
-        const update = await prepare({ verify, hybrid: mode !== 'lexical' });
+        const update = await prepare({ verify, hybrid: mode === 'hybrid' });
         return gate.read(async () => {
           const started = performance.now();
-          const payload = await find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale: update.stale });
+          const options = { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale: update.stale };
+          const payload = mode === 'exact' ? await listMatches(queries, options) : await find(queries, options);
           return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
             resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
             unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes,
@@ -536,6 +575,18 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
         const update = await prepare();
         return gate.read(() => readReference(ref, from, lines, Math.min(budget, MAX_BUDGET)), { wait: !update.stale });
+      },
+      /**
+       * Reads several references in order as read() does, sharing one call's `budget` tokens
+       * (at most the per-call cap) and output bytes. Returns each read's rendered text (an
+       * unreadable reference renders as its error) and the references left for another call.
+       */
+      async readAll(refs, from = 1, lines, budget = MAX_BUDGET) {
+        if (!Array.isArray(refs) || !refs.length || refs.length > MAX_REFS) throw new Error(`read takes 1–${MAX_REFS} references`);
+        if (!Number.isInteger(from) || from < 1 || (lines !== undefined && (!Number.isInteger(lines) || lines < 1))) throw new Error('from >= 1; lines >= 1');
+        if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
+        const update = await prepare();
+        return gate.read(() => readEach(refs, from, lines, Math.min(budget, MAX_BUDGET)), { wait: !update.stale });
       },
       async refresh() {
         const update = await sync();
@@ -563,7 +614,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       const once = api[name];
       api[name] = (...args) => retryOnSourceChange(() => indexWrite(() => once(...args)));
     }
-    for (const name of ['search', 'read']) {
+    for (const name of ['search', 'read', 'readAll']) {
       const once = api[name];
       // A retry follows a source or index change that a lock-free query ran into; sync before it.
       api[name] = (...args) => retryOnSourceChange(attempt => { if (attempt > 1) changes?.changed(); return once(...args); });
@@ -720,8 +771,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         results.push(candidate);
       }
       const payload = { ...(brief && { brief }), results: brief ? results : mergeAdjacent(results), more: omitted > 0 || found.length - skipped > results.length };
-      const updating = stale && `${UPDATING_NOTE}${skipped ? ` ${skipped} ${skipped === 1 ? 'match was' : 'matches were'} left out: ${SKIPPED_NOTE}` : ''}`;
-      payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note, updating].filter(Boolean).join(' ') || undefined;
+      payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note, stale && updatingNote(skipped)].filter(Boolean).join(' ') || undefined;
       return payload;
     }
 
@@ -763,7 +813,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     }
 
     /** Reads a reference for read(), on an up-to-date index. */
-    async function readReference(ref, from, lines, budget) {
+    async function readReference(ref, from, lines, budget, maxBytes = MAX_OUTPUT_BYTES) {
       const chunks = chunksForReference(ref);
       if (!chunks.length && await createdSinceSync(ref)) throw sourceChanged(`Source not indexed yet: ${ref}; retry`);
       if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
@@ -774,12 +824,12 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
       const result = { ...item, text: all.slice(from - 1, from - 1 + lines).join('\n'), excerpt: from > 1 || from + lines - 1 < all.length };
       let cut = false;
-      if (!fits(render({ results: [result] }), budget - 50, MAX_OUTPUT_BYTES - 500)) {
+      if (!fits(render({ results: [result] }), budget - 50, maxBytes - 500)) {
         result.excerpt = cut = true;
         const empty = render({ results: [{ ...result, text: '' }] });
         const available = budget - tokens(empty) - 50;
         if (available < 1) throw new Error('Source reference exceeds budget; increase --budget');
-        result.text = truncate(result.text, available, MAX_OUTPUT_BYTES - 500 - Buffer.byteLength(empty));
+        result.text = truncate(result.text, available, maxBytes - 500 - Buffer.byteLength(empty));
       }
       const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
       if (!span) return result;
@@ -796,6 +846,79 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         else result.continuation = `Line ${next} exceeds the per-call output cap and is cut.${next < Number(span[2]) ? ` ${continueFrom(next + 1)}` : ''}`;
       }
       return result;
+    }
+
+    /** Reads references in order for readAll() until the shared budget or byte cap runs out. */
+    async function readEach(refs, from, lines, budget) {
+      let tokensLeft = budget - MULTI_READ_RESERVE.tokens, bytesLeft = MAX_OUTPUT_BYTES - MULTI_READ_RESERVE.bytes;
+      const pieces = [];
+      for (const [index, ref] of refs.entries()) {
+        if (tokensLeft < 256 || bytesLeft < 2000) return { pieces, unread: refs.slice(index) };
+        const piece = await readReference(ref, from, lines, tokensLeft, bytesLeft).then(item => renderRead(item), error => {
+          if (error.code === SOURCE_CHANGED) throw error;
+          return `${ref}\n[Error: ${error.message}]`;
+        });
+        pieces.push(piece);
+        tokensLeft -= tokens(piece) + 1;
+        bytesLeft -= Buffer.byteLength(piece) + 2;
+      }
+      return { pieces, unread: [] };
+    }
+
+    /**
+     * Lists the lines holding any of the phrases, ignoring case, in the indexed text of every
+     * source the filters allow, extracted Office, PDF and OCR text included. Lines of Markdown and
+     * text sources carry their source line number, other lines the location of their chunk; both
+     * read back with `read`. Shown lines come from verified evidence and fill the budget in source
+     * order; `more` counts the matching lines left out.
+     */
+    async function listMatches(phrases, { budget, scope, paths, exclude, maxBytes, stale }) {
+      const wanted = sourceFilter(scope, paths, exclude);
+      const needles = phrases.map(phrase => phrase.toLowerCase());
+      const bodies = new Map(store.internal.db.prepare(`SELECT d.path AS name, c.doc AS body FROM documents d JOIN content c ON c.hash = d.hash
+        WHERE d.collection = 'docs' AND d.active = 1`).all().map(row => [path.posix.basename(row.name, '.md'), row.body]));
+      const results = [], verified = new Map();
+      let used = 0, bytes = 0, more = 0, skipped = 0;
+      for (const source of Object.keys(manifest.files).sort()) {
+        if (wanted && !wanted(source)) continue;
+        for (const chunk of manifest.files[source].chunks) {
+          const body = bodies.get(chunk.id);
+          const count = body === undefined ? 0 : matchingLines({ ...chunk, text: body.slice(body.indexOf('\n\n') + 2) }, needles).length;
+          if (!count) continue;
+          if (more) { more += count; continue; }
+          const item = await evidence(chunk.id, verified).catch(error => { if (stale && error.code === SOURCE_CHANGED) return null; throw error; });
+          if (!item) { skipped++; continue; }
+          for (const line of matchingLines(item, needles)) {
+            let file = results.at(-1)?.source === source ? results.at(-1) : null;
+            const cost = (file ? 0 : tokens(`${source}\n`)) + tokens(`${matchLine(line)}\n`);
+            const size = (file ? 0 : Buffer.byteLength(source) + 1) + Buffer.byteLength(matchLine(line)) + 1;
+            if (more || used + cost > budget - 150 || bytes + size > maxBytes - 600) { more++; continue; }
+            if (!file) results.push(file = { source, lines: [] });
+            file.lines.push(line);
+            used += cost;
+            bytes += size;
+          }
+        }
+      }
+      const note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, stale && updatingNote(skipped)].filter(Boolean).join(' ') || undefined;
+      return { exact: true, results, more, note };
+    }
+
+    /**
+     * Returns the lines of an evidence item holding any needle (lowercase), each with its source
+     * line number for line chunks or else the chunk's location, trimmed around the first match.
+     * Extracted text is compared and shown without the Markdown escapes its conversion added.
+     * @example matchingLines({ location: 'lines:10-12', text: '# A\n\nLog.Rest stays' }, ['log.rest']) // [{ at: 12, text: 'Log.Rest stays' }]
+     */
+    function matchingLines(item, needles) {
+      const span = LINE_SPAN.exec(item.location);
+      return item.text.split('\n').flatMap((raw, index) => {
+        const line = span ? raw : raw.replace(MARKDOWN_ESCAPE, '$1');
+        const lower = line.toLowerCase();
+        const hits = needles.map(needle => lower.indexOf(needle)).filter(at => at >= 0);
+        if (!hits.length) return [];
+        return [{ at: span ? Number(span[2]) + index : item.location, text: clipAround(line, Math.min(...hits)) }];
+      });
     }
   } catch (error) {
     changes?.close();
@@ -877,12 +1000,12 @@ function watchFolder(root) {
 
 async function main() {
   const { values, positionals } = parseCommandLine();
-  const [command, root, id] = positionals;
+  const [command, root, ...refs] = positionals;
   // Help must not open the index, take the lock or start a server.
   if (values.help || command === 'help') return console.log(USAGE);
   if (command === 'serve' && root) return serveFolder(root);
   if (!CLI_COMMANDS.includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]; run with --help for details');
+    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid|exact]; run with --help for details');
   }
   const folder = await fs.realpath(root).catch(() => { throw new Error(`Folder not found: ${root}`); });
   if (command === 'build') await stopServer(folder);
@@ -891,7 +1014,7 @@ async function main() {
   if (command === 'stop') return index && stopServer(index.root);
   if (!index) throw new Error(`No doktimoi index in ${folder} or its parent folders. Set one up first (the doktimoi skill's setup guide), or run: node doktimoi.mjs build "${folder}"`);
   if (command === 'disable-semantic') return console.log(await disableSemantic(index.root));
-  const request = { command, id, values: index.scope ? { ...values, scope: index.scope } : values, input: command === 'batch' ? await readStdin() : undefined };
+  const request = { command, refs, values: index.scope ? { ...values, scope: index.scope } : values, input: command === 'batch' ? await readStdin() : undefined };
   const served = ['search', 'read', 'batch'].includes(command)
     && await viaServer(index.root, await scriptPath(), request).catch(() => null);
   if (served?.error !== undefined) throw new Error(served.error);
@@ -916,9 +1039,11 @@ async function findIndex(folder) {
 
 /** Parses the CLI arguments; an unknown option error points to --help. */
 function parseCommandLine() {
+  let parsed;
   try {
-    return parseArgs({ allowPositionals: true, options: {
+    parsed = parseArgs({ allowPositionals: true, tokens: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
+      next: { type: 'boolean', multiple: true },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, brief: { type: 'boolean', default: false },
       from: { type: 'string', default: '1' }, lines: { type: 'string' },
@@ -927,13 +1052,31 @@ function parseCommandLine() {
       help: { type: 'boolean', short: 'h', default: false },
     } });
   } catch (error) { throw new Error(`${error.message.replace(/\. To specify a positional argument.*$/s, '')}; run with --help for usage`, { cause: error }); }
+  const { next, ...values } = parsed.values;
+  if (next) values.questions = questionGroups(parsed.tokens);
+  return { values, positionals: parsed.positionals };
+}
+
+/**
+ * Splits the --query options at each --next into the questions of one search call.
+ * @example questionGroups(tokens of '--query a --query b --next --query c') // [['a', 'b'], ['c']]
+ */
+function questionGroups(tokens) {
+  const groups = [[]];
+  for (const token of tokens) {
+    if (token.kind === 'option' && token.name === 'next') groups.push([]);
+    if (token.kind === 'option' && token.name === 'query') groups.at(-1).push(token.value);
+  }
+  return groups;
 }
 
 /**
  * Runs one CLI command against an open project and returns its stdout text and stderr notices,
  * so the in-process path and the search server print exactly the same.
  */
-export async function execute(project, { command, id, values, input }) {
+export async function execute(project, { command, refs: given = [], id, values, input }) {
+  // A client from before multi-reference reads sends one `id`.
+  const refs = given.length || id === undefined ? given : [id];
   const notices = [];
   let result;
   if (command === 'build') result = await project.sync({ verify: true });
@@ -941,29 +1084,49 @@ export async function execute(project, { command, id, values, input }) {
   if (command === 'embed') result = await project.embed();
   if (command === 'batch') {
     const requests = JSON.parse(input);
-    if (!Array.isArray(requests) || requests.length < 1 || requests.length > 20) throw new Error('Batch requires 1–20 search requests');
-    const outputs = [];
-    // The searches share one call's output cap.
-    const share = { budget: Math.max(256, Math.floor(MAX_BUDGET / requests.length)), maxBytes: Math.floor(MAX_OUTPUT_BYTES / requests.length) };
-    for (const [index, request] of requests.entries()) {
-      const options = { ...searchOptions(values), ...request };
-      const found = await project.search(request.queries, { ...options, budget: Math.min(options.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
-      outputs.push(`Q${index + 1}\n${render(found.payload)}`);
-      if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
-    }
-    result = outputs.join('\n\n');
+    if (!Array.isArray(requests) || requests.length < 1 || requests.length > MAX_QUESTIONS) throw new Error(`Batch requires 1–${MAX_QUESTIONS} search requests`);
+    result = await searchEach(project, requests.map(request => ({ ...searchOptions(values), ...request })), values, notices);
   }
-  if (command === 'read') {
-    const item = await project.read(id, Number(values.from), values.lines === undefined ? undefined : Number(values.lines), Number(values.budget ?? 1600));
-    result = render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, capNote(values), item.continuation].filter(Boolean).join(' ') || undefined });
+  const lines = values.lines === undefined ? undefined : Number(values.lines);
+  if (command === 'read' && refs.length === 1) {
+    const item = await project.read(refs[0], Number(values.from), lines, Number(values.budget ?? 1600));
+    result = renderRead(item, capNote(values));
   }
-  if (command === 'search') {
+  if (command === 'read' && refs.length !== 1) {
+    const { pieces, unread } = await project.readAll(refs, Number(values.from), lines, Number(values.budget ?? MAX_BUDGET));
+    const notes = [unread.length && `Output cap reached; not read: ${unread.map(ref => `"${ref}"`).join(' ')}`, capNote(values)].filter(Boolean);
+    result = [pieces.join('\n\n'), ...notes.map(note => `[${note}]`)].filter(Boolean).join('\n');
+  }
+  if (command === 'search' && values.questions) {
+    const { questions } = values;
+    if (questions.some(queries => !queries.length)) throw new Error('--next separates questions: put at least one --query before and after each --next');
+    if (questions.length > MAX_QUESTIONS) throw new Error(`At most ${MAX_QUESTIONS} questions per search call`);
+    // --verify rehashes every source once, before the first question.
+    result = await searchEach(project, questions.map((queries, index) => ({ ...searchOptions(values), queries, verify: values.verify && !index })), values, notices);
+    if (capNote(values)) result += `\n[${capNote(values)}]`;
+  }
+  if (command === 'search' && !values.questions) {
     const search = await project.search(values.query ?? [], { ...searchOptions(values), verify: values.verify, scope: values.scope });
     result = render({ ...search.payload, note: [search.payload.note, capNote(values)].filter(Boolean).join(' ') || undefined });
     if (values.metrics) notices.push(JSON.stringify(search.metrics));
   }
   if (result === undefined) throw new Error(`Unsupported command: ${command}`);
   return { output: typeof result === 'string' ? result : JSON.stringify(result), notices };
+}
+
+/**
+ * Runs several searches that share one call's output cap and renders each as its own section,
+ * `Q1`, `Q2`, … in order. Each request holds its `queries` and search() options.
+ */
+async function searchEach(project, requests, values, notices) {
+  const outputs = [];
+  const share = { budget: Math.max(256, Math.floor(MAX_BUDGET / requests.length)), maxBytes: Math.floor(MAX_OUTPUT_BYTES / requests.length) };
+  for (const [index, request] of requests.entries()) {
+    const found = await project.search(request.queries, { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
+    outputs.push(`Q${index + 1}\n${render(found.payload)}`);
+    if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
+  }
+  return outputs.join('\n\n');
 }
 
 /** Maps the CLI search options to search() options. */
@@ -1094,6 +1257,7 @@ async function readStdin() {
 async function scriptPath() { return fs.realpath(fileURLToPath(import.meta.url)); }
 
 const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
+const MAX_QUESTIONS = 20;
 const CLI_COMMANDS = ['build', 'sync', 'search', 'batch', 'read', 'embed', 'status', 'disable-semantic', 'stop'];
 const USAGE = `Usage: node doktimoi.mjs COMMAND ROOT [REFERENCE] [options]
 
@@ -1102,7 +1266,8 @@ part, and references stay relative to the indexed folder. Only build creates an 
 
 Commands:
   search ROOT --query TERMS  Search the index; prints cited source passages
-  read ROOT REFERENCE        Print source text by reference (see References)
+                             Several questions in one call: --query a --query "a alt" --next --query b
+  read ROOT REFERENCE...     Print source text by 1-${MAX_REFS} references in order (see References)
   batch ROOT                 Run 1-20 searches from a JSON array on stdin: [{"queries": ["terms"]}]
   status ROOT                Show index, lock and background server state; changes nothing
   build ROOT                 Rehash all sources and update the index (creates it in ROOT if missing)
@@ -1115,18 +1280,25 @@ Commands:
 Options:
   --query TERMS    search: 1-4 single-line queries (repeat the option); terms in a query are
                    ANDed; when no passage has them all, results matching some terms are labeled
-  --mode MODE      lexical (default) or hybrid (needs embed; first query is also the semantic one)
+  --next           search: starts the next question; each gets its own section (Q1, Q2, …) and
+                   a share of the output cap; other options apply to every question
+  --mode MODE      lexical (default), hybrid (needs embed; first query is also the semantic one)
+                   or exact: list every line holding the phrase, ignoring case, as FILE then
+                   "  N: line" (Markdown/text source line N; read FILE:N) or "  LOCATION: line"
+                   (Office, PDF, OCR; read FILE:LOCATION); repeated --query are alternatives
   --path PREFIX    search, batch: only sources under this folder or file (repeatable), relative
                    to the indexed folder like references
   --exclude PREFIX search, batch: leave out sources under this folder or file (repeatable)
   --budget N       output tokens, 256-${MAX_BUDGET} (default 1600); larger values are capped so one
-                   call's output stays inline; batch splits ${MAX_BUDGET} across its searches
+                   call's output stays inline; batch and --next split ${MAX_BUDGET} across their
+                   searches; a read of several references shares it (default ${MAX_BUDGET}) in order
   --limit N        search: results, 1-20 (default 4, with --brief 10)
   --brief          search, batch: only the reference, heading path and one matching line per
                    result (default budget 800); read the reference you need afterwards
   --from N         read: start at line N of the returned text, where line 1 is the first
                    source line of the reference's range (default 1)
-  --lines N        read: lines to return (default 40 for a search reference, all for a range)
+  --lines N        read: lines to return (default 40 for a search reference, all for a range);
+                   --from and --lines apply to each reference
   --verify         search: rehash every source instead of trusting timestamps
   --metrics        search, batch: print timings and token counts to stderr
 
@@ -1135,7 +1307,8 @@ References:
   file.md:N        Markdown, text, CSV: the chunk containing line N (or the next one)
   file.md:N-M      Markdown, text, CSV: source lines N-M (within indexed chunks), cut to --budget
   Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
-  with [Continue: read "file.md:65-120"], the range that reads on.
+  with [Continue: read "file.md:65-120"], the range that reads on. References that did not
+  fit a multi-reference read are named in [Output cap reached; not read: ...].
   Other formats (PDF pages, sheets, slides, OCR images) need the exact reference.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {

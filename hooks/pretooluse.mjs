@@ -2,9 +2,9 @@
 /**
  * Claude Code PreToolUse hook for doktimoi.
  *
- * Auto-approves doktimoi's usage text (`help`, `--help`) and its own `search`, `read` and
- * `status` commands on an already indexed folder or a path inside one, so retrieval never stalls on a
- * permission prompt and silently falls back to Grep. Hybrid mode is included: it only updates existing
+ * Auto-approves doktimoi's usage text (`help`, `--help`) and its own `search` (also exact mode and
+ * several questions with --next), `read` (1-20 references) and `status` commands on an already
+ * indexed folder or a path inside one, so retrieval never stalls on a permission prompt and silently falls back to Grep. Hybrid mode is included: it only updates existing
  * embeddings and refuses to run when no semantic index was enabled. Adds a
  * doktimoi reminder to content lookups that bypass it inside an indexed folder:
  * folder-wide Grep, recursive shell searches and whole reads of large or Office/PDF
@@ -42,8 +42,9 @@ function approveDoktimoiCommand(input, pluginRoot) {
   if (!['search', 'read', 'status'].includes(command)) return null;
   if (command === 'status' && rest.length) return null;
   const options = parseOptions(rest);
-  if (!options || !['lexical', 'hybrid'].includes(options.values.mode)) return null;
-  if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;
+  if (!options || !['lexical', 'hybrid', 'exact'].includes(options.values.mode)) return null;
+  const references = options.positionals.length;
+  if (command === 'read' ? references < 1 || references > MAX_REFS : references) return null;
   // A path inside an indexed folder uses that folder's index; the CLI never creates one outside build.
   if (!indexedRoot(resolvePath(root, input.cwd))) return null;
   return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder`, ...updated });
@@ -83,7 +84,7 @@ function remindOnWholeRead(input, pluginRoot) {
 
 function remind(root, pluginRoot, bypass) {
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --brief to locate passages, then read the exact range (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --brief to locate passages (--next separates further questions; --mode exact lists every line holding a name or phrase), then read the exact ranges, several per call (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**
@@ -121,7 +122,7 @@ function isHelp(args) {
 function parseOptions(args) {
   try {
     return parseArgs({ args, allowPositionals: true, strict: true, options: {
-      query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
+      query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' }, next: { type: 'boolean', multiple: true },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, from: { type: 'string' }, lines: { type: 'string' },
       verify: { type: 'boolean' }, brief: { type: 'boolean' },
@@ -140,6 +141,7 @@ function output(fields) { return { hookSpecificOutput: { hookEventName: 'PreTool
 
 const SHELL_SEARCH = /\b(rg|ag|ack)\s|\bgit\s+grep\b|\bgrep\b[^|;&\n]*\s(-\w*[rR]\w*|--recursive)\b|\b(xargs\s+|-exec\s+)grep\b|\bfindstr\b[^|;&\n]*\/s\b|\b(Get-ChildItem|gci|dir|ls)\b[^;\n]*\|\s*(Select-String|sls)\b/i;
 const CLI_COMMANDS = ['search', 'read', 'batch', 'status', 'build', 'sync', 'embed', 'stop', 'disable-semantic'];
+const MAX_REFS = 20;
 const DOCUMENT_FILE = /\.(pdf|docx?|xlsx?|pptx?)$/i;
 const LARGE_FILE_BYTES = 50_000;
 

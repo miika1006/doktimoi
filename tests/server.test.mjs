@@ -286,3 +286,26 @@ test('parallel searches through one server all answer with the in-process output
   const results = await Promise.all(Array.from({ length: 6 }, runAsync));
   assert.deepEqual(results, Array(6).fill({ stdout: direct.stdout, status: 0 }));
 });
+
+test('several references, several questions and exact listing give the same output via the server', async t => {
+  const root = await folder(t, true);
+  await fs.copyFile(new URL('../examples/office/example.docx', import.meta.url), path.join(root, 'example.docx'));
+  const direct = { DOKTIMOI_NO_SERVER: '1' };
+  const cases = [
+    ['read', root, 'guide.md:1-3', 'guide.md:5-7', 'missing.md:1', '--budget', '2000'],
+    ['search', root, '--query', 'SERVER_TOKEN', '--brief', '--next', '--query', 'AutoGen', '--query', 'agents', '--exclude', 'other.md'],
+    ['search', root, '--query', 'server_token', '--mode', 'exact', '--next', '--query', 'multiple agents'],
+  ];
+  for (const args of cases) {
+    const served = run(args);
+    assert.equal(served.status, 0, served.stderr);
+    assert.deepEqual(served, run(args, direct));
+  }
+  assert.ok(await readInfo(root), 'the server answered');
+  assert.equal(run(cases[0]).stdout, 'guide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n\nguide.md:5-7\n# Other\n\nUnrelated text.\n\nmissing.md:1\n[Error: Unknown or obsolete chunk: missing.md:1]\n');
+  assert.match(run(cases[1]).stdout, /^Q1\nguide\.md:1-3 — Guide\n {2}SERVER_TOKEN needs approval\.\n\nQ2\nexample\.docx:/);
+  assert.match(run(cases[2]).stdout, /^Q1\nguide\.md\n {2}3: SERVER_TOKEN needs approval\.\n\nQ2\nexample\.docx\n {2}extracted-lines:[\d-]+: .*multiple agents/);
+  const empty = ['search', root, '--query', 'x', '--next'];
+  assert.deepEqual(run(empty), { stdout: '', stderr: 'doktimoi: --next separates questions: put at least one --query before and after each --next\n', status: 1 });
+  assert.deepEqual(run(empty), run(empty, direct));
+});

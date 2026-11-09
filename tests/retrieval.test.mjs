@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
+import { execute, openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
 import { chunkMarkdown, safePath } from '../skills/doktimoi/scripts/sources.mjs';
 
 const require = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
@@ -640,4 +640,73 @@ test('a chain of adjacent hits merges into one result whatever their rank order'
   const { payload } = await project.search(['CHAIN_TERM']);
   assert.deepEqual(payload.results.map(reference), ['chain.md:1-11']);
   assert.match(payload.results[0].text, /^# One[\s\S]*# Two[\s\S]*# Three\n\nCHAIN_TERM CHAIN_TERM\.$/);
+});
+
+test('a read of several references returns each in order within one shared output cap', async t => {
+  const { root, project } = await fixture(t);
+  await fs.copyFile(new URL('../examples/office/example.docx', import.meta.url), path.join(root, 'example.docx'));
+  const sections = Array.from({ length: 40 }, (_, i) => `## Part ${i}\n\nPART_${i} ${'The reserved quantity is deducted before saving. '.repeat(12)}`);
+  await fs.writeFile(path.join(root, 'plan.md'), `# Plan\n\n${sections.join('\n\n')}\n`);
+  await fs.writeFile(path.join(root, 'small.md'), '# Small\n\nSMALL_TERM one.\n\n# Next\n\nSMALL_TERM two.\n');
+  const docx = reference((await project.search(['AutoGen'])).payload.results.find(item => item.location.startsWith('extracted-lines:')));
+  const read = async (refs, values = {}) => (await execute(project, { command: 'read', refs, values: { from: '1', ...values } })).output;
+  const mixed = await read(['small.md:5-7', docx, 'missing.md:1', 'small.md:1-3']);
+  assert.match(mixed, /^small\.md:5-7\n[\s\S]*SMALL_TERM two\.\n\nexample\.docx:extracted-lines:[\s\S]*AutoGen[\s\S]*\n\nmissing\.md:1\n\[Error: Unknown or obsolete chunk: missing\.md:1\]\n\nsmall\.md:1-3\n# Small\n\nSMALL_TERM one\.$/);
+  assert.equal(await read(['small.md:1-3']), (await execute(project, { command: 'read', refs: ['small.md:1-3'], values: { from: '1' } })).output);
+  assert.equal(await read(['small.md:1-3']), renderSingle(await project.read('small.md:1-3')));
+  const capped = await read(['plan.md:1-9999', 'small.md:1-3', docx]);
+  assert.ok(Buffer.byteLength(capped) <= 20000 && tokens(capped) <= 6000, `${Buffer.byteLength(capped)} bytes, ${tokens(capped)} tokens`);
+  assert.match(capped, /^plan\.md:1-\d+\n# Plan[\s\S]*\n\[Continue: read "plan\.md:\d+-\d+"\]\n\[Output cap reached; not read: "small\.md:1-3" "example\.docx:extracted-lines:[^"]+"\]$/);
+  const shared = await read(['plan.md:1-9999', 'small.md:1-3'], { budget: '1000' });
+  assert.ok(tokens(shared) <= 1000);
+  assert.match(shared, /\[Continue: read "plan\.md:\d+-\d+"\]\n\[Output cap reached; not read: "small\.md:1-3"\]$/);
+  await assert.rejects(read([]), /read takes 1–20 references/);
+  await assert.rejects(read(Array(21).fill('small.md:1-3')), /read takes 1–20 references/);
+});
+
+/** Renders a single read the way the CLI prints it. */
+function renderSingle(item) { return render({ results: [item], note: item.continuation }); }
+
+test('several questions in one search call each get their own section, filters and brief apply to all', async t => {
+  const { root, project } = await fixture(t);
+  await fs.mkdir(path.join(root, 'plans'));
+  await fs.writeFile(path.join(root, 'plans', 'a.md'), '# A\n\nALPHA_TERM is planned.\n\n# B\n\nBETA_TERM is planned.');
+  await fs.writeFile(path.join(root, 'other.md'), '# Other\n\nALPHA_TERM elsewhere. BETA_TERM elsewhere.');
+  const search = async values => (await execute(project, { command: 'search', values: { mode: 'lexical', brief: false, ...values } })).output;
+  const output = await search({ questions: [['ALPHA_TERM'], ['NOTHING_SUCH', 'BETA_TERM']], brief: true, path: ['plans'] });
+  assert.equal(output, 'Q1\nplans/a.md:1-3 — A\n  ALPHA_TERM is planned.\n\nQ2\nplans/a.md:5-7 — B\n  BETA_TERM is planned.');
+  const excluded = await search({ questions: [['ALPHA_TERM'], ['BETA_TERM']], exclude: ['plans'], budget: '9000' });
+  assert.match(excluded, /^Q1\nother\.md:1-3\n[\s\S]*\n\nQ2\nother\.md:1-3\n[\s\S]*\n\[--budget capped at 6000 tokens per call\.\]$/);
+  const exact = await search({ questions: [['alpha_term'], ['beta_term is']], mode: 'exact' });
+  assert.equal(exact, 'Q1\nother.md\n  3: ALPHA_TERM elsewhere. BETA_TERM elsewhere.\nplans/a.md\n  3: ALPHA_TERM is planned.\n\nQ2\nplans/a.md\n  7: BETA_TERM is planned.');
+  await assert.rejects(search({ questions: [['ALPHA_TERM'], []] }), /--next separates questions/);
+  await assert.rejects(search({ questions: Array(21).fill(['ALPHA_TERM']) }), /At most 20 questions/);
+});
+
+test('exact mode lists matching lines of every format, readable by reference, scoped and capped', async t => {
+  const { root, project } = await fixture(t);
+  await fs.copyFile(new URL('../examples/office/example.docx', import.meta.url), path.join(root, 'example.docx'));
+  await fs.mkdir(path.join(root, 'sub'));
+  await fs.writeFile(path.join(root, 'guide.md'), '# Guide\n\nLog.Rest is the old store.\n\n## Lisää\n\nÄÄKKÖSET ja log.rest-palvelu.\n');
+  await fs.writeFile(path.join(root, 'sub', 'page.html'), '<h1>Page</h1><p>The EXACT_TERM stays.</p>');
+  const exact = async (queries, options = {}) => render((await project.search(queries, { mode: 'exact', ...options })).payload);
+  assert.equal(await exact(['LOG.REST']), 'guide.md\n  3: Log.Rest is the old store.\n  7: ÄÄKKÖSET ja log.rest-palvelu.');
+  assert.equal(await exact(['ääkköset']), 'guide.md\n  7: ÄÄKKÖSET ja log.rest-palvelu.');
+  assert.match((await project.read('guide.md:7')).text, /ÄÄKKÖSET ja log\.rest-palvelu/);
+  assert.equal(await exact(['exact_term']), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
+  assert.match((await project.read('sub/page.html:extracted-lines:1-3')).text, /EXACT\\_TERM/);
+  const word = await exact(['multiple agents']);
+  const [, location] = /^example\.docx\n {2}(extracted-lines:[\d-]+): /.exec(word);
+  assert.match((await project.read(`example.docx:${location}`)).text, /multiple agents/);
+  assert.equal(await exact(['log.rest', 'exact_term'], { exclude: ['guide.md'] }), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
+  assert.equal(await exact(['log.rest', 'exact_term'], { scope: 'sub' }), 'sub/page.html\n  extracted-lines:1-3: The EXACT_TERM stays.');
+  assert.equal(await exact(['Log.Rest'], { paths: ['example.docx'] }), 'No matching evidence.');
+  await fs.writeFile(path.join(root, 'many.md'), `# Many\n\n${Array.from({ length: 400 }, (_, i) => `MANY_TERM line ${i} ${'filler words '.repeat(8)}`).join('\n')}\n`);
+  const capped = await exact(['many_term'], { budget: 1000 });
+  assert.ok(tokens(capped) <= 1000, `${tokens(capped)} tokens`);
+  const shown = capped.split('\n').filter(line => /^ {2}\d+: MANY_TERM/.test(line)).length;
+  assert.ok(shown > 5);
+  assert.ok(capped.endsWith(`\n[${400 - shown} more matching lines not shown; narrow with --path, --exclude or a longer phrase.]`), capped.slice(-200));
+  const long = await exact(['many_term'], { budget: 6000 });
+  assert.ok(Buffer.byteLength(long) <= 20000 && tokens(long) <= 6000);
 });

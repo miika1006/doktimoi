@@ -18,8 +18,9 @@ folder, else the working directory.
 
 ```text
 node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "exact terms" --brief
-node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:20-45"
-node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "terms" --query "other phrasing"
+node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "terms" --query "other phrasing" --next --query "second question" --brief
+node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "Log.Rest" --mode exact
+node "<skill>/scripts/doktimoi.mjs" read "<folder>" "a.md:20-45" "b.md:1-30" "guide.docx:extracted-lines:5-9"
 node "<skill>/scripts/doktimoi.mjs" status "<folder>"
 ```
 
@@ -43,6 +44,15 @@ node "<skill>/scripts/doktimoi.mjs" status "<folder>"
    `[Continue: read "path.md:65-400"]`.
 3. Without `--brief`, search returns whole passages (default 1600 tokens); use it
    when the top hits are likely enough.
+
+Batch: every call resends the conversation, so the number of calls drives cost.
+Put independent questions in one search, separated by `--next` (own `Q1`, `Q2`
+sections; other options apply to all), and all ranges you need in one `read`
+(up to 20, shared 6000-token cap; `[Output cap reached; not read: ...]` lists
+the rest). For names, numbers or phrases use `--mode exact` instead of `grep`:
+it lists every matching line, Office/PDF/OCR text included, as the file, then
+`N: line` (read `file:N`) or `LOCATION: line` (read `file:LOCATION`). To read a
+whole Markdown file, read `file.md:1-99999 --budget 6000` and follow `Continue`.
 
 Start with exact names, identifiers or keywords. Terms in a query are ANDed;
 repeat `--query` for up to four phrasings of one intent, including the
@@ -79,10 +89,10 @@ Pass these to subagents that search:
   take minutes.
 - In a semantic folder a background server answers searches in parallel with the
   model loaded: about a second each, but its first hybrid search loads the model
-  (10–25 s). Elsewhere each call takes about a second; put alternate phrasings in
-  one call (up to four `--query`) instead of separate calls.
-- Output is capped at 6000 tokens and about 20 KB per call; page with `Continue`
-  instead of raising `--budget`. Token counts are `o200k_base` estimates.
+  (10–25 s). Elsewhere each call takes about a second; put alternate phrasings
+  (up to four `--query`) and other questions (`--next`) in one call.
+- Output is capped at 6000 tokens and about 20 KB per call, whatever `--budget`
+  says; page with `Continue`. Token counts are `o200k_base` estimates.
 - `--verify` waits for a running index update instead of answering with a note.
 - `Index busy` (waited 5 minutes) or `Index lock lost` (stalled over 60 s): retry
   once, run fewer searches at once, never loop with sleeps.

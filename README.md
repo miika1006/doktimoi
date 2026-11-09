@@ -131,6 +131,16 @@ as such.
 hit, so an assistant can locate passages cheaply and then `read` exact ranges.
 Adjacent hits from one file are returned as one passage.
 
+Each tool call resends the assistant's whole conversation, so doktimoi lets one
+call do several lookups. `--next` separates independent questions in one
+`search` (`--query a --query "a alt" --next --query b`), each answered in its
+own section. `read` takes up to 20 references or ranges, from any files, and
+returns them in order within the per-call cap, naming those that did not fit.
+`search --mode exact` replaces `grep -rn`: it lists every line holding a phrase
+(case-insensitive) per file, with Markdown and text source line numbers and the
+chunk location for Word, Excel, PowerPoint, PDF and OCR text, all readable with
+`read`.
+
 Search checks file metadata and verifies returned sources against their hashes;
 `--verify` rehashes every source. A tiny folder may be cheaper to read directly.
 

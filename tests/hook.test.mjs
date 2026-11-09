@@ -50,6 +50,24 @@ test('approves commands on a path inside an indexed folder and the --path and --
   assert.equal(decide(bash(`node "${script}" build "${sub}"`, plain), pluginRoot), null);
 });
 
+test('approves several references, several questions and exact listing, and nothing looser', async t => {
+  const { indexed } = await folders(t);
+  const approve = args => decide(bash(`node "${script}" ${args}`, indexed), pluginRoot);
+  assert.ok(allowed(approve(`read "${indexed}" "a.md:1-5" "b.docx:extracted-lines:1-3" a.md:9`)));
+  assert.ok(allowed(approve(`read "${indexed}" ${Array(20).fill('a.md:1').join(' ')}`)));
+  assert.ok(allowed(approve(`search "${indexed}" --query "a b" --query alt --next --query c --brief --path sub --exclude sub/x.md`)));
+  assert.ok(allowed(approve(`search "${indexed}" --query "Log.Rest" --mode exact --next --query DB_PASSWORD`)));
+  for (const args of [
+    `read "${indexed}"`,
+    `read "${indexed}" ${Array(21).fill('a.md:1').join(' ')}`,
+    `search "${indexed}" --query x extra`,
+    `search "${indexed}" --query x --next=1`,
+    `search "${indexed}" --query x --mode regex`,
+    `search "${indexed}" --query x --next --query y; rm -rf /`,
+    `read "${indexed}" a.md:1 && echo hi`,
+  ]) assert.equal(approve(args), null, args);
+});
+
 test('approves the usage text without a folder and nothing more on the line', async t => {
   const { indexed } = await folders(t);
   for (const args of ['help', '--help', '-h', 'search --help', 'read -h', 'disable-semantic --help']) {
