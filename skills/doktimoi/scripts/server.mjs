@@ -9,10 +9,37 @@ import fs from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import childProcess, { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { createRequire, syncBuiltinESMExports } from 'node:module';
 import { atomicWrite } from './extraction.mjs';
+
+/**
+ * Hides the window of every child process this process starts from now on, unless a caller
+ * asks otherwise. The detached server has no console, so on Windows each console program it
+ * starts without windowsHide — such as node-llama-cpp's binding test fork — flashes a window.
+ */
+export function hideChildWindows() {
+  if (process.platform !== 'win32') return;
+  for (const name of ['spawn', 'spawnSync', 'fork', 'execFile', 'execFileSync', 'exec', 'execSync']) {
+    const original = childProcess[name];
+    childProcess[name] = (...args) => original(...withHiddenWindow(name, args));
+  }
+  syncBuiltinESMExports();
+}
+
+/**
+ * Returns child_process arguments whose options default windowsHide to true.
+ * @example withHiddenWindow('fork', ['m.js', [], { silent: true }]) // ['m.js', [], { windowsHide: true, silent: true }]
+ */
+export function withHiddenWindow(name, args) {
+  const at = name.startsWith('exec') && !name.startsWith('execFile') ? 1 : Array.isArray(args[1]) ? 2 : 1;
+  const given = args[at];
+  if (given && typeof given === 'object' && !Array.isArray(given)) return args.with(at, { windowsHide: true, ...given });
+  const result = [...args];
+  result.splice(at, 0, { windowsHide: true });
+  return result;
+}
 
 /**
  * Sends a request to the folder's server, starting one when none runs. Returns the reply

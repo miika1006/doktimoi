@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { hasSemanticIndex, serve, serverStatus, stopServer, unembeddedChunks, viaServer } from './server.mjs';
+import { hasSemanticIndex, hideChildWindows, serve, serverStatus, stopServer, unembeddedChunks, viaServer } from './server.mjs';
 import { MISSING_CONVERTER, atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
 // QMD, tiktoken, the lock library and the converters load lazily: a CLI call answered by the
@@ -1227,6 +1227,7 @@ async function runInProcess(root, request) {
 
 /** Runs the hidden `serve` command: the folder's warm search server, which keeps one project open. */
 async function serveFolder(directory) {
+  hideChildWindows();
   const root = await fs.realpath(directory);
   const { version } = JSON.parse(await fs.readFile(new URL('../package.json', import.meta.url), 'utf8'));
   let opening, project, warming = null;

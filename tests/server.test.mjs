@@ -309,3 +309,14 @@ test('several references, several questions and exact listing give the same outp
   assert.deepEqual(run(empty), { stdout: '', stderr: 'doktimoi: --next separates questions: put at least one --query before and after each --next\n', status: 1 });
   assert.deepEqual(run(empty), run(empty, direct));
 });
+
+test('child processes started by the server default to hidden windows', async () => {
+  const { withHiddenWindow } = await import('../skills/doktimoi/scripts/server.mjs');
+  assert.deepEqual(withHiddenWindow('fork', ['m.js', [], { silent: true }]), ['m.js', [], { windowsHide: true, silent: true }]);
+  assert.deepEqual(withHiddenWindow('fork', ['m.js']), ['m.js', { windowsHide: true }]);
+  assert.deepEqual(withHiddenWindow('spawn', ['git', ['status']]), ['git', ['status'], { windowsHide: true }]);
+  assert.deepEqual(withHiddenWindow('execFile', ['git', ['x'], { windowsHide: false }]), ['git', ['x'], { windowsHide: false }]);
+  const callback = () => {};
+  assert.deepEqual(withHiddenWindow('exec', ['dir', callback]), ['dir', { windowsHide: true }, callback]);
+  assert.deepEqual(withHiddenWindow('execSync', ['dir', { cwd: 'C:/' }]), ['dir', { windowsHide: true, cwd: 'C:/' }]);
+});
