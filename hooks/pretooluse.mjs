@@ -2,15 +2,17 @@
 /**
  * Claude Code PreToolUse hook for doktimoi.
  *
- * Auto-approves doktimoi's own read-only `search` and `read` commands against an
- * already indexed folder, so retrieval never stalls on a permission prompt and
- * silently falls back to Grep. Adds a reminder to Grep calls that sweep an
- * indexed folder. Everything else passes through untouched.
+ * Auto-approves doktimoi's own `search` and `read` commands against an already
+ * indexed folder, so retrieval never stalls on a permission prompt and silently
+ * falls back to Grep. Hybrid mode is included: it only updates existing
+ * embeddings and refuses to run when no semantic index was enabled. Adds a
+ * reminder to Grep calls that sweep an indexed folder. Everything else passes
+ * through untouched.
  */
-import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { indexedRoot, isFile, readHookInput, resolvePath } from './common.mjs';
 
 export function decide(input, pluginRoot) {
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') return approveDoktimoiCommand(input, pluginRoot);
@@ -26,7 +28,7 @@ function approveDoktimoiCommand(input, pluginRoot) {
   const [, , command, root, ...rest] = words;
   if (!['search', 'read'].includes(command)) return null;
   const options = parseOptions(rest);
-  if (!options || options.values.mode !== 'lexical') return null;
+  if (!options || !SEARCH_MODES.includes(options.values.mode)) return null;
   if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;
   if (!indexedRoot(resolvePath(root, input.cwd), true)) return null;
   return {
@@ -42,12 +44,12 @@ function approveDoktimoiCommand(input, pluginRoot) {
 function remindOnFolderGrep(input, pluginRoot) {
   const target = resolvePath(input.tool_input?.path ?? input.cwd ?? '.', input.cwd);
   if (isFile(target)) return null;
-  const root = indexedRoot(target, false);
+  const root = indexedRoot(target);
   if (!root) return null;
   return {
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
-      additionalContext: `${root} is indexed by doktimoi. For content lookups here (questions, fact checks, verification while editing) search with the doktimoi skill instead of Grep: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --budget 1600 (one command per call, no cd or chaining, so it runs without a permission prompt). Grep stays fine for file names or exact edit locations in a file doktimoi already returned.`,
+      additionalContext: `${root} is indexed by doktimoi. For content lookups here (questions, fact checks, verification while editing) search with the doktimoi skill instead of Grep: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --budget 1600 (add --mode hybrid when semantic search is enabled; one command per call, no cd or chaining, so it runs without a permission prompt). Grep stays fine for file names or exact edit locations in a file doktimoi already returned.`,
     },
   };
 }
@@ -60,11 +62,13 @@ function remindOnFolderGrep(input, pluginRoot) {
 export function splitCommand(command) {
   if (!command || /[\r\n$`;&|<>]/.test(command) || command.includes('\\"')) return null;
   const words = [];
-  const pattern = /"([^"]*)"|'([^']*)'|([A-Za-z0-9_\-.\/:\\=,+]+)|(\s+)|(.)/g;
+  const pattern = /"([^"]*)"|'([^']*)'|([A-Za-z0-9_\-.\/:\\=,+~]+)|(\s+)|(.)/g;
   let word = null;
   for (const match of command.matchAll(pattern)) {
     if (match[5] !== undefined) return null;
     if (match[4] !== undefined) { if (word !== null) words.push(word); word = null; continue; }
+    // A leading unquoted ~ is tilde expansion in Bash; inside a word (RUNNER~1) it is literal.
+    if (match[3] !== undefined && word === null && match[3].startsWith('~')) return null;
     word = (word ?? '') + (match[1] ?? match[2] ?? match[3]);
   }
   if (word !== null) words.push(word);
@@ -82,38 +86,20 @@ function parseOptions(args) {
   } catch { return null; }
 }
 
-/** Walks up from a folder to the nearest one holding a `.doktimoi` index; `exact` checks only the folder itself. */
-function indexedRoot(folder, exact) {
-  for (let current = folder; ; current = path.dirname(current)) {
-    if (isDirectory(path.join(current, INDEX_DIR))) return current;
-    if (exact || path.dirname(current) === current) return null;
-  }
-}
-
-/** Resolves a path given in Git Bash (`/c/...`) or Windows form against the hook's working directory. */
-function resolvePath(value, cwd) {
-  const native = process.platform === 'win32' ? String(value).replace(/^\/([a-zA-Z])(\/|$)/, '$1:/') : String(value);
-  return path.resolve(cwd ?? process.cwd(), native);
-}
-
 function samePath(value, expected, cwd) {
   const normalize = p => { const r = path.normalize(p); return process.platform === 'win32' ? r.toLowerCase() : r; };
-  return normalize(resolvePath(value, cwd)) === normalize(expected);
+  return normalize(resolvePath(value, cwd)) === normalize(resolvePath(expected));
 }
 
 function scriptPath(pluginRoot) { return path.join(pluginRoot, 'skills', 'doktimoi', 'scripts', 'doktimoi.mjs'); }
-function isDirectory(p) { try { return fs.statSync(p).isDirectory(); } catch { return false; } }
-function isFile(p) { try { return fs.statSync(p).isFile(); } catch { return false; } }
 
 async function main() {
-  let raw = '';
-  for await (const part of process.stdin) raw += part;
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const output = decide(JSON.parse(raw), pluginRoot);
+  const output = decide(await readHookInput(), pluginRoot);
   if (output) process.stdout.write(JSON.stringify(output));
 }
 
-const INDEX_DIR = '.doktimoi';
+const SEARCH_MODES = ['lexical', 'hybrid'];
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch(error => { console.error(`doktimoi hook: ${error.message}`); process.exitCode = 1; });

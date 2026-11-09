@@ -36,8 +36,8 @@ node <skill>/scripts/doktimoi.mjs search <folder> --query "distinctive terms" --
 
 Run each search or read as its own single command with absolute or folder-relative
 paths: no `cd`, variables, `;`, `&&`, pipes or redirection. In Claude Code the
-plugin's hook approves exactly that form for an indexed folder in lexical mode, so
-it runs without a permission prompt; a chained command needs approval and tends
+plugin's hook approves exactly that form for an indexed folder in lexical or hybrid
+mode, so it runs without a permission prompt; a chained command needs approval and tends
 to end in a Grep fallback. If a search is denied or fails, say so instead of
 silently switching to Grep.
 
@@ -49,6 +49,8 @@ The first query is also the semantic query; put the natural-language question
 first in hybrid mode. Do not confuse a ranking score with confidence.
 
 Search checks file metadata and refreshes changed/added/deleted files itself.
+In Claude Code the plugin also refreshes an existing index in the background at
+session start and after each Edit/Write inside it (`sync`), so searches rarely wait.
 Returned sources are hash-verified; use `--verify` to rehash the whole corpus on
 network filesystems or when timestamps are unreliable.
 Hybrid mode updates existing embeddings incrementally. If no semantic index

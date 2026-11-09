@@ -6,6 +6,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { decide, splitCommand } from '../hooks/pretooluse.mjs';
+import { targetRoot } from '../hooks/sync.mjs';
+import { openProject } from '../skills/doktimoi/scripts/doktimoi.mjs';
 
 const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = path.join(pluginRoot, 'skills', 'doktimoi', 'scripts', 'doktimoi.mjs');
@@ -31,6 +33,15 @@ test('approves a single lexical search or read against an indexed folder', async
   assert.ok(allowed(decide(bash(`node "${script}" search . --query Entra --mode lexical --verify`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" read "${indexed}" "a.md:1-5" --from 1 --lines 40`, indexed), pluginRoot)));
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" search "${indexed}" --query "ä ö"` }, cwd: indexed }, pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "how is access granted" --mode hybrid`, indexed), pluginRoot)));
+});
+
+test('accepts a literal ~ inside an unquoted word but not tilde expansion', async t => {
+  const { indexed } = await folders(t);
+  const short = path.join(indexed, 'RUNNER~1');
+  await fs.mkdir(path.join(short, '.doktimoi'), { recursive: true });
+  assert.ok(allowed(decide(bash(`node "${script}" search ${short.replaceAll('\\', '/')} --query x`, indexed), pluginRoot)));
+  assert.equal(decide(bash(`node "${script}" search ~/docs --query x`, indexed), pluginRoot), null);
 });
 
 test('accepts the Git Bash form of Windows paths', { skip: process.platform !== 'win32' }, async t => {
@@ -46,7 +57,8 @@ test('leaves everything else to the normal permission flow', async t => {
     `node "${script}" search "${path.join(indexed, 'sub')}" --query x`,
     `node "${script}" build "${indexed}"`,
     `node "${script}" embed "${indexed}"`,
-    `node "${script}" search "${indexed}" --query x --mode hybrid`,
+    `node "${script}" search "${indexed}" --query x --mode semantic`,
+    `node "${script}" sync "${indexed}"`,
     `node "${script}" search "${indexed}" --query x --unknown`,
     `node "${script}" search "${indexed}" --query x; rm -rf /`,
     `node "${script}" search "${indexed}" --query "$(whoami)"`,
@@ -74,6 +86,38 @@ test('reminds about doktimoi when Grep sweeps an indexed folder, not a single fi
 test('splitCommand keeps quoted words and refuses shell syntax', () => {
   assert.deepEqual(splitCommand(`node "C:\\x y\\d.mjs" search . --query 'a b'`), ['node', 'C:\\x y\\d.mjs', 'search', '.', '--query', 'a b']);
   for (const bad of ['a | b', 'a $HOME', 'a (b)', 'a *', '@args', 'a "unterminated']) assert.equal(splitCommand(bad), null, bad);
+});
+
+test('sync hook targets indexed folders only, outside the index data', async t => {
+  const { indexed, plain } = await folders(t);
+  const edit = (file, cwd = plain) => targetRoot({ hook_event_name: 'PostToolUse', tool_input: { file_path: file }, cwd });
+  assert.equal(edit(path.join(indexed, 'sub', 'new.md')), await fs.realpath(indexed));
+  assert.equal(edit('a.md', indexed), await fs.realpath(indexed));
+  assert.equal(edit(path.join(indexed, '.doktimoi', 'manifest.json')), null);
+  assert.equal(edit(path.join(plain, 'x.md')), null);
+  assert.equal(targetRoot({ hook_event_name: 'PostToolUse', tool_input: { notebook_path: path.join(indexed, 'n.ipynb') }, cwd: plain }), await fs.realpath(indexed));
+  assert.equal(targetRoot({ hook_event_name: 'SessionStart', cwd: path.join(indexed, 'sub') }), await fs.realpath(indexed));
+  assert.equal(targetRoot({ hook_event_name: 'SessionStart', cwd: plain }), null);
+});
+
+test('sync hook refreshes an edited index so the next search has nothing to update', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-sync-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = path.join(root, 'rules.md');
+  await fs.writeFile(file, '# Access\n\nProduction requires TLS.');
+  let project = await openProject(root);
+  await project.search(['TLS']);
+  await project.close();
+  await fs.writeFile(file, '# Access\n\nProduction requires mutual TLS and audited ROTATION.');
+  execFileSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
+    input: JSON.stringify({ hook_event_name: 'PostToolUse', tool_name: 'Edit', tool_input: { file_path: file }, cwd: root }),
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8',
+  });
+  project = await openProject(root);
+  try {
+    assert.equal((await project.sync()).changed, 0);
+    assert.match((await project.search(['ROTATION'])).payload.results[0].text, /audited ROTATION/);
+  } finally { await project.close(); }
 });
 
 test('hook process prints the decision as JSON and nothing for other tools', async t => {

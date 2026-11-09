@@ -64,7 +64,8 @@ export async function openProject(directory) {
   }
   const release = await lockfile.lock(root, {
     realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 10000,
-    retries: { retries: 20, minTimeout: 100, maxTimeout: 500 },
+    // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
+    retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
   });
   let store;
   try {
@@ -246,6 +247,14 @@ export async function openProject(directory) {
         }
         return result;
       },
+      async refresh() {
+        const update = await sync();
+        const health = await store.getStatus();
+        if (!health.hasVectorIndex || !health.needsEmbedding) return { update };
+        const embeddings = await store.embed();
+        if (embeddings.errors) throw new Error('Incremental embedding failed; semantic index is incomplete');
+        return { update, embeddings };
+      },
       async embed() {
         const update = await sync();
         const embeddings = await store.embed();
@@ -269,13 +278,14 @@ async function main() {
     verify: { type: 'boolean', default: false },
   } });
   const [command, root, id] = positionals;
-  if (!['build', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|search|batch|read|embed ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
+  if (!['build', 'sync', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
+    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
   }
   const project = await openProject(root);
   try {
     let result;
     if (command === 'build') result = await project.sync({ verify: true });
+    if (command === 'sync') result = await project.refresh();
     if (command === 'embed') result = await project.embed();
     if (command === 'batch') {
       const parts = []; let bytes = 0;

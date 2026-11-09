@@ -1,5 +1,5 @@
 {
-  "description": "Auto-approve doktimoi's read-only search/read commands and point folder-wide Grep calls in indexed folders to doktimoi.",
+  "description": "Auto-approve doktimoi's search/read commands, point folder-wide Grep calls in indexed folders to doktimoi, and refresh indexes in the background.",
   "hooks": {
     "PreToolUse": [
       {
@@ -9,6 +9,32 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.mjs\"",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/sync.mjs\"",
+            "async": true,
+            "timeout": 600
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/sync.mjs\"",
+            "async": true,
+            "timeout": 600
           }
         ]
       }
