@@ -2,7 +2,7 @@
 /**
  * Claude Code PreToolUse hook for doktimoi.
  *
- * Auto-approves doktimoi's own `search` and `read` commands against an already
+ * Auto-approves doktimoi's own `search`, `read` and `status` commands against an already
  * indexed folder, so retrieval never stalls on a permission prompt and silently
  * falls back to Grep. Hybrid mode is included: it only updates existing
  * embeddings and refuses to run when no semantic index was enabled. Adds a
@@ -25,7 +25,7 @@ export function decide(input, pluginRoot) {
 }
 
 /**
- * Returns an allow decision when the command is a single safe doktimoi search/read.
+ * Returns an allow decision when the command is a single safe doktimoi search, read or status.
  * In Git Bash it also rewrites unquoted Windows paths, whose backslashes Bash would
  * strip (C:\Users -> C:Users), so the approved command does not fail with MODULE_NOT_FOUND.
  */
@@ -36,7 +36,8 @@ function approveDoktimoiCommand(input, pluginRoot) {
   if (!words || words.length < 4 || !/^node(\.exe)?$/i.test(words[0])) return null;
   if (!samePath(words[1], scriptPath(pluginRoot), input.cwd)) return null;
   const [, , command, root, ...rest] = words;
-  if (!['search', 'read'].includes(command)) return null;
+  if (!['search', 'read', 'status'].includes(command)) return null;
+  if (command === 'status' && rest.length) return null;
   const options = parseOptions(rest);
   if (!options || !['lexical', 'hybrid'].includes(options.values.mode)) return null;
   if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;

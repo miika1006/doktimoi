@@ -12,8 +12,11 @@ load machine indexes into context.
 
 For installation, first use, missing dependencies or initial indexing (invoked as
 `/doktimoi`, `/doktimoi:doktimoi` in the Claude plugin or `$doktimoi` in Codex),
-read [index.md](references/index.md); it includes asking about the optional local
-semantic model. Respect any recorded choice. Otherwise go straight to search.
+and for turning semantic search on or off, read [index.md](references/index.md);
+it includes asking about the optional local semantic model. Respect any recorded
+choice. Otherwise go straight to search. `node "<skill>/scripts/doktimoi.mjs"
+status "<folder>"` shows the index, lock and background server state without
+changing anything.
 
 Use the requested folder, else the working directory. `<skill>` is this skill's
 directory, not the documentation folder. Keep customer case material

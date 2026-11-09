@@ -30,6 +30,11 @@ Open your documentation folder and ask:
 - “Plan offline approvals. Which components and source repositories are affected?”
 - “Compare these customer meeting notes and pricing sheets with the product docs.
   Produce a gap analysis, separating supported features from missing evidence.”
+- “doktimoi status” shows the index, whether semantic search is on and what the
+  background server is doing, without changing anything.
+- “Turn off semantic search for this folder” removes the embeddings and stops the
+  background server; keyword search keeps working. Ask to turn it on again at any
+  time.
 
 ## Install
 
@@ -64,11 +69,11 @@ on first use. Marketplace installation alone does not install npm dependencies.
 
 The Claude Code plugin also ships hooks:
 
-- `PreToolUse` approves the skill's own `search` and `read` commands without a
+- `PreToolUse` approves the skill's own `search`, `read` and `status` commands without a
   permission prompt when they run as a single command in lexical or hybrid mode
   against a folder that already has a `.doktimoi` index (search may refresh that
   index; hybrid only updates existing embeddings and fails if semantic search was
-  never enabled). Other commands, `build`, `embed` and unindexed folders go
+  never enabled). Other commands, `build`, `embed`, `disable-semantic` and unindexed folders go
   through the normal permission flow. Inside an indexed folder, folder-wide Grep,
   recursive shell searches (grep -r, rg, git grep, findstr /s, Select-String) and
   whole reads of large or Office/PDF files get a reminder to use doktimoi.

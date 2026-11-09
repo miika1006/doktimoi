@@ -87,6 +87,32 @@ and keyword search for exact identifiers. Documents are never uploaded. Models
 use QMD's local cache (`XDG_CACHE_HOME` isolates it); `QMD_FORCE_CPU=1` forces
 CPU when Metal/CUDA is unavailable; report the mode when benchmarking.
 
+## Turn semantic search on or off; check status
+
+To turn it on later, ask for consent as above, then run `embed`. To turn it off
+when the user asks (no consent question needed), run:
+
+```text
+node "<skill>/scripts/doktimoi.mjs" disable-semantic "<folder>"
+```
+
+It stops the folder's background server, removes the embeddings and keeps the
+keyword index, so no rebuild is needed and no model or server starts again for
+the folder. Then set the recorded choice in the doktimoi block to `keyword only`.
+The model files stay in QMD's cache for other folders.
+
+To see what the index and its background work are doing, run:
+
+```text
+node "<skill>/scripts/doktimoi.mjs" status "<folder>"
+```
+
+It changes and starts nothing: it reports source, chunk and warning counts, the
+last index update, whether semantic search is on (and chunks still waiting for
+embeddings), an interrupted update, whether the index lock is held, and the
+background server: its process, plugin version, model state, current request and
+idle exit time. Report it to the user in plain words.
+
 ## Future sessions
 
 Append `.doktimoi/` to the folder's `.gitignore` once, preserving its content and

@@ -5,12 +5,14 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
 const pluginRoot = fileURLToPath(new URL('..', import.meta.url));
-const Database = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url))('better-sqlite3');
+const skillRequire = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
+const Database = skillRequire('better-sqlite3');
+const lockfile = skillRequire('proper-lockfile');
 
 /** Runs the CLI and returns its stdout, stderr and exit code. */
 function run(args, env = {}, input) {
@@ -108,4 +110,61 @@ test('stop and build shut the folder server down so the cache can be rebuilt or 
   assert.ok(info && alive(info.pid));
   assert.equal(run(['build', root]).status, 0);
   assert.equal(await readInfo(root), null);
+});
+
+test('status reports a lexical-only folder without starting or locking anything', async t => {
+  const root = await folder(t, false);
+  const result = run(['status', root]);
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /^Index: 1 sources, 2 chunks, 0 extraction warnings, updated \d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d$/m);
+  assert.match(result.stdout, /^Semantic search: off \(keyword only\)$/m);
+  assert.match(result.stdout, /^Index lock: free$/m);
+  assert.match(result.stdout, /^Background server: not running$/m);
+  assert.equal(await readInfo(root), null);
+  assert.match(run(['status', path.dirname(root)]).stdout, /^No doktimoi index in /);
+});
+
+test('status reports a semantic folder server, its busy request and the held lock', async t => {
+  const root = await folder(t, true);
+  assert.match(run(['status', root]).stdout, /^Semantic search: on, 2 chunks not embedded yet.*\nIndex lock: free\nBackground server: not running$/m);
+  assert.equal(await readInfo(root), null);
+  assert.equal(run(['search', root, '--query', 'SERVER_TOKEN']).status, 0);
+  const info = await readInfo(root);
+  const idle = run(['status', root]).stdout;
+  assert.ok(idle.includes(`Background server: running, pid ${info.pid}, version ${info.version}, ${info.script}\n`), idle);
+  assert.match(idle, /^ {2}Embedding model: not loaded; idle, 0 queued, exits when idle at \d{4}-\d\d-\d\dT[\d:]{8}[+-]\d\d:\d\d$/m);
+  await new Promise(resolve => setTimeout(resolve, 1100));
+  assert.equal(run(['status', root]).stdout, idle, 'status must not reset the idle timer');
+  // Holding the index lock keeps the server's next search waiting, so status sees it busy.
+  const release = await lockfile.lock(root, { realpath: false, lockfilePath: path.join(root, '.doktimoi', 'write.lock') });
+  const search = new Promise(resolve => spawn(process.execPath, [cli, 'search', root, '--query', 'SERVER_TOKEN'], { stdio: 'ignore' }).on('exit', resolve));
+  let status = '';
+  for (let i = 0; i < 100 && !/busy with search/.test(status); i++) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    status = run(['status', root]).stdout;
+  }
+  await release();
+  assert.match(status, /Index lock: held for \d+\.\d s/);
+  assert.match(status, /Embedding model: not loaded; busy with search for \d+\.\d s, 0 queued$/m);
+  assert.equal(await search, 0);
+  assert.equal((await readInfo(root)).pid, info.pid);
+});
+
+test('disable-semantic stops the server and leaves a working keyword-only index', async t => {
+  const root = await folder(t, true);
+  assert.equal(run(['search', root, '--query', 'SERVER_TOKEN']).status, 0);
+  const info = await readInfo(root);
+  assert.ok(info);
+  const result = run(['disable-semantic', root]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Semantic search turned off/);
+  assert.equal(await readInfo(root), null);
+  assert.ok(!alive(info.pid));
+  const db = new Database(path.join(root, '.doktimoi', 'index.sqlite'), { readonly: true });
+  assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name = 'vectors_vec'").get(), undefined);
+  db.close();
+  assert.match(run(['search', root, '--query', 'SERVER_TOKEN']).stdout, /needs approval/);
+  assert.equal(await readInfo(root), null);
+  assert.match(run(['status', root]).stdout, /Semantic search: off/);
+  assert.match(run(['search', root, '--query', 'SERVER_TOKEN', '--mode', 'hybrid']).stderr, /Semantic index missing; run embed/);
 });

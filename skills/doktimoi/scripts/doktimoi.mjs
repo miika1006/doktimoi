@@ -8,7 +8,7 @@ import lockfile from 'proper-lockfile';
 import { createStore, extractSnippet } from '@tobilu/qmd';
 import { get_encoding } from 'tiktoken';
 import { convert, inventory, safePath } from './sources.mjs';
-import { serve, stopServer, viaServer } from './server.mjs';
+import { hasSemanticIndex, serve, serverStatus, stopServer, unembeddedChunks, viaServer } from './server.mjs';
 import { MISSING_CONVERTER, atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
 let encoder;
@@ -365,9 +365,12 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       async warm() {
         if ((await store.getStatus()).hasVectorIndex) await store.searchVector('warm', { collection: 'docs', limit: 1 });
       },
+      /** Removes all embeddings and the vector table; the keyword index stays as it is. */
+      async disableSemantic() { store.internal.clearAllEmbeddings(); },
+      modelLoaded: () => !!store.internal.llm?.embedModel,
       async close() { await store.close(); },
     };
-    for (const name of ['sync', 'search', 'read', 'refresh', 'embed']) {
+    for (const name of ['sync', 'search', 'read', 'refresh', 'embed', 'disableSemantic']) {
       const once = api[name];
       api[name] = (...args) => retryOnSourceChange(() => exclusive(() => locked(async () => { await loadManifest(); return once(...args); })));
     }
@@ -389,9 +392,11 @@ async function main() {
   const [command, root, id] = positionals;
   if (command === 'serve' && root) return serveFolder(root);
   if (command === 'stop' && root) return stopServer(await fs.realpath(root));
+  if (command === 'status' && root) return console.log(await status(await fs.realpath(root)));
+  if (command === 'disable-semantic' && root) return console.log(await disableSemantic(await fs.realpath(root)));
   if (command === 'build' && root) await stopServer(await fs.realpath(root));
   if (!['build', 'sync', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
+    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
   }
   const request = { command, id, values, input: command === 'batch' ? await readStdin() : undefined };
   const served = ['search', 'read', 'batch'].includes(command)
@@ -437,6 +442,83 @@ export async function execute(project, { command, id, values, input }) {
   return { output: typeof result === 'string' ? result : JSON.stringify(result), notices };
 }
 
+/**
+ * Describes the folder's index, lock and background server in a few lines without changing
+ * anything: no lock, sync, server start or model load.
+ * @example await status('C:\\docs') // 'Index: 12 sources, 340 chunks, 0 extraction warnings, updated 2026-11-09T10:12:03+02:00\n…'
+ */
+async function status(root) {
+  const cache = path.join(root, '.doktimoi');
+  const manifestFile = path.join(cache, 'manifest.json');
+  const manifestStat = await ifMissing(fs.stat(manifestFile), null);
+  if (!manifestStat) return `No doktimoi index in ${root}.`;
+  const files = Object.values(JSON.parse(await fs.readFile(manifestFile, 'utf8')).files ?? {});
+  const count = key => files.reduce((sum, file) => sum + (file[key]?.length ?? 0), 0);
+  const lines = [`Index: ${files.length} sources, ${count('chunks')} chunks, ${count('warnings')} extraction warnings, updated ${localTime(manifestStat.mtime)}`];
+  lines.push(semanticLine(root));
+  if (await ifMissing(fs.stat(path.join(cache, 'dirty')), false)) lines.push('Interrupted update: the next search or sync redoes it');
+  lines.push(await lockLine(path.join(cache, 'write.lock')));
+  lines.push(...serverLines(await serverStatus(root), await scriptPath()));
+  return lines.join('\n');
+}
+
+/** Tells whether semantic search is on and, when known, how many chunks still await embedding. */
+function semanticLine(root) {
+  if (!hasSemanticIndex(root)) return 'Semantic search: off (keyword only)';
+  const waiting = unembeddedChunks(root);
+  return `Semantic search: on${waiting ? `, ${waiting} chunks not embedded yet (the next hybrid search or sync embeds them)` : ''}`;
+}
+
+/** Describes the index write lock: free, held for how long, or stale from a stopped process. */
+async function lockLine(lockDir) {
+  const lock = await ifMissing(fs.stat(lockDir), null);
+  if (!lock) return 'Index lock: free';
+  // proper-lockfile refreshes the lock's mtime every 5 s and treats it as stale after 60 s.
+  if (Date.now() - lock.mtimeMs > 60000) return 'Index lock: stale, left by a stopped process; the next operation takes it over';
+  return `Index lock: held for ${seconds(Date.now() - lock.birthtimeMs)} (a search, sync or index update is running)`;
+}
+
+/** Describes the background search server from its status reply. */
+function serverLines(server, ownScript) {
+  if (!server) return ['Background server: not running'];
+  const { info, state, error } = server;
+  const other = info.script === ownScript ? '' : ' (another plugin copy)';
+  const head = `Background server: running, pid ${info.pid}, version ${info.version ?? 'unknown'}${other}, ${info.script}`;
+  // Servers from plugin versions before `status` reply with an unsupported-command error instead.
+  if (error) return [head, `  Did not answer the status request: ${error}${/^no answer/.test(error) ? ' (stalled, e.g. loading the model)' : ''}`];
+  const model = state.modelLoaded ? 'loaded' : state.warming ? 'loading in the background' : 'not loaded';
+  const work = state.busy ? `busy with ${state.busy.command} for ${seconds(state.busy.ms)}` : 'idle';
+  const idleExit = state.idleExitAt ? `, exits when idle at ${localTime(new Date(state.idleExitAt))}` : '';
+  return [head, `  Embedding model: ${model}; ${work}, ${state.queued} queued${idleExit}`];
+}
+
+/**
+ * Formats a time as local ISO 8601 with its UTC offset.
+ * @example localTime(new Date('2026-11-09T08:12:03Z')) // '2026-11-09T10:12:03+02:00' in Helsinki
+ */
+function localTime(date) {
+  const offset = -date.getTimezoneOffset();
+  const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+  const local = new Date(date.getTime() + offset * 60000).toISOString().slice(0, 19);
+  return `${local}${offset < 0 ? '-' : '+'}${pad(offset / 60)}:${pad(offset % 60)}`;
+}
+
+const seconds = ms => `${(ms / 1000).toFixed(1)} s`;
+
+/**
+ * Turns semantic search off for an indexed folder: stops its server, then drops the embeddings
+ * under the index lock so no server or model starts again, keeping the keyword index.
+ */
+async function disableSemantic(root) {
+  if (!await ifMissing(fs.stat(path.join(root, '.doktimoi', 'index.sqlite')), false)) throw new Error(`No doktimoi index in ${root}`);
+  await stopServer(root);
+  const project = await openProject(root);
+  try { await project.disableSemantic(); } finally { await project.close(); }
+  // A search between the first stop and taking the lock may have started a new server.
+  await stopServer(root);
+  return 'Semantic search turned off; keyword search keeps working. Run embed to turn it on again.';
+}
+
 /** Opens the folder in this process, runs the command and closes the folder again. */
 async function runInProcess(root, request) {
   const project = await openProject(root);
@@ -447,15 +529,15 @@ async function runInProcess(root, request) {
 async function serveFolder(directory) {
   const root = await fs.realpath(directory);
   const { version } = JSON.parse(await fs.readFile(new URL('../package.json', import.meta.url), 'utf8'));
-  let project;
+  let project, warming = null;
   await serve(root, await scriptPath(), version, async request => {
     if (!['search', 'read', 'batch', 'warm'].includes(request.command)) throw new Error(`Unsupported server command: ${request.command}`);
     project ??= await openProject(root, { modelIdleMs: SERVER_MODEL_IDLE_MS });
     if (request.command !== 'warm') return execute(project, request);
     // Answer at once so the session-start hook never waits for the model; a failed warm-up only costs the next search the load.
-    project.warm().catch(() => {});
+    warming = project.warm().catch(() => {}).finally(() => { warming = null; });
     return { output: '', notices: [] };
-  }, async () => { await project?.close(); });
+  }, async () => { await project?.close(); }, () => ({ modelLoaded: project?.modelLoaded() ?? false, warming: !!warming }));
 }
 
 /** Reads the batch requests from stdin, refusing more than 1 MB. */

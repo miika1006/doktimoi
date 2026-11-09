@@ -53,12 +53,26 @@ export async function stopServer(root, info) {
 }
 
 /**
+ * Asks the folder's running server what it is doing. Resolves to null when no server runs,
+ * `{ info, state }` with the reply, or `{ info, error }` when it does not answer in time.
+ * Never starts a server.
+ */
+export async function serverStatus(root) {
+  const info = await readInfo(root);
+  if (!info) return null;
+  const reply = await send(info, { command: 'status' }, STATUS_WAIT_MS).catch(error => ({ error: error.message }));
+  return reply.error !== undefined ? { info, error: reply.error } : { info, state: JSON.parse(reply.output) };
+}
+
+/**
  * Serves requests for one folder until it has been idle for `idleMs`; returns at once when
- * another server already owns the folder.
+ * another server already owns the folder. A `status` request is answered at once, outside the
+ * queue, and does not count as activity.
  * @param {(request: object) => Promise<{ output: string, notices: string[] }>} run handles one request
  * @param {() => Promise<void>} close releases what `run` opened
+ * @param {() => object} describe reports the served project's state, such as whether the model is loaded
  */
-export async function serve(root, script, version, run, close, idleMs = IDLE_MS) {
+export async function serve(root, script, version, run, close, describe, idleMs = IDLE_MS) {
   const info = path.join(root, CACHE_DIR, 'server.json');
   let stopping = null;
   const stop = () => (stopping ??= shutdown());
@@ -70,8 +84,12 @@ export async function serve(root, script, version, run, close, idleMs = IDLE_MS)
   const token = crypto.randomBytes(32).toString('hex');
   const name = `doktimoi-${crypto.randomBytes(8).toString('hex')}`;
   const pipe = process.platform === 'win32' ? `\\\\.\\pipe\\${name}` : path.join(os.tmpdir(), `${name}.sock`);
-  let queue = Promise.resolve(), pending = 0, idle;
-  const resetIdle = () => { clearTimeout(idle); if (!pending) idle = setTimeout(stop, idleMs); };
+  let queue = Promise.resolve(), pending = 0, idle, idleAt = null, active = null;
+  const resetIdle = () => { clearTimeout(idle); idleAt = null; if (!pending) { idle = setTimeout(stop, idleMs); idleAt = Date.now() + idleMs; } };
+
+  /** Describes this server for the `status` request. */
+  const state = () => ({ pid: process.pid, version, script, idleExitAt: idleAt, queued: pending - (active ? 1 : 0),
+    busy: active && { command: active.command, ms: Date.now() - active.started }, ...describe() });
 
   /** Answers one connection: a JSON request line with the token, then a JSON reply line. */
   const server = net.createServer(socket => {
@@ -86,10 +104,14 @@ export async function serve(root, script, version, run, close, idleMs = IDLE_MS)
       socket.removeAllListeners('data');
       const request = parseRequest(data.slice(0, end));
       if (!request || !sameToken(request.token, token)) return socket.end(`${JSON.stringify({ error: 'Unauthorized request' })}\n`);
+      if (request.command === 'status') return socket.end(`${JSON.stringify({ output: JSON.stringify(state()), notices: [] })}\n`);
       pending++;
       clearTimeout(idle);
+      idleAt = null;
       queue = queue.then(async () => {
+        active = { command: request.command, started: Date.now() };
         const reply = request.command === 'stop' ? { output: '', notices: [] } : await run(request).catch(error => ({ error: error.message }));
+        active = null;
         if (!socket.destroyed) socket.end(`${JSON.stringify(reply)}\n`);
         pending--;
         if (request.command === 'stop') stop(); else resetIdle();
@@ -124,13 +146,28 @@ export async function serve(root, script, version, run, close, idleMs = IDLE_MS)
  * Tells whether semantic search was enabled for the folder (its index has a vector table), read
  * directly from SQLite so that neither QMD nor the model loads; only such folders get a server.
  */
-function hasSemanticIndex(root) {
+export function hasSemanticIndex(root) {
+  return readIndex(root, db => !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'vectors_vec'").get()) ?? false;
+}
+
+/**
+ * Counts indexed chunks that are not fully embedded yet (none or only some of their parts), read-only
+ * like hasSemanticIndex; undefined when the index lacks the tables. Chunks embedded with an older model count as embedded.
+ */
+export function unembeddedChunks(root) {
+  try {
+    return readIndex(root, db => db.prepare('SELECT COUNT(*) AS n FROM documents d WHERE d.active = 1 AND NOT EXISTS (SELECT 1 FROM content_vectors v WHERE v.hash = d.hash GROUP BY v.hash HAVING COUNT(*) >= MAX(v.total_chunks))').get().n);
+  } catch { return undefined; }
+}
+
+/** Runs `query` on the folder's index.sqlite opened read-only; null when there is no index. */
+function readIndex(root, query) {
   const file = path.join(root, CACHE_DIR, 'index.sqlite');
-  if (!existsSync(file)) return false;
+  if (!existsSync(file)) return null;
   // better-sqlite3 is QMD's own driver, so resolve it from QMD rather than as a separate dependency.
   const Database = createRequire(import.meta.resolve('@tobilu/qmd'))('better-sqlite3');
   const db = new Database(file, { readonly: true, fileMustExist: true });
-  try { return !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'vectors_vec'").get(); }
+  try { return query(db); }
   finally { db.close(); }
 }
 
@@ -163,11 +200,12 @@ async function readInfo(root) {
   catch (error) { return error.code === 'EPERM' ? info : null; }
 }
 
-/** Sends one request line with the server's token and resolves with its parsed reply line. */
-function send(info, request) {
+/** Sends one request line with the server's token and resolves with its parsed reply line; `timeoutMs` limits the wait. */
+function send(info, request, timeoutMs) {
   return new Promise((resolve, reject) => {
     let data = '';
     const socket = net.connect(info.pipe, () => socket.write(`${JSON.stringify({ ...request, token: info.token })}\n`));
+    if (timeoutMs) socket.setTimeout(timeoutMs, () => socket.destroy(new Error(`no answer within ${timeoutMs / 1000} s`)));
     socket.setEncoding('utf8');
     socket.on('data', chunk => { data += chunk; });
     socket.on('error', reject);
@@ -202,4 +240,5 @@ function sameToken(given, expected) {
 const CACHE_DIR = '.doktimoi';
 const IDLE_MS = 30 * 60 * 1000;
 const START_WAIT_MS = 10000;
+const STATUS_WAIT_MS = 2000;
 const MAX_REQUEST_CHARS = 8 * 1024 * 1024;

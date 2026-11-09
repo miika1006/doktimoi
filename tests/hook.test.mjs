@@ -27,13 +27,15 @@ async function folders(t) {
 const bash = (command, cwd) => ({ tool_name: 'Bash', tool_input: { command }, cwd });
 const allowed = output => output?.hookSpecificOutput?.permissionDecision === 'allow';
 
-test('approves a single lexical search or read against an indexed folder', async t => {
+test('approves a single lexical search, read or status against an indexed folder', async t => {
   const { indexed } = await folders(t);
   assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "XTX Identity" --query 'Entra vieras' --budget 1600`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" search . --query Entra --mode lexical --verify`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" read "${indexed}" "a.md:1-5" --from 1 --lines 40`, indexed), pluginRoot)));
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" search "${indexed}" --query "ä ö"` }, cwd: indexed }, pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "how is access granted" --mode hybrid`, indexed), pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" status "${indexed}"`, indexed), pluginRoot)));
+  assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" status .` }, cwd: indexed }, pluginRoot)));
 });
 
 test('accepts a literal ~ inside an unquoted word but not tilde expansion', async t => {
@@ -68,6 +70,12 @@ test('leaves everything else to the normal permission flow', async t => {
     `node "${script}" embed "${indexed}"`,
     `node "${script}" search "${indexed}" --query x --mode semantic`,
     `node "${script}" sync "${indexed}"`,
+    `node "${script}" disable-semantic "${indexed}"`,
+    `node "${script}" stop "${indexed}"`,
+    `node "${script}" status "${plain}"`,
+    `node "${script}" status "${indexed}" extra`,
+    `node "${script}" status "${indexed}" --mode lexical`,
+    `node "${script}" status "${indexed}"; rm -rf /`,
     `node "${script}" search "${indexed}" --query x --unknown`,
     `node "${script}" search "${indexed}" --query x; rm -rf /`,
     `node "${script}" search "${indexed}" --query "$(whoami)"`,
