@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
 import { chunkMarkdown, safePath } from '../skills/doktimoi/scripts/sources.mjs';
 
@@ -347,11 +348,37 @@ test('a lost index lock blocks further index writes with an explanatory error in
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   await fs.writeFile(path.join(root, 'a.md'), '# A\n\nLOCK_TOKEN one.');
   const project = await openProject(root);
+  const readFile = fs.readFile;
+  t.after(() => { fs.readFile = readFile; });
   try {
     await project.search(['LOCK_TOKEN']);
-    await fs.rm(path.join(root, '.doktimoi', 'write.lock'), { recursive: true, force: true });
-    await new Promise(resolve => setTimeout(resolve, 6000));
     await fs.writeFile(path.join(root, 'a.md'), '# A\n\nLOCK_TOKEN two.');
+    // The lock is held only during an operation, so steal it while the search reads the changed source.
+    fs.readFile = async (file, ...rest) => {
+      if (String(file).endsWith('a.md')) {
+        fs.readFile = readFile;
+        await fs.rm(path.join(root, '.doktimoi', 'write.lock'), { recursive: true, force: true });
+        await new Promise(resolve => setTimeout(resolve, 6000));
+      }
+      return readFile(file, ...rest);
+    };
     await assert.rejects(project.search(['LOCK_TOKEN']), /Index lock lost: .*parallel hybrid searches/);
   } finally { await project.close(); }
+});
+
+test('the index lock is held per operation, so another process can sync while a project stays open', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nFIRST_TOKEN here.');
+  const first = await openProject(root);
+  try {
+    assert.equal((await first.search(['FIRST_TOKEN'])).payload.results.length, 1);
+    await fs.writeFile(path.join(root, 'b.md'), '# B\n\nSECOND_TOKEN here.');
+    const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
+    assert.equal(JSON.parse(execFileSync(process.execPath, [cli, 'sync', root], { encoding: 'utf8', timeout: 60000 })).update.changed, 1);
+    // The open project reloads the other process's manifest, and its store sees that process's index update.
+    const result = await first.search(['SECOND_TOKEN']);
+    assert.equal(result.metrics.changed, 0);
+    assert.match(result.payload.results[0].text, /SECOND_TOKEN here/);
+  } finally { await first.close(); }
 });

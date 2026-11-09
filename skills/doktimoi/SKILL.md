@@ -40,28 +40,6 @@ then approves it without a permission prompt for an indexed folder in lexical or
 hybrid mode; a chained command needs approval. If a search is denied or fails, say
 so instead of silently switching to Grep.
 
-## Limits and waits
-
-Know these before planning searches, and pass them to subagents that search:
-
-- **One lock per indexed folder.** Every search, read and index refresh runs
-  alone; parallel calls from you, subagents or other sessions queue. A lexical
-  search on a current index takes about a second. Each hybrid call loads the
-  embedding model, about 10–25 s, so five parallel hybrid calls finish only after
-  about a minute. Use lexical for names and identifiers, hybrid only for
-  paraphrases or cross-language questions, and put alternate phrasings in one call
-  (up to four `--query`) instead of separate calls.
-- **Changed files are indexed first.** After edits, the next search (or the
-  background hook) re-indexes changed files, and hybrid embeds new chunks: quick
-  for Markdown, possibly minutes for new Office, PDF or image (OCR) files. A file
-  another writer changes during a search is retried automatically.
-- **Lock errors.** A queued call waits up to 5 minutes, then fails with
-  `Index busy`; a call stalled over 60 s fails with `Index lock lost`. Retry once,
-  run fewer searches at once, and never loop with sleeps.
-- **References.** `read` takes a reference from search output. For Markdown and
-  text, any line inside a chunk works (`file.md:120`); other formats need the
-  exact reference. Never guess one for an unsearched file.
-
 Start with exact names, identifiers or keywords. Repeat `--query` for up to four
 phrasings of one intent, including the document's language; terms within a query
 are ANDed, queries are combined. For paraphrases or cross-language questions use
@@ -101,3 +79,28 @@ Mention unsupported formats or incomplete extraction when relevant; narrow the
 question or open the original file. Never read `manifest.json`, SQLite or all
 chunks into context. Token budgets are `o200k_base` estimates, not exact
 Claude/Codex counts.
+
+## Limits and waits
+
+Know these before planning searches, and pass them to subagents that search:
+
+- **One lock per indexed folder.** Every search, read and index refresh runs
+  alone; parallel calls from you, subagents or other sessions queue. A lexical
+  search on a current index takes about a second.
+- **Hybrid model stays warm.** In a folder with semantic search enabled, searches
+  run in a background server that keeps the embedding model loaded. Session start
+  in that folder warms it in the background; otherwise the first hybrid search
+  loads it (10–25 s). Later searches take a few seconds while the server runs; it
+  stops after 30 idle minutes. Use lexical for names and identifiers, hybrid only
+  for paraphrases or cross-language questions, and put alternate phrasings in one
+  call (up to four `--query`) instead of separate calls.
+- **Changed files are indexed first.** After edits, the next search (or the
+  background hook) re-indexes changed files, and hybrid embeds new chunks: quick
+  for Markdown, possibly minutes for new Office, PDF or image (OCR) files. A file
+  another writer changes during a search is retried automatically.
+- **Lock errors.** A queued call waits up to 5 minutes, then fails with
+  `Index busy`; a call stalled over 60 s fails with `Index lock lost`. Retry once,
+  run fewer searches at once, and never loop with sleeps.
+- **References.** `read` takes a reference from search output. For Markdown and
+  text, any line inside a chunk works (`file.md:120`); other formats need the
+  exact reference. Never guess one for an unsearched file.

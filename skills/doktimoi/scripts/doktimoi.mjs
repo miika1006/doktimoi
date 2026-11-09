@@ -8,6 +8,7 @@ import lockfile from 'proper-lockfile';
 import { createStore, extractSnippet } from '@tobilu/qmd';
 import { get_encoding } from 'tiktoken';
 import { convert, inventory, safePath } from './sources.mjs';
+import { serve, stopServer, viaServer } from './server.mjs';
 import { MISSING_CONVERTER, atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
 let encoder;
@@ -88,50 +89,88 @@ export function render(payload) {
   return text;
 }
 
-export async function openProject(directory) {
+/**
+ * Opens a folder's index. Each operation (sync, search, read, refresh, embed) takes the index
+ * write lock only while it runs and first reloads manifest.json if another process changed it.
+ * @param {string} directory the documentation folder
+ * @param {{ modelIdleMs?: number }} [options] how long a loaded embedding model may stay idle
+ */
+export async function openProject(directory, { modelIdleMs } = {}) {
   const root = await fs.realpath(directory);
   const converterVersion = JSON.stringify({ version: 14, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
-  for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock']) {
+  for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
     await safePath(cache, name);
   }
-  let lostLock = null;
-  const assertLock = () => { if (lostLock) throw lostLock; };
-  const release = await lockfile.lock(root, {
-    // The default throws from a timer and kills the process mid-write; instead block further index writes.
-    onCompromised: error => { lostLock = new Error(LOST_LOCK, { cause: error }); },
-    // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
-    // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
-    // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
-    realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
-    // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
-    retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
-  }).catch(error => { throw error.code === 'ELOCKED' ? new Error(LOCK_BUSY, { cause: error }) : error; });
-  const releaseLock = () => release().catch(error => { if (!lostLock) throw error; });
-  let store;
-  try {
-    const chunkDir = path.join(cache, 'chunks');
-    await fs.mkdir(chunkDir, { recursive: true });
-    for (const dir of [cache, chunkDir, path.join(cache, 'visuals'), path.join(cache, 'ocr')]) await removeOrphanTemps(dir);
-    if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
-    store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
-      collections: { docs: { path: chunkDir, pattern: '*.md' } },
-    } });
-    let manifest = JSON.parse(await ifMissing(fs.readFile(path.join(cache, 'manifest.json'), 'utf8'), '{"version":2,"files":{}}'));
-    if (manifest.version !== 2 || !manifest.files || typeof manifest.files !== 'object') throw new Error('Unsupported cache; rebuild in a fresh .doktimoi directory');
-    let metadata;
-    const indexMetadata = () => {
-      metadata = new Map();
-      for (const [source, file] of Object.entries(manifest.files)) {
-        for (const chunk of file.chunks) {
-          if (!/^[a-f0-9]{32}$/.test(chunk.id)) throw new Error('Invalid cached chunk ID');
-          if (chunk.visual && !/^\.doktimoi\/visuals\/[a-f0-9]{64}\.png$/.test(chunk.visual)) throw new Error('Invalid visual reference');
-          metadata.set(chunk.id, { ...chunk, source, hash: file.hash });
-        }
-      }
-    };
+  const chunkDir = path.join(cache, 'chunks');
+  const manifestFile = path.join(cache, 'manifest.json');
+  let held = null;
+  const assertLock = () => { if (held?.lost) throw held.lost; };
+
+  /**
+   * Runs `work` holding the index write lock, released afterwards so that a long-lived process
+   * (the search server) leaves the index to hooks and other sessions between operations.
+   */
+  async function locked(work) {
+    const current = held = { lost: null };
+    const release = await lockfile.lock(root, {
+      // The default throws from a timer and kills the process mid-write; instead block further index writes.
+      onCompromised: error => { current.lost = new Error(LOST_LOCK, { cause: error }); },
+      // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
+      // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
+      // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
+      realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
+      // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
+      retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
+    }).catch(error => { throw error.code === 'ELOCKED' ? new Error(LOCK_BUSY, { cause: error }) : error; });
+    try {
+      for (const dir of [cache, chunkDir, path.join(cache, 'visuals'), path.join(cache, 'ocr')]) await removeOrphanTemps(dir);
+      return await work();
+    } finally { await release().catch(error => { if (!current.lost) throw error; }); }
+  }
+
+  let queue = Promise.resolve();
+  /** Runs this project's operations one at a time, since they share the lock state. */
+  const exclusive = work => (queue = queue.then(work, work));
+
+  let store, manifest, manifestStamp, metadata;
+  const manifestSignature = async () => { const stat = await ifMissing(fs.stat(manifestFile, { bigint: true }), null); return stat && stamp(stat); };
+
+  /** Reloads manifest.json and chunk metadata when another process rewrote it since this process last read or wrote it. */
+  async function loadManifest() {
+    const signature = await manifestSignature();
+    if (manifest && signature === manifestStamp) return;
+    const loaded = JSON.parse(await ifMissing(fs.readFile(manifestFile, 'utf8'), '{"version":2,"files":{}}'));
+    if (loaded.version !== 2 || !loaded.files || typeof loaded.files !== 'object') throw new Error('Unsupported cache; rebuild in a fresh .doktimoi directory');
+    manifest = loaded;
+    manifestStamp = signature;
     indexMetadata();
+  }
+
+  /** Maps each cached chunk ID of the manifest to its source metadata. */
+  function indexMetadata() {
+    metadata = new Map();
+    for (const [source, file] of Object.entries(manifest.files)) {
+      for (const chunk of file.chunks) {
+        if (!/^[a-f0-9]{32}$/.test(chunk.id)) throw new Error('Invalid cached chunk ID');
+        if (chunk.visual && !/^\.doktimoi\/visuals\/[a-f0-9]{64}\.png$/.test(chunk.visual)) throw new Error('Invalid visual reference');
+        metadata.set(chunk.id, { ...chunk, source, hash: file.hash });
+      }
+    }
+  }
+
+  try {
+    await locked(async () => {
+      await fs.mkdir(chunkDir, { recursive: true });
+      if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
+      store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
+        collections: { docs: { path: chunkDir, pattern: '*.md' } },
+      } });
+      // QMD unloads the embedding model after 5 idle minutes; the search server keeps it for its own lifetime.
+      if (modelIdleMs) store.internal.llm.inactivityTimeoutMs = modelIdleMs;
+      await loadManifest();
+    });
 
     async function sync({ verify = false } = {}) {
       const started = performance.now();
@@ -177,7 +216,7 @@ export async function openProject(directory) {
       const existing = await fs.readdir(chunkDir);
       const present = new Set([...existing, ...writes.map(w => `${w.id}.md`)]);
       // Missing unchanged chunks require regeneration; never query a partial cache.
-      if ([...wanted].some(name => !present.has(name))) throw new Error('Cached chunks are missing. Remove the disposable cache and build again.');
+      if ([...wanted].some(name => !present.has(name))) throw new Error('Cached chunks are missing. Stop the search server (doktimoi.mjs stop ROOT), remove the disposable cache and build again.');
       if (changed || removed || dirty || existing.some(name => !wanted.has(name)) || !Object.keys(manifest.files).length) {
         assertLock();
         await fs.writeFile(path.join(cache, 'dirty'), 'updating\n');
@@ -201,6 +240,7 @@ export async function openProject(directory) {
         await atomicWrite(path.join(cache, 'manifest.json'), JSON.stringify(next));
       }
       manifest = next;
+      manifestStamp = await manifestSignature();
       indexMetadata();
       return { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
         unsupported: listing.unsupported, warnings: Object.entries(next.files).flatMap(([file, value]) => value.warnings.map(warning => ({ file, warning }))),
@@ -318,15 +358,22 @@ export async function openProject(directory) {
         const update = await sync();
         return { update, embeddings: await embed('Embedding failed; semantic index is incomplete') };
       },
-      async close() { try { await store.close(); } finally { await releaseLock(); } },
+      /**
+       * Loads the embedding model when the folder has a semantic index, without the index lock,
+       * so the next hybrid search skips the load; a no-op for lexical-only folders.
+       */
+      async warm() {
+        if ((await store.getStatus()).hasVectorIndex) await store.searchVector('warm', { collection: 'docs', limit: 1 });
+      },
+      async close() { await store.close(); },
     };
     for (const name of ['sync', 'search', 'read', 'refresh', 'embed']) {
       const once = api[name];
-      api[name] = (...args) => retryOnSourceChange(() => once(...args));
+      api[name] = (...args) => retryOnSourceChange(() => exclusive(() => locked(async () => { await loadManifest(); return once(...args); })));
     }
     return api;
   } catch (error) {
-    try { if (store) await store.close(); } finally { await releaseLock(); }
+    if (store) await store.close();
     throw error;
   }
 }
@@ -340,46 +387,93 @@ async function main() {
     verify: { type: 'boolean', default: false },
   } });
   const [command, root, id] = positionals;
+  if (command === 'serve' && root) return serveFolder(root);
+  if (command === 'stop' && root) return stopServer(await fs.realpath(root));
+  if (command === 'build' && root) await stopServer(await fs.realpath(root));
   if (!['build', 'sync', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
     throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
   }
-  const project = await openProject(root);
-  try {
-    let result;
-    if (command === 'build') result = await project.sync({ verify: true });
-    if (command === 'sync') result = await project.refresh();
-    if (command === 'embed') result = await project.embed();
-    if (command === 'batch') {
-      const parts = []; let bytes = 0;
-      for await (const part of process.stdin) {
-        bytes += part.length;
-        if (bytes > 1024 * 1024) throw new Error('Batch input exceeds 1 MB');
-        parts.push(part);
-      }
-      const requests = JSON.parse(Buffer.concat(parts).toString('utf8'));
-      if (!Array.isArray(requests) || requests.length < 1 || requests.length > 20) throw new Error('Batch requires 1–20 search requests');
-      const outputs = [];
-      for (const [index, request] of requests.entries()) {
-        const found = await project.search(request.queries, { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), ...request });
-        outputs.push(`Q${index + 1}\n${render(found.payload)}`);
-        if (values.metrics) console.error(JSON.stringify({ query: index + 1, ...found.metrics }));
-      }
-      result = outputs.join('\n\n');
-    }
-    if (command === 'read') {
-      const item = await project.read(id, Number(values.from), Number(values.lines), Number(values.budget));
-      result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? EXCEL_NOTE : undefined });
-    }
-    if (command === 'search') {
-      const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
-      result = render(search.payload);
-      if (values.metrics) console.error(JSON.stringify(search.metrics));
-      if (search.metrics.unsupportedCount) console.error(`Skipped ${search.metrics.unsupportedCount} unsupported files; build lists them.`);
-    }
-    console.log(typeof result === 'string' ? result : JSON.stringify(result));
-  } finally { await project.close(); }
+  const request = { command, id, values, input: command === 'batch' ? await readStdin() : undefined };
+  const served = ['search', 'read', 'batch'].includes(command)
+    && await viaServer(await fs.realpath(root), await scriptPath(), request).catch(() => null);
+  if (served?.error !== undefined) throw new Error(served.error);
+  const { output, notices } = served || await runInProcess(root, request);
+  for (const notice of notices) console.error(notice);
+  console.log(output);
 }
 
-if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await fs.realpath(fileURLToPath(import.meta.url))) {
+/**
+ * Runs one CLI command against an open project and returns its stdout text and stderr notices,
+ * so the in-process path and the search server print exactly the same.
+ */
+export async function execute(project, { command, id, values, input }) {
+  const notices = [];
+  let result;
+  if (command === 'build') result = await project.sync({ verify: true });
+  if (command === 'sync') result = await project.refresh();
+  if (command === 'embed') result = await project.embed();
+  if (command === 'batch') {
+    const requests = JSON.parse(input);
+    if (!Array.isArray(requests) || requests.length < 1 || requests.length > 20) throw new Error('Batch requires 1–20 search requests');
+    const outputs = [];
+    for (const [index, request] of requests.entries()) {
+      const found = await project.search(request.queries, { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), ...request });
+      outputs.push(`Q${index + 1}\n${render(found.payload)}`);
+      if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
+    }
+    result = outputs.join('\n\n');
+  }
+  if (command === 'read') {
+    const item = await project.read(id, Number(values.from), Number(values.lines), Number(values.budget));
+    result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? EXCEL_NOTE : undefined });
+  }
+  if (command === 'search') {
+    const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
+    result = render(search.payload);
+    if (values.metrics) notices.push(JSON.stringify(search.metrics));
+    if (search.metrics.unsupportedCount) notices.push(`Skipped ${search.metrics.unsupportedCount} unsupported files; build lists them.`);
+  }
+  if (result === undefined) throw new Error(`Unsupported command: ${command}`);
+  return { output: typeof result === 'string' ? result : JSON.stringify(result), notices };
+}
+
+/** Opens the folder in this process, runs the command and closes the folder again. */
+async function runInProcess(root, request) {
+  const project = await openProject(root);
+  try { return await execute(project, request); } finally { await project.close(); }
+}
+
+/** Runs the hidden `serve` command: the folder's warm search server, which keeps one project open. */
+async function serveFolder(directory) {
+  const root = await fs.realpath(directory);
+  const { version } = JSON.parse(await fs.readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  let project;
+  await serve(root, await scriptPath(), version, async request => {
+    if (!['search', 'read', 'batch', 'warm'].includes(request.command)) throw new Error(`Unsupported server command: ${request.command}`);
+    project ??= await openProject(root, { modelIdleMs: SERVER_MODEL_IDLE_MS });
+    if (request.command !== 'warm') return execute(project, request);
+    // Answer at once so the session-start hook never waits for the model; a failed warm-up only costs the next search the load.
+    project.warm().catch(() => {});
+    return { output: '', notices: [] };
+  }, async () => { await project?.close(); });
+}
+
+/** Reads the batch requests from stdin, refusing more than 1 MB. */
+async function readStdin() {
+  const parts = []; let bytes = 0;
+  for await (const part of process.stdin) {
+    bytes += part.length;
+    if (bytes > 1024 * 1024) throw new Error('Batch input exceeds 1 MB');
+    parts.push(part);
+  }
+  return Buffer.concat(parts).toString('utf8');
+}
+
+/** Canonical path of this script; the server records it so a different plugin version's server is ignored. */
+async function scriptPath() { return fs.realpath(fileURLToPath(import.meta.url)); }
+
+const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
+
+if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {
   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });
 }

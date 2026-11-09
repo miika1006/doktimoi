@@ -8,6 +8,7 @@
  * to hybrid search: computing them here would hold the lock and stall lexical
  * searches for minutes.
  */
+import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { indexedRoot, insideIndexData, isDirectory, resolvePath, runHook } from './common.mjs';
@@ -30,7 +31,23 @@ async function refresh(root, pluginRoot) {
   try { await project.sync(); } finally { await project.close(); }
 }
 
+/**
+ * Starts the folder's search server if none runs and asks it to load the embedding model in the
+ * background, so the session's first hybrid search is fast. Failures are ignored: searches then
+ * start the server or run in-process themselves.
+ */
+export async function warmServer(root, pluginRoot) {
+  const scripts = path.join(pluginRoot, 'skills', 'doktimoi', 'scripts');
+  if (!isDirectory(path.join(scripts, '..', 'node_modules'))) return;
+  try {
+    const { viaServer } = await import(pathToFileURL(path.join(scripts, 'server.mjs')).href);
+    await viaServer(fs.realpathSync(root), fs.realpathSync(path.join(scripts, 'doktimoi.mjs')), { command: 'warm' });
+  } catch { /* optional: the first search starts the server instead */ }
+}
+
 runHook(import.meta.url, 'doktimoi sync hook', async (input, pluginRoot) => {
   const root = targetRoot(input);
-  if (root) await refresh(root, pluginRoot);
+  if (!root) return;
+  try { await refresh(root, pluginRoot); }
+  finally { if (input.hook_event_name === 'SessionStart') await warmServer(root, pluginRoot); }
 });

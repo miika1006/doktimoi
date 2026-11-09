@@ -75,7 +75,9 @@ The Claude Code plugin also ships hooks:
 - `SessionStart` and `PostToolUse` (Edit/Write) refresh an existing index's changed
   files in the background. They never create an index and leave embeddings to
   hybrid search, so the lock is held briefly. A search that starts during a
-  refresh waits for it.
+  refresh waits for it. In a folder with semantic search enabled, `SessionStart`
+  also starts the search server (below) and has it load the embedding model in the
+  background.
 
 With a standalone skill installation, use `/doktimoi` in Claude Code or `$doktimoi`
 in Codex. If the skill does not appear, restart the assistant.
@@ -90,6 +92,14 @@ locally; only selected passages enter your assistant's normal model context.
 Keyword search needs no AI model. Optional semantic search downloads and runs a
 local embedding model. Setup explains the tradeoffs and asks whether to enable
 it. Source documents are not rewritten.
+
+In a folder with semantic search enabled, `search` and `read` start a hidden
+background server for that folder and send their requests to it over a local
+named pipe or Unix socket, authenticated by a random token in
+`.doktimoi/server.json`. The server keeps the embedding model loaded, so only the
+first hybrid search waits for it; it takes the index lock per request and exits
+after 30 idle minutes. If the server is unavailable, the command runs in-process
+as before. Keyword-only folders never start a server.
 
 OCR downloads English/Finnish recognition data on first use and runs locally.
 Legacy `.doc` and `.xls` image conversion also require LibreOffice. OCR can misread text; inspect

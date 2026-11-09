@@ -131,4 +131,7 @@ it costs disk, not context. Searches rescan metadata, reconvert only changed
 files, update embeddings when a semantic index exists and fail rather than return
 stale evidence; a per-folder lock serializes them. `build` rehashes every source.
 The cache is disposable: if it is incompatible or incomplete, rebuild it while
-preserving unrelated user files. Old v1 `matrix.json`/`.ai` files are ignored.
+preserving unrelated user files. A folder with semantic search may have a
+background search server holding `index.sqlite` open; run
+`node "<skill>/scripts/doktimoi.mjs" stop "<folder>"` before deleting the cache
+(`build` stops it itself). Old v1 `matrix.json`/`.ai` files are ignored.
