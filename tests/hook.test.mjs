@@ -38,6 +38,17 @@ test('approves a single lexical search, read or status against an indexed folder
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" status .` }, cwd: indexed }, pluginRoot)));
 });
 
+test('approves commands on a path inside an indexed folder and the --path and --exclude filters', async t => {
+  const { indexed, plain } = await folders(t);
+  const sub = path.join(indexed, 'sub');
+  assert.ok(allowed(decide(bash(`node "${script}" search "${sub}" --query x --mode hybrid`, plain), pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" read "${sub}" "a.md:1-5"`, plain), pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" status sub`, indexed), pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query x --path sub --path "Kaaviot/a b" --exclude sub/own.md`, plain), pluginRoot)));
+  assert.equal(decide(bash(`node "${script}" search "${path.join(plain, 'sub')}" --query x`, plain), pluginRoot), null);
+  assert.equal(decide(bash(`node "${script}" build "${sub}"`, plain), pluginRoot), null);
+});
+
 test('approves the usage text without a folder and nothing more on the line', async t => {
   const { indexed } = await folders(t);
   for (const args of ['help', '--help', '-h', 'search --help', 'read -h', 'disable-semantic --help']) {
@@ -77,7 +88,6 @@ test('leaves everything else to the normal permission flow', async t => {
   const { indexed, plain } = await folders(t);
   const rejected = [
     `node "${script}" search "${plain}" --query x`,
-    `node "${script}" search "${path.join(indexed, 'sub')}" --query x`,
     `node "${script}" build "${indexed}"`,
     `node "${script}" embed "${indexed}"`,
     `node "${script}" search "${indexed}" --query x --mode semantic`,

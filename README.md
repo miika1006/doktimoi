@@ -71,7 +71,7 @@ The Claude Code plugin also ships hooks:
 
 - `PreToolUse` approves the skill's own `search`, `read` and `status` commands without a
   permission prompt when they run as a single command in lexical or hybrid mode
-  against a folder that already has a `.doktimoi` index (search may refresh that
+  on a folder that already has a `.doktimoi` index, or a path inside one (search may refresh that
   index; hybrid only updates existing embeddings and fails if semantic search was
   never enabled), and `help`/`--help`, which prints the usage text and touches no
   folder. Other commands, `build`, `embed`, `disable-semantic` and unindexed folders go
@@ -113,8 +113,16 @@ the linked image for critical facts and diagrams. Complex chart/diagram/layout c
 formulas use cached results. Token counts are estimates.
 
 `read` expands a search result, or for Markdown and text reads a line range
-(`plan.md:1-400`) as the chunks it overlaps, within the token budget, ending with
-the command that continues a cut read.
+(`plan.md:1-400`) within the token budget. Its output names the source lines it
+shows, and a cut read ends with the line range that continues it. One call's
+output is capped at 6000 tokens and about 20 KB so that it stays inline in Claude
+Code.
+
+`search` and `read` also take a folder or file inside the indexed folder: they use
+that index and search only that part. Only `build` creates an index. `--path` and
+`--exclude` narrow a search to, or away from, folders and files. A keyword search
+whose terms never occur together returns passages matching some of them, labeled
+as such.
 
 Search checks file metadata and verifies returned sources against their hashes;
 `--verify` rehashes every source. A tiny folder may be cheaper to read directly.

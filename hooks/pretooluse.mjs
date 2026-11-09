@@ -3,7 +3,7 @@
  * Claude Code PreToolUse hook for doktimoi.
  *
  * Auto-approves doktimoi's usage text (`help`, `--help`) and its own `search`, `read` and
- * `status` commands against an already indexed folder, so retrieval never stalls on a
+ * `status` commands on an already indexed folder or a path inside one, so retrieval never stalls on a
  * permission prompt and silently falls back to Grep. Hybrid mode is included: it only updates existing
  * embeddings and refuses to run when no semantic index was enabled. Adds a
  * doktimoi reminder to content lookups that bypass it inside an indexed folder:
@@ -44,7 +44,8 @@ function approveDoktimoiCommand(input, pluginRoot) {
   const options = parseOptions(rest);
   if (!options || !['lexical', 'hybrid'].includes(options.values.mode)) return null;
   if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;
-  if (!indexedRoot(resolvePath(root, input.cwd), true)) return null;
+  // A path inside an indexed folder uses that folder's index; the CLI never creates one outside build.
+  if (!indexedRoot(resolvePath(root, input.cwd))) return null;
   return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder`, ...updated });
 }
 
@@ -121,6 +122,7 @@ function parseOptions(args) {
   try {
     return parseArgs({ args, allowPositionals: true, strict: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
+      path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, from: { type: 'string' }, lines: { type: 'string' },
       verify: { type: 'boolean' },
     } });

@@ -22,6 +22,40 @@ export function tokens(text) {
 
 export const reference = item => `${item.source}:${item.location.replace(/^lines:/, '')}`;
 
+/** Tells whether output stays within the token budget and the byte cap that keeps it inline in Claude Code. */
+const fits = (text, budget, maxBytes) => tokens(text) <= budget && Buffer.byteLength(text) <= maxBytes;
+
+/** Cuts text to at most `maxTokens` tokens and `maxBytes` UTF-8 bytes, dropping a split last character. */
+function truncate(text, maxTokens, maxBytes) {
+  const byTokens = new TextDecoder().decode(encoder.decode(encoder.encode(text, [], []).slice(0, maxTokens)));
+  return Buffer.from(byTokens).subarray(0, Math.max(0, maxBytes)).toString('utf8').replace(/\uFFFD$/, '');
+}
+
+/**
+ * Narrows a line-located item to source lines start..end, kept within the lines it holds.
+ * @example clipLines({ location: 'lines:5-13', text }, [8, 99]) // { location: 'lines:8-13', text: lines 8-13 }
+ */
+function clipLines(item, [start, end]) {
+  const [, first, last] = /^lines:(\d+)-(\d+)$/.exec(item.location).map(Number);
+  const [low, high] = [Math.max(start, first), Math.min(end, last)];
+  return { ...item, location: `lines:${low}-${high}`, text: item.text.split('\n').slice(low - first, high - first + 1).join('\n') };
+}
+
+/**
+ * Collects the terms of all queries for the OR fallback of a lexical search that found
+ * nothing; one-letter terms and duplicates are dropped, at most eight terms are kept.
+ * @example fallbackTerms(['ABC XYZ analyysi 5–7 vk']) // ['ABC', 'XYZ', 'analyysi', 'vk']
+ */
+function fallbackTerms(queries) {
+  // Terms negated with a leading - stay excluded: the lookbehinds skip them, as QMD's AND search does.
+  const terms = queries.flatMap(query => query.match(/(?<![\p{L}\p{N}_])(?<!(?:^|\s)-)[\p{L}\p{N}_]+/gu) ?? []).filter(term => term.length > 1);
+  const unique = [...new Map(terms.map(term => [term.toLowerCase(), term])).values()];
+  return unique.length > 1 ? unique.slice(0, 8) : [];
+}
+
+/** Tells whether a root-relative source path is the prefix itself or lies under that folder. */
+const under = (source, prefix) => source === prefix || source.startsWith(`${prefix}/`);
+
 /** Creates the retryable error for a source written by someone else while it was being read. */
 function sourceChanged(message) { return Object.assign(new Error(message), { code: SOURCE_CHANGED }); }
 
@@ -42,6 +76,12 @@ async function retryOnSourceChange(run) {
   }
 }
 
+// Claude Code moves tool output above ~25 KB into a file the agent must read separately.
+const MAX_OUTPUT_BYTES = 20000;
+const MAX_BUDGET = 6000;
+const BUDGET_CAPPED = `--budget capped at ${MAX_BUDGET} tokens per call.`;
+const NO_MATCH_HINT = 'Lexical search ANDs the terms of a query: use fewer or rarer terms, one --query per phrasing, or --mode hybrid if semantic search is on.';
+const OR_FALLBACK = 'No passage has every term of a query; these match some terms. Use fewer or rarer terms, or one --query per phrasing.';
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
 const SOURCE_CHANGE_ATTEMPTS = 6;
 const LOCK_BUSY = 'Index busy: other doktimoi processes (parallel searches, hybrid model loading or a background index update) held the index lock for over 5 minutes. Run fewer searches at once, or retry later.';
@@ -251,7 +291,7 @@ export async function openProject(directory, { modelIdleMs } = {}) {
      * Resolves a read reference to chunks. A chunk ID or exact reference gives that chunk. For
      * `lines:a-b` sources, `source:N` gives the chunk containing line N, else the next chunk after
      * it, else the last one before it; `source:N-M` gives every chunk overlapping N..M in order
-     * (as `source:N` when none does). Line chunks carry their `first` and `last` lines.
+     * with `range` [N, M] set (as `source:N` when none does). Line chunks carry their `first` and `last` lines.
      * @example chunksForReference('Raportointi.md:1-60') // [{ id, first: 1, last: 24 }, { id, first: 26, last: 58 }]
      */
     function chunksForReference(ref) {
@@ -259,13 +299,13 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       const entries = [...metadata.entries()];
       const exact = entries.find(([, item]) => reference(item) === ref);
       if (exact) return [{ id: exact[0] }];
-      const [, source, start, end = start] = /^(.+):(\d+)(?:-(\d+))?$/.exec(ref) ?? [];
+      const [, source, start, end = start, ranged] = /^(.+):(\d+)(?:-((\d+)))?$/.exec(ref) ?? [];
       const chunks = entries.flatMap(([id, item]) => {
         const [, first, last] = item.source === source && /^lines:(\d+)-(\d+)$/.exec(item.location) || [];
         return first ? [{ id, first: Number(first), last: Number(last) }] : [];
       }).sort((a, b) => a.first - b.first);
       const overlapping = chunks.filter(chunk => chunk.first <= Number(end) && Number(start) <= chunk.last);
-      if (overlapping.length) return overlapping;
+      if (overlapping.length) return ranged ? Object.assign(overlapping, { range: [Number(start), Number(end)] }) : overlapping;
       const near = chunks.find(chunk => chunk.first > Number(start)) ?? chunks.at(-1);
       return near ? [near] : [];
     }
@@ -300,6 +340,47 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       return { id, source: entry.source, location: entry.location, heading: entry.heading, visual: entry.visual, warning, text: body.slice(body.indexOf('\n\n') + 2) };
     }
 
+    /**
+     * Ranks chunks holding any of the terms by BM25, so chunks with more and rarer terms come
+     * first. QMD's lexical search only ANDs terms, so this queries its FTS table directly with the
+     * same column weights; terms hold only letters, digits and _ and cannot inject FTS syntax.
+     */
+    function searchAnyTerm(terms, limit) {
+      return store.internal.db.prepare(`WITH matches AS (
+          SELECT rowid, bm25(documents_fts, 1.5, 4.0, 1.0) AS score FROM documents_fts WHERE documents_fts MATCH ? ORDER BY score LIMIT ?)
+        SELECT 'qmd://' || d.collection || '/' || d.path AS filepath, d.collection || '/' || d.path AS displayPath
+        FROM matches JOIN documents d ON d.id = matches.rowid WHERE d.active = 1 AND d.collection = 'docs' ORDER BY matches.score`)
+        .all(terms.map(term => `"${term.toLowerCase()}"*`).join(' OR '), limit);
+    }
+
+    /** Returns the source file of a QMD search row, whose path is the chunk ID. */
+    const sourceOf = row => metadata.get(path.posix.basename(row.displayPath, '.md'))?.source;
+
+    /**
+     * Builds the source predicate for a search, or null without filters. A `paths` prefix that
+     * matches no indexed source is an error, so a typo does not look like missing evidence.
+     */
+    function sourceFilter(scope, paths, exclude) {
+      const [include, skip] = [paths, exclude].map(list => list.map(prefixOf));
+      const sources = Object.keys(manifest.files);
+      const unknown = include.find(prefix => !sources.some(source => under(source, prefix)));
+      if (unknown) throw new Error(`No indexed source under --path ${unknown}`);
+      if (!scope && !include.length && !skip.length) return null;
+      return source => !!source && (!scope || under(source, scope))
+        && (!include.length || include.some(prefix => under(source, prefix))) && !skip.some(prefix => under(source, prefix));
+    }
+
+    /**
+     * Normalizes a --path or --exclude value to a root-relative POSIX prefix.
+     * @example prefixOf('C:\\docs\\Plans\\') // 'Plans' when the index root is C:\docs
+     */
+    function prefixOf(value) {
+      const relative = path.isAbsolute(value) ? path.relative(root, value) : String(value);
+      const prefix = relative.replaceAll('\\', '/').replace(/^(\.\/)+/, '').replace(/\/+$/, '');
+      if (!prefix || prefix === '.' || prefix.split('/').includes('..')) throw new Error(`--path and --exclude take a folder or file inside ${root}: ${value}`);
+      return prefix;
+    }
+
     async function embed(failure) {
       const embeddings = await store.embed();
       if (embeddings.errors) throw new Error(failure);
@@ -308,24 +389,39 @@ export async function openProject(directory, { modelIdleMs } = {}) {
 
     const api = {
       sync,
-      async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false } = {}) {
+      /**
+       * Searches the index. `scope`, `paths` and `exclude` are root-relative (or absolute) folder or
+       * file prefixes; `maxBytes` caps the rendered results so batch searches can share one output.
+       */
+      async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
         if (!['lexical', 'hybrid'].includes(mode)) throw new Error('mode must be lexical or hybrid');
         if (!Array.isArray(queries) || !queries.length || queries.length > 4 || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
         if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
+        budget = Math.min(budget, MAX_BUDGET);
         const update = await sync({ verify });
         const started = performance.now();
+        const wanted = sourceFilter(scope, paths, exclude);
+        // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
+        // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
+        const candidates = wanted ? 500 : 20;
+        const lexical = async query => (await store.searchLex(query, { collection: 'docs', limit: candidates })).filter(row => !wanted || wanted(sourceOf(row)));
         if (mode !== 'lexical') {
           const health = await store.getStatus();
           if (!health.hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
           if (health.needsEmbedding) await embed('Incremental embedding failed; use lexical search or retry');
         }
         const lists = [];
-        for (const query of queries) lists.push(await store.searchLex(query, { collection: 'docs', limit: 20 }));
+        for (const query of queries) lists.push(await lexical(query));
+        let note;
         if (mode !== 'lexical') {
-          const vector = await store.searchVector(queries[0], { collection: 'docs', limit: 20 });
+          const vector = await store.searchVector(queries[0], { collection: 'docs', limit: candidates });
           // QMD can log embedding failures and return []; do not label that a successful hybrid search.
           if (!vector.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
-          lists.push(vector);
+          lists.push(vector.filter(row => !wanted || wanted(sourceOf(row))));
+        } else if (lists.every(list => !list.length)) {
+          const terms = fallbackTerms(queries);
+          lists.push(terms.length ? searchAnyTerm(terms, candidates).filter(row => !wanted || wanted(sourceOf(row))) : []);
+          note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
         }
         const fused = new Map();
         for (const list of lists) list.forEach((row, rank) => {
@@ -340,46 +436,60 @@ export async function openProject(directory, { modelIdleMs } = {}) {
           const id = path.posix.basename(row.displayPath, '.md');
           const item = await evidence(id);
           let candidate = item;
-          if (tokens(render({ results: [...results, candidate] })) > budget - 100) {
+          const fitting = list => fits(render({ results: list }), budget - 100, maxBytes - 400);
+          if (!fitting([...results, candidate])) {
             candidate = { ...item, text: excerpt(item.text, queries.join(' '), 600, store.internal.db), excerpt: true };
           }
-          if (tokens(render({ results: [...results, candidate] })) > budget - 100) { omitted++; continue; }
+          if (!fitting([...results, candidate])) { omitted++; continue; }
           results.push(candidate);
         }
         const payload = { results, more: omitted > 0 || found.length > results.length };
-        if (results.some(r => /\.xlsx?$/i.test(r.source))) payload.note = EXCEL_NOTE;
-        if (update.warnings.length) payload.note = [payload.note, `Extraction may be incomplete (${update.warnings.length} warnings); run build for details.`].filter(Boolean).join(' ');
+        payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note].filter(Boolean).join(' ') || undefined;
         return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
           resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
           unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
       },
       /**
-       * Returns the text of a chunk ID or reference (see chunksForReference) from line `from`, at
-       * most `lines` lines (default 40 for one chunk, all for several) and `budget` tokens. When a
-       * line reference read leaves later lines out, `continuation` says how to read on.
+       * Returns the text of a chunk ID or reference (see chunksForReference) from line `from` of
+       * that text, at most `lines` lines (default 40 for a chunk, all for a line range) and `budget`
+       * tokens. A line range returns exactly its lines within the chunks it overlaps. For line
+       * sources the result's location is the source lines shown, and when later lines are left out
+       * `continuation` names the line range that reads on.
        */
       async read(ref, from = 1, lines, budget = 1600) {
         if (!Number.isInteger(from) || from < 1 || (lines !== undefined && (!Number.isInteger(lines) || lines < 1))) throw new Error('from >= 1; lines >= 1');
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
+        budget = Math.min(budget, MAX_BUDGET);
         await sync();
         const chunks = chunksForReference(ref);
         if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
-        const item = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
-        lines ??= chunks.length === 1 ? 40 : Infinity;
+        const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
+        const item = chunks.range ? clipLines(joined, chunks.range) : joined;
+        lines ??= chunks.range ? Infinity : 40;
         const all = item.text.split('\n');
         if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
         const result = { ...item, text: all.slice(from - 1, from - 1 + lines).join('\n'), excerpt: from > 1 || from + lines - 1 < all.length };
         let cut = false;
-        if (tokens(render({ results: [result] })) > budget - 50) {
+        if (!fits(render({ results: [result] }), budget - 50, MAX_OUTPUT_BYTES - 500)) {
           result.excerpt = cut = true;
-          const available = budget - tokens(render({ results: [{ ...result, text: '' }] })) - 50;
+          const empty = render({ results: [{ ...result, text: '' }] });
+          const available = budget - tokens(empty) - 50;
           if (available < 1) throw new Error('Source reference exceeds budget; increase --budget');
-          result.text = new TextDecoder().decode(encoder.decode(encoder.encode(result.text, [], []).slice(0, available))).replace(/\uFFFD$/, '');
+          result.text = truncate(result.text, available, MAX_OUTPUT_BYTES - 500 - Buffer.byteLength(empty));
         }
-        // A cut last line is only partly shown, so the continuation repeats it.
-        const shown = result.text.split('\n').length - (cut ? 1 : 0);
-        if (chunks[0].first && from + shown <= all.length) {
-          result.continuation = shown ? `Continue: read "${reference(result)}" --from ${from + shown}` : 'Line exceeds budget; increase --budget';
+        const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
+        if (!span) return result;
+        // A cut last line is only partly shown: the location includes it and the continuation repeats it.
+        const first = Number(span[1]) + from - 1;
+        const shownLines = result.text.split('\n').length;
+        const complete = shownLines - (cut ? 1 : 0);
+        result.location = `lines:${first}-${first + shownLines - 1}`;
+        if (from + complete <= all.length) {
+          const next = first + complete;
+          const continueFrom = line => `Continue: read "${item.source}:${line}-${span[2]}"`;
+          if (complete) result.continuation = continueFrom(next);
+          else if (budget < MAX_BUDGET) result.continuation = 'Line exceeds budget; increase --budget';
+          else result.continuation = `Line ${next} exceeds the per-call output cap and is cut.${next < Number(span[2]) ? ` ${continueFrom(next + 1)}` : ''}`;
         }
         return result;
       },
@@ -422,20 +532,37 @@ async function main() {
   // Help must not open the index, take the lock or start a server.
   if (values.help || command === 'help') return console.log(USAGE);
   if (command === 'serve' && root) return serveFolder(root);
-  if (command === 'stop' && root) return stopServer(await fs.realpath(root));
-  if (command === 'status' && root) return console.log(await status(await fs.realpath(root)));
-  if (command === 'disable-semantic' && root) return console.log(await disableSemantic(await fs.realpath(root)));
-  if (command === 'build' && root) await stopServer(await fs.realpath(root));
-  if (!['build', 'sync', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
+  if (!CLI_COMMANDS.includes(command) || !root) {
     throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]; run with --help for details');
   }
-  const request = { command, id, values, input: command === 'batch' ? await readStdin() : undefined };
+  const folder = await fs.realpath(root).catch(() => { throw new Error(`Folder not found: ${root}`); });
+  if (command === 'build') await stopServer(folder);
+  const index = command === 'build' ? { root: folder } : await findIndex(folder);
+  if (command === 'status') return console.log(index ? await status(index.root, index.scope) : `No doktimoi index in ${folder} or its parent folders.`);
+  if (command === 'stop') return index && stopServer(index.root);
+  if (!index) throw new Error(`No doktimoi index in ${folder} or its parent folders. Set one up first (the doktimoi skill's setup guide), or run: node doktimoi.mjs build "${folder}"`);
+  if (command === 'disable-semantic') return console.log(await disableSemantic(index.root));
+  const request = { command, id, values: index.scope ? { ...values, scope: index.scope } : values, input: command === 'batch' ? await readStdin() : undefined };
   const served = ['search', 'read', 'batch'].includes(command)
-    && await viaServer(await fs.realpath(root), await scriptPath(), request).catch(() => null);
+    && await viaServer(index.root, await scriptPath(), request).catch(() => null);
   if (served?.error !== undefined) throw new Error(served.error);
-  const { output, notices } = served || await runInProcess(root, request);
+  const { output, notices } = served || await runInProcess(index.root, request);
   for (const notice of notices) console.error(notice);
   console.log(output);
+}
+
+/**
+ * Finds the indexed folder for a command: the folder itself or its nearest ancestor with a
+ * `.doktimoi` index. `scope` is the given folder or file relative to that index, when it is inside it.
+ * @example await findIndex('C:\\docs\\Plans') // { root: 'C:\\docs', scope: 'Plans' }
+ */
+async function findIndex(folder) {
+  for (let dir = folder; ; dir = path.dirname(dir)) {
+    if ((await fs.stat(path.join(dir, '.doktimoi')).catch(() => null))?.isDirectory()) {
+      return { root: dir, scope: path.relative(dir, folder).split(path.sep).join('/') || undefined };
+    }
+    if (path.dirname(dir) === dir) return null;
+  }
 }
 
 /** Parses the CLI arguments; an unknown option error points to --help. */
@@ -443,6 +570,7 @@ function parseCommandLine() {
   try {
     return parseArgs({ allowPositionals: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
+      path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string', default: '1600' }, limit: { type: 'string', default: '4' },
       from: { type: 'string', default: '1' }, lines: { type: 'string' },
       metrics: { type: 'boolean', default: false },
@@ -466,8 +594,11 @@ export async function execute(project, { command, id, values, input }) {
     const requests = JSON.parse(input);
     if (!Array.isArray(requests) || requests.length < 1 || requests.length > 20) throw new Error('Batch requires 1–20 search requests');
     const outputs = [];
+    // The searches share one call's output cap.
+    const share = { budget: Math.max(256, Math.floor(MAX_BUDGET / requests.length)), maxBytes: Math.floor(MAX_OUTPUT_BYTES / requests.length) };
     for (const [index, request] of requests.entries()) {
-      const found = await project.search(request.queries, { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), ...request });
+      const options = { ...searchOptions(values), ...request };
+      const found = await project.search(request.queries, { ...options, budget: Math.min(options.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
       outputs.push(`Q${index + 1}\n${render(found.payload)}`);
       if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
     }
@@ -475,31 +606,40 @@ export async function execute(project, { command, id, values, input }) {
   }
   if (command === 'read') {
     const item = await project.read(id, Number(values.from), values.lines === undefined ? undefined : Number(values.lines), Number(values.budget));
-    result = render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, item.continuation].filter(Boolean).join(' ') || undefined });
+    result = render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, capNote(values), item.continuation].filter(Boolean).join(' ') || undefined });
   }
   if (command === 'search') {
-    const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
-    result = render(search.payload);
+    const search = await project.search(values.query ?? [], { ...searchOptions(values), verify: values.verify, scope: values.scope });
+    result = render({ ...search.payload, note: [search.payload.note, capNote(values)].filter(Boolean).join(' ') || undefined });
     if (values.metrics) notices.push(JSON.stringify(search.metrics));
-    if (search.metrics.unsupportedCount) notices.push(`Skipped ${search.metrics.unsupportedCount} unsupported files; build lists them.`);
   }
   if (result === undefined) throw new Error(`Unsupported command: ${command}`);
   return { output: typeof result === 'string' ? result : JSON.stringify(result), notices };
 }
 
+/** Maps the CLI search options to search() options. */
+function searchOptions(values) {
+  return { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), paths: values.path ?? [], exclude: values.exclude ?? [] };
+}
+
+/** Says that a --budget above the per-call cap was lowered, so the agent knows why output is shorter. */
+const capNote = values => Number(values.budget) > MAX_BUDGET ? BUDGET_CAPPED : undefined;
+
 /**
  * Describes the folder's index, lock and background server in a few lines without changing
  * anything: no lock, sync, server start or model load.
+ * `scope` names the folder asked about when it lies inside the indexed `root`.
  * @example await status('C:\\docs') // 'Index: 12 sources, 340 chunks, 0 extraction warnings, updated 2026-11-09T10:12:03+02:00\n…'
  */
-async function status(root) {
+async function status(root, scope) {
   const cache = path.join(root, '.doktimoi');
   const manifestFile = path.join(cache, 'manifest.json');
   const manifestStat = await ifMissing(fs.stat(manifestFile), null);
   if (!manifestStat) return `No doktimoi index in ${root}.`;
   const files = Object.values(JSON.parse(await fs.readFile(manifestFile, 'utf8')).files ?? {});
   const count = key => files.reduce((sum, file) => sum + (file[key]?.length ?? 0), 0);
-  const lines = [`Index: ${files.length} sources, ${count('chunks')} chunks, ${count('warnings')} extraction warnings, updated ${localTime(manifestStat.mtime)}`];
+  const lines = scope ? [`Indexed folder: ${root} (${scope} is inside it)`] : [];
+  lines.push(`Index: ${files.length} sources, ${count('chunks')} chunks, ${count('warnings')} extraction warnings, updated ${localTime(manifestStat.mtime)}`);
   lines.push(semanticLine(root));
   if (await ifMissing(fs.stat(path.join(cache, 'dirty')), false)) lines.push('Interrupted update: the next search or sync redoes it');
   lines.push(await lockLine(path.join(cache, 'write.lock')));
@@ -511,7 +651,7 @@ async function status(root) {
 function semanticLine(root) {
   if (!hasSemanticIndex(root)) return 'Semantic search: off (keyword only)';
   const waiting = unembeddedChunks(root);
-  return `Semantic search: on${waiting ? `, ${waiting} chunks not embedded yet (the next hybrid search or sync embeds them)` : ''}`;
+  return `Semantic search: on${waiting ? `, ${waiting} chunks not embedded yet (changed since the last hybrid search; the next hybrid search or sync embeds them)` : ''}`;
 }
 
 /** Describes the index write lock: free, held for how long, or stale from a stopped process. */
@@ -600,14 +740,18 @@ async function readStdin() {
 async function scriptPath() { return fs.realpath(fileURLToPath(import.meta.url)); }
 
 const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
+const CLI_COMMANDS = ['build', 'sync', 'search', 'batch', 'read', 'embed', 'status', 'disable-semantic', 'stop'];
 const USAGE = `Usage: node doktimoi.mjs COMMAND ROOT [REFERENCE] [options]
 
+ROOT is the indexed folder or a folder or file inside it: search then covers only that
+part, and references stay relative to the indexed folder. Only build creates an index.
+
 Commands:
-  search ROOT --query TERMS  Search the indexed folder ROOT; prints cited source passages
+  search ROOT --query TERMS  Search the index; prints cited source passages
   read ROOT REFERENCE        Print source text by reference (see References)
   batch ROOT                 Run 1-20 searches from a JSON array on stdin: [{"queries": ["terms"]}]
   status ROOT                Show index, lock and background server state; changes nothing
-  build ROOT                 Rehash all sources and update the index (creates it if missing)
+  build ROOT                 Rehash all sources and update the index (creates it in ROOT if missing)
   sync ROOT                  Index changed sources; updates embeddings if semantic search is on
   embed ROOT                 Turn semantic search on: downloads a local model (ask the user first)
   disable-semantic ROOT      Remove embeddings; keyword search keeps working
@@ -615,20 +759,27 @@ Commands:
   help                       Show this text (also --help or -h with any command)
 
 Options:
-  --query TERMS    search: 1-4 single-line queries (repeat the option); terms in a query are ANDed
+  --query TERMS    search: 1-4 single-line queries (repeat the option); terms in a query are
+                   ANDed; when no passage has them all, results matching some terms are labeled
   --mode MODE      lexical (default) or hybrid (needs embed; first query is also the semantic one)
-  --budget N       output tokens, at least 256 (default 1600)
+  --path PREFIX    search, batch: only sources under this folder or file (repeatable), relative
+                   to the indexed folder like references
+  --exclude PREFIX search, batch: leave out sources under this folder or file (repeatable)
+  --budget N       output tokens, 256-${MAX_BUDGET} (default 1600); larger values are capped so one
+                   call's output stays inline; batch splits ${MAX_BUDGET} across its searches
   --limit N        search: results, 1-20 (default 4)
-  --from N         read: first line of the returned text (default 1)
-  --lines N        read: lines to return (default 40 for one chunk, all for a range of chunks)
+  --from N         read: start at line N of the returned text, where line 1 is the first
+                   source line of the reference's range (default 1)
+  --lines N        read: lines to return (default 40 for a search reference, all for a range)
   --verify         search: rehash every source instead of trusting timestamps
   --metrics        search, batch: print timings and token counts to stderr
 
 References:
   file.md:12-40    a reference copied from search output, or a chunk ID: that chunk
   file.md:N        Markdown, text, CSV: the chunk containing line N (or the next one)
-  file.md:N-M      Markdown, text, CSV: all chunks overlapping lines N-M, joined and cut to
-                   --budget; a cut read ends with the command that continues it
+  file.md:N-M      Markdown, text, CSV: source lines N-M (within indexed chunks), cut to --budget
+  Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
+  with [Continue: read "file.md:65-120"], the range that reads on.
   Other formats (PDF pages, sheets, slides, OCR images) need the exact reference.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {

@@ -43,9 +43,16 @@ then approves it without a permission prompt for an indexed folder in lexical or
 hybrid mode; a chained command needs approval. If a search is denied or fails, say
 so instead of silently switching to Grep.
 
+`<folder>` may be the indexed folder or a folder or file inside it: search then
+covers only that part, and references stay relative to the indexed folder. Only
+`build` creates an index. `--path PREFIX` keeps and `--exclude PREFIX` drops sources
+under a folder or file (repeatable, written like references).
+
 Start with exact names, identifiers or keywords. Repeat `--query` for up to four
 phrasings of one intent, including the document's language; terms within a query
-are ANDed, queries are combined. For paraphrases or cross-language questions use
+are ANDed, queries are combined. When no passage has every term, results matching
+some terms are returned and labeled; drop exact numbers and rare words that may be
+phrased differently. For paraphrases or cross-language questions use
 `--mode hybrid` when embeddings are enabled; its first query is also the semantic
 query, so put the natural-language question first. A ranking score is not confidence.
 
@@ -61,7 +68,8 @@ text and CSV lines, Word/HTML **extracted** lines, PDF pages, Excel sheets/rows/
 slides/notes, structured-data paths, draw.io cells, Mermaid lines, SVG text or OCR
 images. OCR is fallible: open the `[Visual: ...]` path (relative to the folder) for
 critical image facts, diagrams or unclear OCR. When missing evidence matters, check
-the extraction warnings in `build` output. Expand an incomplete excerpt or read
+the extraction warnings in `build` output (`status` counts them; search shows only
+those of returned sources). Expand an incomplete excerpt or read
 a whole section:
 
 ```text
@@ -69,13 +77,14 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:20-45"
 node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:1-400" --budget 4000
 ```
 
-A reference copied from search output returns that chunk (40 lines; `--from` and
-`--lines` page within it). For Markdown and text, `path.md:N-M` returns every
-chunk overlapping those lines, joined; a cut read ends with the exact `read ...
---from` command that continues it, so a whole file takes a few calls. Prefer this
-over whole-file reads of indexed files. Reads obey `--budget` (default 1600);
-raise it for a large indivisible paragraph or table. `--help` prints all commands
-and options. Expand conditions and related sections before interpreting an excerpt. Cite
+A reference copied from search output returns that chunk (up to 40 lines). For
+Markdown and text, `path.md:N-M` returns source lines N-M and `path.md:N` the
+chunk at or after line N. Read output starts with
+the source lines it actually shows (`path.md:20-64`); count edit lines from that
+first line. A cut read ends with `[Continue: read "path.md:65-400"]`, the range
+that reads on, so a whole file takes a few calls. Prefer this over whole-file
+reads of indexed files. `--help` prints all commands and options. Expand
+conditions and related sections before interpreting an excerpt. Cite
 original files, not `.doktimoi/chunks`. Preserve qualifiers, negation, units and
 versions. Excel formula results are cached, not recalculated.
 
@@ -107,10 +116,13 @@ Know these before planning searches, and pass them to subagents that search:
   background hook) re-indexes changed files, and hybrid embeds new chunks: quick
   for Markdown, possibly minutes for new Office, PDF or image (OCR) files. A file
   another writer changes during a search is retried automatically.
+- **Output per call.** `--budget` (default 1600) is capped at 6000 tokens and
+  about 20 KB per call, so output stays inline in Claude Code. Page larger reads
+  with the `Continue` range instead of raising it.
 - **Lock errors.** A queued call waits up to 5 minutes, then fails with
   `Index busy`; a call stalled over 60 s fails with `Index lock lost`. Retry once,
   run fewer searches at once, and never loop with sleeps.
-- **References.** `read` takes a reference from search output. For Markdown and
-  text, `file.md:120` returns the chunk at (or after) that line and `file.md:1-400`
-  all chunks in that range up to `--budget`; other formats need the exact
-  reference. Never guess one for an unindexed file.
+- **References.** Other formats than Markdown and text need the exact reference
+  from search output; never guess one for an unindexed file. A folder with no
+  index in it or above it fails with a setup message; never run `build` on a
+  subfolder of an indexed folder.

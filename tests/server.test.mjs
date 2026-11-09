@@ -187,3 +187,66 @@ test('disable-semantic stops the server and leaves a working keyword-only index'
   assert.match(run(['status', root]).stdout, /Semantic search: off/);
   assert.match(run(['search', root, '--query', 'SERVER_TOKEN', '--mode', 'hybrid']).stderr, /Semantic index missing; run embed/);
 });
+
+test('a command on a subfolder uses the parent index for that subfolder and creates nothing', async t => {
+  const root = await folder(t, false);
+  const sub = path.join(root, 'plans');
+  await fs.mkdir(path.join(sub, 'deep'), { recursive: true });
+  await fs.writeFile(path.join(sub, 'deep', 'plan.md'), '# Plan\n\nSERVER_TOKEN is planned here.');
+  const result = run(['search', sub, '--query', 'SERVER_TOKEN']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'plans/deep/plan.md:1-3\n# Plan\n\nSERVER_TOKEN is planned here.\n');
+  assert.match(run(['read', path.join(sub, 'deep'), 'plans/deep/plan.md:3']).stdout, /SERVER_TOKEN is planned here/);
+  assert.match(run(['read', sub, 'guide.md:3']).stdout, /SERVER_TOKEN needs approval/, 'references stay relative to the indexed folder');
+  assert.match(run(['search', path.join(sub, 'deep', 'plan.md'), '--query', 'SERVER_TOKEN']).stdout, /^plans\/deep\/plan\.md/);
+  assert.match(run(['status', sub]).stdout, /^Indexed folder: .+ \(plans is inside it\)\nIndex: 2 sources/);
+  assert.deepEqual(await fs.readdir(sub), ['deep']);
+  assert.deepEqual(await fs.readdir(path.join(sub, 'deep')), ['plan.md']);
+});
+
+test('a command on a folder without an index fails clearly and creates nothing', async t => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-none-')));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.writeFile(path.join(root, 'a.md'), '# A');
+  for (const args of [['search', root, '--query', 'x'], ['sync', root], ['embed', root], ['read', root, 'a.md:1']]) {
+    const result = run(args);
+    assert.equal(result.status, 1, args.join(' '));
+    assert.match(result.stderr, /^doktimoi: No doktimoi index in .+ or its parent folders\. Set one up first .*build/);
+  }
+  assert.deepEqual(await fs.readdir(root), ['a.md']);
+});
+
+test('search prints no unsupported-file or extraction-total notices; status keeps the totals', async t => {
+  const root = await folder(t, false);
+  await fs.writeFile(path.join(root, 'notes.rst'), 'Notes\n=====\n\nOther text.');
+  await fs.writeFile(path.join(root, 'tool.exe'), 'binary');
+  const result = run(['search', root, '--query', 'SERVER_TOKEN']);
+  assert.equal(result.stderr, '');
+  assert.equal(result.stdout, 'guide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n');
+  assert.match(run(['status', root]).stdout, /^Index: 2 sources, 3 chunks, 1 extraction warnings/m);
+  assert.match(run(['search', root, '--query', 'Other text']).stdout, /^notes\.rst:1-4\n[\s\S]*\[Extraction: RST\/AsciiDoc/m);
+});
+
+test('subfolder scope, --path, --exclude and the budget cap give the same output via the server', async t => {
+  const root = await folder(t, true);
+  await fs.mkdir(path.join(root, 'plans'));
+  await fs.writeFile(path.join(root, 'plans', 'own.md'), '# Own\n\nSERVER_TOKEN in my plan.');
+  await fs.writeFile(path.join(root, 'plans', 'other.md'), '# Other\n\nSERVER_TOKEN in another plan.');
+  const direct = { DOKTIMOI_NO_SERVER: '1' };
+  const cases = [
+    ['search', path.join(root, 'plans'), '--query', 'SERVER_TOKEN', '--exclude', 'plans/own.md'],
+    ['search', root, '--query', 'SERVER_TOKEN', '--path', 'plans', '--budget', '99999'],
+    ['read', path.join(root, 'plans'), 'guide.md:1-3', '--budget', '7000'],
+  ];
+  for (const args of cases) {
+    const served = run(args);
+    assert.equal(served.status, 0, served.stderr);
+    assert.deepEqual(served, run(args, direct));
+  }
+  assert.ok(await readInfo(root), 'the server of the indexed folder answered');
+  assert.equal(await fs.stat(path.join(root, 'plans', '.doktimoi')).catch(() => null), null);
+  assert.equal(run(cases[0]).stdout, 'plans/other.md:1-3\n# Other\n\nSERVER_TOKEN in another plan.\n');
+  assert.match(run(cases[1]).stdout, /^plans\/[\s\S]*\n\[--budget capped at 6000 tokens per call\.\]\n$/);
+  const batch = JSON.stringify([{ queries: ['SERVER_TOKEN'], exclude: ['plans'] }]);
+  assert.equal(run(['batch', root], {}, batch).stdout, 'Q1\nguide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n');
+});

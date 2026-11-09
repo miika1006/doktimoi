@@ -294,7 +294,7 @@ test('a legacy DOC without LibreOffice is skipped with a warning instead of fail
   await fs.writeFile(path.join(root, 'rules.md'), '# Access\n\nNever log DB_PASSWORD.');
   const result = await project.search(['DB_PASSWORD']);
   assert.match(result.payload.results[0].text, /Never log DB_PASSWORD/);
-  assert.match(result.payload.note, /Extraction may be incomplete/);
+  assert.equal(result.payload.note, undefined, 'warnings of other sources stay out of search output');
   const update = await project.sync({ verify: true });
   assert.ok(update.warnings.some(w => w.file === 'policy.doc' && /requires LibreOffice/.test(w.warning)));
   assert.equal(update.changed, 1);
@@ -332,10 +332,14 @@ test('read resolves gap lines to the next chunk and joins chunks overlapping a r
   }
   assert.equal(reference(await project.read('doc.md:9')), 'doc.md:11-13');
   assert.equal(reference(await project.read('doc.md:99')), 'doc.md:15-17');
-  const range = await project.read('doc.md:4-12');
+  const range = await project.read('doc.md:4-13');
   assert.equal(reference(range), 'doc.md:5-13');
   assert.equal(range.text.split('\n')[13 - 5], 'BETA text.');
   assert.equal(range.excerpt, false);
+  const inside = await project.read('doc.md:6-12');
+  assert.equal(reference(inside), 'doc.md:6-12');
+  assert.match(inside.text, /^\nALPHA text\.[\s\S]*## B\n$/);
+  assert.equal(render({ results: [inside] }).split('\n')[1], 'Title > A', 'a clipped range keeps its heading');
   const whole = await project.read('doc.md:1-200', 1, 400);
   assert.equal(reference(whole), 'doc.md:1-17');
   assert.match(whole.text, /Intro\.[\s\S]*ALPHA[\s\S]*BETA[\s\S]*GAMMA text\.$/);
@@ -347,18 +351,23 @@ test('a range read beyond the budget is cut and names the read that continues it
   const sections = Array.from({ length: 30 }, (_, i) => `## Part ${i}\n\nPART_${i} ${'condition applies here. '.repeat(40)}`);
   await fs.writeFile(path.join(root, 'plan.md'), `# Plan\n\n${sections.join('\n\n')}\n`);
   await project.sync();
-  let from = 1;
+  const source = (await fs.readFile(path.join(root, 'plan.md'), 'utf8')).split('\n');
+  let ref = 'plan.md:1-1000';
   const seen = new Set();
-  for (let call = 0; call < 40 && from; call++) {
-    const item = await project.read('plan.md:1-1000', from, undefined, 400);
+  for (let call = 0; call < 40 && ref; call++) {
+    const item = await project.read(ref, 1, undefined, 400);
     const note = item.continuation;
     assert.ok(tokens(render({ results: [item], note })) <= 400);
     for (const [, part] of item.text.matchAll(/PART_(\d+)/g)) seen.add(part);
-    const next = /^Continue: read "plan\.md:1-\d+" --from (\d+)$/.exec(note ?? '')?.[1];
-    if (next) { assert.ok(item.excerpt); assert.ok(Number(next) > from); }
-    from = next && Number(next);
+    const [first, last] = /^lines:(\d+)-(\d+)$/.exec(item.location).slice(1).map(Number);
+    const shown = item.text.split('\n');
+    assert.equal(shown.length, last - first + 1, 'the header names exactly the lines shown');
+    assert.ok(source[first - 1].startsWith(shown[0]), 'the first shown line is that source line');
+    const next = /^Continue: read "(plan\.md:(\d+)-\d+)"$/.exec(note ?? '');
+    if (next) { assert.ok(item.excerpt); assert.ok(Number(next[2]) > first && Number(next[2]) <= last + 1); }
+    ref = next?.[1];
   }
-  assert.equal(from, undefined, 'the file is read to its end');
+  assert.equal(ref, undefined, 'the file is read to its end');
   assert.equal(seen.size, 30);
 });
 
@@ -434,4 +443,58 @@ test('the index lock is held per operation, so another process can sync while a 
     assert.equal(result.metrics.changed, 0);
     assert.match(result.payload.results[0].text, /SECOND_TOKEN here/);
   } finally { await first.close(); }
+});
+
+test('--path and --exclude restrict search to source prefixes and reject unknown paths', async t => {
+  const { root, project } = await fixture(t);
+  await fs.mkdir(path.join(root, 'plans', 'own'), { recursive: true });
+  await fs.mkdir(path.join(root, 'diagrams'));
+  await fs.writeFile(path.join(root, 'plans', 'own', 'draft.md'), '# Draft\n\nFILTER_TERM in my own draft.');
+  await fs.writeFile(path.join(root, 'plans', 'other.md'), '# Other\n\nFILTER_TERM in another plan.');
+  await fs.writeFile(path.join(root, 'diagrams', 'flow.md'), '# Flow\n\nFILTER_TERM in a diagram.');
+  // Many better-ranked matches elsewhere must not starve the filtered results.
+  for (let i = 0; i < 40; i++) await fs.writeFile(path.join(root, `noise${i}.md`), `# Noise\n\nFILTER_TERM FILTER_TERM FILTER_TERM ${i}.`);
+  const sources = async options => (await project.search(['FILTER_TERM'], { limit: 20, budget: 6000, ...options })).payload.results.map(r => r.source).sort();
+  assert.deepEqual(await sources({ paths: ['plans'] }), ['plans/other.md', 'plans/own/draft.md']);
+  assert.deepEqual(await sources({ paths: ['plans/'], exclude: ['plans/own'] }), ['plans/other.md']);
+  assert.deepEqual(await sources({ paths: [path.join(root, 'diagrams')] }), ['diagrams/flow.md']);
+  assert.deepEqual(await sources({ scope: 'plans', paths: ['diagrams'] }), []);
+  assert.ok((await sources({ exclude: ['plans', 'diagrams'] })).every(source => source.startsWith('noise')));
+  await assert.rejects(project.search(['FILTER_TERM'], { paths: ['plan'] }), /No indexed source under --path plan$/);
+  await assert.rejects(project.search(['FILTER_TERM'], { exclude: ['../x'] }), /inside/);
+});
+
+test('a lexical search without a passage holding every term falls back to some terms, else hints', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'plan.md'), '# Plan\n\nABC analyysi kestää 5–7 viikkoa.\n\n# Other\n\nXYZ luokitus.');
+  const fallback = (await project.search(['ABC XYZ analyysi 5–7 vk'])).payload;
+  assert.ok(fallback.results.length > 0);
+  assert.match(render(fallback), /\[No passage has every term of a query; these match some terms\./);
+  assert.equal((await project.search(['ABC analyysi'])).payload.note, undefined);
+  const none = (await project.search(['NOTHING_LIKE_THIS', 'NOR THAT'])).payload;
+  assert.equal(render(none), 'No matching evidence.\n[Lexical search ANDs the terms of a query: use fewer or rarer terms, one --query per phrasing, or --mode hybrid if semantic search is on.]');
+});
+
+test('one call stays below the inline output cap however large --budget is, and reads page on', async t => {
+  const { root, project } = await fixture(t);
+  const sentence = 'Keräilyssä käsipäätteellä varattu määrä vähennetään saldosta ennen siirtoa, ja hyllypaikan tarkistus tehdään tallennettaessa. ';
+  const sections = Array.from({ length: 60 }, (_, i) => `## Osa ${i}\n\nOSA_${i} ${sentence.repeat(6)}`);
+  await fs.writeFile(path.join(root, 'suunnitelma.md'), `# Suunnitelma\n\n${sections.join('\n\n')}\n`);
+  const english = Array.from({ length: 60 }, (_, i) => `## Part ${i}\n\nPART_${i} ${'The reserved quantity is deducted from stock before the transfer is saved. '.repeat(8)}`);
+  await fs.writeFile(path.join(root, 'english.md'), `# Plan\n\n${english.join('\n\n')}\n`);
+  for (const file of ['suunnitelma.md', 'english.md']) {
+    let ref = `${file}:1-10000`;
+    const seen = new Set();
+    for (let call = 0; call < 20 && ref; call++) {
+      const item = await project.read(ref, 1, undefined, 12000);
+      const text = render({ results: [item], note: item.continuation });
+      assert.ok(Buffer.byteLength(text) <= 20000 && tokens(text) <= 6000, `${file}: ${Buffer.byteLength(text)} bytes, ${tokens(text)} tokens`);
+      for (const [, part] of item.text.matchAll(/(?:OSA|PART)_(\d+)/g)) seen.add(part);
+      ref = /^Continue: read "(.+)"$/.exec(item.continuation ?? '')?.[1];
+    }
+    assert.equal(ref, undefined, `${file} is read to its end`);
+    assert.equal(seen.size, 60);
+  }
+  const found = render((await project.search(['määrä', 'quantity'], { budget: 12000, limit: 20 })).payload);
+  assert.ok(Buffer.byteLength(found) <= 20000 && tokens(found) <= 6000);
 });
