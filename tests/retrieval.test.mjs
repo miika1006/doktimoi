@@ -299,3 +299,20 @@ test('a legacy DOC without LibreOffice is skipped with a warning instead of fail
   assert.equal(update.changed, 1);
   assert.equal((await project.sync()).changed, 0);
 });
+
+test('read accepts a line range inside a chunk and open removes orphaned temp files', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.mkdir(path.join(root, '.doktimoi', 'chunks'), { recursive: true });
+  const orphan = path.join(root, '.doktimoi', 'manifest.json.dead.tmp');
+  await fs.writeFile(orphan, 'partial');
+  await fs.writeFile(path.join(root, 'guide.md'), '# Intro\n\nHello.\n\n# Limits\n\nLIMIT_RULE applies.\n');
+  const project = await openProject(root);
+  try {
+    await assert.rejects(fs.stat(orphan), { code: 'ENOENT' });
+    const exact = reference((await project.search(['LIMIT_RULE'])).payload.results[0]);
+    assert.notEqual(exact, 'guide.md:6-60');
+    assert.match((await project.read('guide.md:6-60')).text, /LIMIT_RULE/);
+    await assert.rejects(project.read('guide.md:500-600'), /Unknown or obsolete chunk/);
+  } finally { await project.close(); }
+});

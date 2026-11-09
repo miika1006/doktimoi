@@ -21,6 +21,13 @@ export function tokens(text) {
 
 export const reference = item => `${item.source}:${item.location.replace(/^lines:/, '')}`;
 
+/** Deletes `*.tmp` files left by a process that died mid atomicWrite; call only while holding the lock. */
+async function removeOrphanTemps(dir) {
+  for (const name of await ifMissing(fs.readdir(dir), [])) {
+    if (name.endsWith('.tmp')) await fs.rm(path.join(dir, name), { force: true });
+  }
+}
+
 export function excerpt(text, query, maxChars = 600, db) {
   const terms = (query.match(/[\p{L}\p{N}_]+/gu) ?? []).sort((a, b) => b.length - a.length);
   if (db && terms.length) {
@@ -65,7 +72,10 @@ export async function openProject(directory) {
     await safePath(cache, name);
   }
   const release = await lockfile.lock(root, {
-    realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 10000,
+    // Loading the embedding model or a busy machine can stall the event loop for seconds; a 10 s
+    // threshold made concurrent agents' holders crash with ECOMPROMISED, often mid-write.
+    // Refreshing every 5 s keeps older doktimoi versions (10 s threshold) from stealing the lock unless a stall exceeds ~5 s.
+    realpath: false, lockfilePath: path.join(cache, 'write.lock'), stale: 60000, update: 5000,
     // A background refresh may hold the lock while extracting Office/PDF/OCR sources; wait up to ~5 minutes.
     retries: { retries: 300, minTimeout: 100, maxTimeout: 1000 },
   });
@@ -73,6 +83,7 @@ export async function openProject(directory) {
   try {
     const chunkDir = path.join(cache, 'chunks');
     await fs.mkdir(chunkDir, { recursive: true });
+    for (const dir of [cache, chunkDir, path.join(cache, 'visuals'), path.join(cache, 'ocr')]) await removeOrphanTemps(dir);
     if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
     store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
       collections: { docs: { path: chunkDir, pattern: '*.md' } },
@@ -163,6 +174,23 @@ export async function openProject(directory) {
         ms: since(started) };
     }
 
+    /**
+     * Finds the chunk for a search reference; a `source:N` or `source:N-M` that is not an exact
+     * reference resolves to the `lines:a-b` chunk of that source whose range contains line N.
+     * @example chunkForReference('Raportointi.md:1-60') // id of the chunk 'Raportointi.md:1-24'
+     */
+    function chunkForReference(ref) {
+      const entries = [...metadata.entries()];
+      const exact = entries.find(([, item]) => reference(item) === ref);
+      if (exact) return exact[0];
+      const [, source, line] = /^(.+):(\d+)(?:-\d+)?$/.exec(ref) ?? [];
+      if (!source) return undefined;
+      return entries.find(([, item]) => {
+        const [, first, last] = /^lines:(\d+)-(\d+)$/.exec(item.location) ?? [];
+        return item.source === source && first && Number(first) <= Number(line) && Number(line) <= Number(last);
+      })?.[0];
+    }
+
     async function evidence(id) {
       const entry = metadata.get(id);
       if (!entry) throw new Error(`Unknown or obsolete chunk: ${id}`);
@@ -233,7 +261,7 @@ export async function openProject(directory) {
         if (!Number.isInteger(from) || from < 1 || !Number.isInteger(lines) || lines < 1 || lines > 200) throw new Error('from >= 1; lines 1–200');
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
         await sync();
-        if (!metadata.has(id)) id = [...metadata.entries()].find(([, item]) => reference(item) === id)?.[0] ?? id;
+        if (!metadata.has(id)) id = chunkForReference(id) ?? id;
         const item = await evidence(id);
         const all = item.text.split('\n');
         if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
