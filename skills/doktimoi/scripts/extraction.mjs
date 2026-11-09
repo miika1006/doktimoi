@@ -9,7 +9,8 @@ import { promisify } from 'node:util';
 
 const run = promisify(execFile);
 const require = createRequire(import.meta.url);
-export const NO_TEXT = '[Visual content; no readable text detected. Inspect the image.]';
+export const MISSING_CONVERTER = 'DOKTIMOI_MISSING_CONVERTER';
+export const NO_TEXT ='[Visual content; no readable text detected. Inspect the image.]';
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const utf8 = buffer => new TextDecoder('utf-8', { fatal: true }).decode(buffer);
 export const ifMissing = (promise, fallback) => promise.catch(error => { if (error.code !== 'ENOENT') throw error; return fallback; });
@@ -159,7 +160,7 @@ export async function legacyOffice(buffer, extension) {
       await run(executable, [`-env:UserInstallation=${pathToFileURL(profile).href}`, '--headless', '--nologo', '--nodefault', '--norestore',
         '--convert-to', conversion[0], '--outdir', temp, input], { timeout: 120000, maxBuffer: 1024 * 1024 });
     } catch (e) {
-      if (e.code === 'ENOENT') throw new Error(`Legacy ${extension} requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable`);
+      if (e.code === 'ENOENT') throw Object.assign(new Error(`Legacy ${extension} requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable`), { code: MISSING_CONVERTER });
       throw e;
     }
     return await fs.readFile(path.join(temp, `input${conversion[1]}`)).catch(error => {

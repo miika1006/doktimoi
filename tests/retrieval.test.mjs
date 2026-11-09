@@ -283,3 +283,19 @@ test('the CLI runs through the symlink used by npm executables', {
   assert.match(output, /policy.md:/);
   assert.match(output, /SYMLINK_CLI requires approval/);
 });
+
+test('a legacy DOC without LibreOffice is skipped with a warning instead of failing search', async t => {
+  const previous = process.env.DOKTIMOI_SOFFICE;
+  process.env.DOKTIMOI_SOFFICE = path.join(os.tmpdir(), 'missing-libreoffice', 'soffice.exe');
+  t.after(() => { if (previous === undefined) delete process.env.DOKTIMOI_SOFFICE; else process.env.DOKTIMOI_SOFFICE = previous; });
+  const { root, project } = await fixture(t);
+  await fs.copyFile(new URL('../examples/formats/image-policy.doc', import.meta.url), path.join(root, 'policy.doc'));
+  await fs.writeFile(path.join(root, 'rules.md'), '# Access\n\nNever log DB_PASSWORD.');
+  const result = await project.search(['DB_PASSWORD']);
+  assert.match(result.payload.results[0].text, /Never log DB_PASSWORD/);
+  assert.match(result.payload.note, /Extraction may be incomplete/);
+  const update = await project.sync({ verify: true });
+  assert.ok(update.warnings.some(w => w.file === 'policy.doc' && /requires LibreOffice/.test(w.warning)));
+  assert.equal(update.changed, 1);
+  assert.equal((await project.sync()).changed, 0);
+});

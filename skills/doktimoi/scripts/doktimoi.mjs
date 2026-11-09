@@ -8,7 +8,7 @@ import lockfile from 'proper-lockfile';
 import { createStore, extractSnippet } from '@tobilu/qmd';
 import { get_encoding } from 'tiktoken';
 import { convert, inventory, safePath } from './sources.mjs';
-import { atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
+import { MISSING_CONVERTER, atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
 let encoder;
 const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
@@ -111,13 +111,17 @@ export async function openProject(directory) {
         const after = await fs.stat(file, { bigint: true });
         if (signature !== stamp(after)) throw new Error(`Source changed while reading: ${source}; retry`);
         const digest = hash(raw);
-        if (old?.hash === digest) {
+        // build (verify) retries files skipped for a missing converter, e.g. after LibreOffice was installed.
+        if (old?.hash === digest && !(verify && old.skipped)) {
           next.files[source] = { ...old, stamp: signature };
           if (old.stamp !== signature) touched++;
           continue;
         }
-        const result = await convert(source, raw, extraction).catch(error => { throw new Error(`${source}: ${error.message}`, { cause: error }); });
-        next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, warnings: result.warnings, chunks: result.chunks.map(chunk => {
+        const result = await convert(source, raw, extraction).catch(error => {
+          if (error.code === MISSING_CONVERTER) return { skipped: true, warnings: [`${error.message}; skipped until it changes or build runs.`], chunks: [] };
+          throw new Error(`${source}: ${error.message}`, { cause: error });
+        });
+        next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, ...(result.skipped && { skipped: true }), warnings: result.warnings, chunks: result.chunks.map(chunk => {
           const body = `# ${source} | ${chunk.heading}\n\n${chunk.text}`;
           const id = hash(`${source}\0${chunk.location}\0${body}`).slice(0, 32);
           writes.push({ id, body });

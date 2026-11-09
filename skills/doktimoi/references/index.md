@@ -43,6 +43,8 @@ Use the same quoted commands in PowerShell, macOS or Linux, with Windows paths s
 as `"C:\Docs\Product"`; Bash and Python are not required. Legacy `.doc` (and images
 in legacy `.xls`) need LibreOffice; if it is not in the standard Windows/macOS
 location, set `DOKTIMOI_SOFFICE` to the executable path (`soffice.exe` on Windows).
+Without it such files are skipped with a warning; run `build` after installing it.
+Microsoft Office is not used.
 
 OCR (`DOKTIMOI_OCR_LANGUAGES`, default `eng+fin`) downloads recognition data on
 first use, then runs locally; `DOKTIMOI_OCR_CACHE` selects its cache. `DOKTIMOI_OCR`
