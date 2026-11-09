@@ -8,21 +8,25 @@ import { fileURLToPath } from 'node:url';
 /** Walks up from a folder to the nearest one holding a `.doktimoi` index; `exact` checks only the folder itself. */
 export function indexedRoot(folder, exact = false) {
   for (let current = folder; ; current = path.dirname(current)) {
-    // A not-yet-existing file resolves to its unexpanded 8.3 form (RUNNER~1); return the canonical folder.
-    if (isDirectory(path.join(current, INDEX_DIR))) return fs.realpathSync.native(current);
+    if (isDirectory(path.join(current, INDEX_DIR))) return current;
     if (exact || path.dirname(current) === current) return null;
   }
 }
 
 /**
  * Resolves a path given in Git Bash (`/c/...`) or Windows form against a working
- * directory and expands Windows 8.3 short names when the path exists.
- * @example resolvePath('/c/Users/RUNNER~1/docs', 'D:/a') // 'C:\Users\runneradmin\docs'
+ * directory into canonical form. The nearest existing ancestor is resolved, so a
+ * not-yet-existing file under a Windows 8.3 short name (RUNNER~1) still compares
+ * equal to its canonical folder.
+ * @example resolvePath('/c/Users/RUNNER~1/docs/new.md', 'D:/a') // 'C:\Users\runneradmin\docs\new.md'
  */
 export function resolvePath(value, cwd) {
   const native = process.platform === 'win32' ? String(value).replace(/^\/([a-zA-Z])(\/|$)/, '$1:/') : String(value);
   const resolved = path.resolve(cwd ?? process.cwd(), native);
-  try { return fs.realpathSync.native(resolved); } catch { return resolved; }
+  for (let existing = resolved; ; existing = path.dirname(existing)) {
+    try { return path.join(fs.realpathSync.native(existing), path.relative(existing, resolved)); }
+    catch { if (path.dirname(existing) === existing) return resolved; }
+  }
 }
 
 /** Tells whether the path is inside the index's own machine data. */

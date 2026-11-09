@@ -4,8 +4,9 @@
  *
  * Refreshes an existing index in the background (async hook) when a session
  * starts in an indexed folder or Claude edits a file inside one, so searches
- * find the index already current. Never creates an index and never enables
- * semantic search; existing embeddings are updated incrementally.
+ * find the index already current. Never creates an index. Embeddings are left
+ * to hybrid search: computing them here would hold the lock and stall lexical
+ * searches for minutes.
  */
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -26,7 +27,7 @@ async function refresh(root, pluginRoot) {
   if (!isDirectory(path.join(skill, 'node_modules'))) return;
   const { openProject } = await import(pathToFileURL(path.join(skill, 'scripts', 'doktimoi.mjs')).href);
   const project = await openProject(root);
-  try { await project.refresh(); } finally { await project.close(); }
+  try { await project.sync(); } finally { await project.close(); }
 }
 
 runHook(import.meta.url, 'doktimoi sync hook', async (input, pluginRoot) => {

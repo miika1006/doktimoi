@@ -83,6 +83,24 @@ test('reminds about doktimoi when Grep sweeps an indexed folder, not a single fi
   assert.equal(decide({ tool_name: 'Read', tool_input: { file_path: path.join(indexed, 'a.md') }, cwd: indexed }, pluginRoot), null);
 });
 
+test('reminds about doktimoi for recursive shell searches and whole reads of big or Office files', async t => {
+  const { indexed, plain } = await folders(t);
+  const reminded = output => /indexed by doktimoi/.test(output?.hookSpecificOutput?.additionalContext ?? '');
+  for (const command of ['grep -rn "XTX" .', 'rg -i entra', 'git grep -n Identity', 'grep --recursive x docs', 'find . -name "*.md" | xargs grep x', 'findstr /s /i entra *.md', 'Get-ChildItem -Recurse *.md | Select-String XTX']) {
+    assert.ok(reminded(decide(bash(command, path.join(indexed, 'sub')), pluginRoot)), command);
+    assert.equal(decide(bash(command, plain), pluginRoot), null, command);
+  }
+  for (const command of ['grep -n "^#" a.md', 'git status', 'ls -la']) assert.equal(decide(bash(command, indexed), pluginRoot), null, command);
+  const big = path.join(indexed, 'big.md');
+  await fs.writeFile(big, 'x'.repeat(60_000));
+  await fs.writeFile(path.join(indexed, 'guide.docx'), 'stub');
+  const read = input => decide({ tool_name: 'Read', tool_input: input, cwd: plain }, pluginRoot);
+  assert.ok(reminded(read({ file_path: big })));
+  assert.ok(reminded(read({ file_path: path.join(indexed, 'guide.docx') })));
+  assert.equal(read({ file_path: big, offset: 100, limit: 40 }), null);
+  assert.equal(read({ file_path: path.join(indexed, '.doktimoi', 'manifest.json') }), null);
+});
+
 test('splitCommand keeps quoted words and refuses shell syntax', () => {
   assert.deepEqual(splitCommand(`node "C:\\x y\\d.mjs" search . --query 'a b'`), ['node', 'C:\\x y\\d.mjs', 'search', '.', '--query', 'a b']);
   for (const bad of ['a | b', 'a $HOME', 'a (b)', 'a *', '@args', 'a "unterminated']) assert.equal(splitCommand(bad), null, bad);

@@ -6,16 +6,21 @@
  * indexed folder, so retrieval never stalls on a permission prompt and silently
  * falls back to Grep. Hybrid mode is included: it only updates existing
  * embeddings and refuses to run when no semantic index was enabled. Adds a
- * reminder to Grep calls that sweep an indexed folder. Everything else passes
- * through untouched.
+ * doktimoi reminder to content lookups that bypass it inside an indexed folder:
+ * folder-wide Grep, recursive shell searches and whole reads of large or Office/PDF
+ * files. Everything else passes through untouched.
  */
+import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { indexedRoot, isFile, resolvePath, runHook } from './common.mjs';
+import { indexedRoot, insideIndexData, isFile, resolvePath, runHook } from './common.mjs';
 
 export function decide(input, pluginRoot) {
-  if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') return approveDoktimoiCommand(input, pluginRoot);
+  if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') {
+    return approveDoktimoiCommand(input, pluginRoot) ?? remindOnShellSearch(input, pluginRoot);
+  }
   if (input.tool_name === 'Grep') return remindOnFolderGrep(input, pluginRoot);
+  if (input.tool_name === 'Read') return remindOnWholeRead(input, pluginRoot);
   return null;
 }
 
@@ -37,9 +42,29 @@ function approveDoktimoiCommand(input, pluginRoot) {
 function remindOnFolderGrep(input, pluginRoot) {
   const target = resolvePath(input.tool_input?.path ?? input.cwd ?? '.', input.cwd);
   if (isFile(target)) return null;
-  const root = indexedRoot(target);
+  return remind(indexedRoot(target), pluginRoot, 'Grep');
+}
+
+/** Returns a reminder when a shell command searches file contents recursively from inside an indexed folder. */
+function remindOnShellSearch(input, pluginRoot) {
+  if (!SHELL_SEARCH.test(String(input.tool_input?.command ?? ''))) return null;
+  return remind(input.cwd ? indexedRoot(resolvePath(input.cwd)) : null, pluginRoot, 'shell searches');
+}
+
+/** Returns a reminder when Read loads a whole large or Office/PDF source file of an indexed folder. */
+function remindOnWholeRead(input, pluginRoot) {
+  const { file_path: file, offset, limit } = input.tool_input ?? {};
+  if (!file || offset !== undefined || limit !== undefined) return null;
+  const resolved = resolvePath(file, input.cwd);
+  const root = indexedRoot(path.dirname(resolved));
+  if (!root || insideIndexData(resolved, root)) return null;
+  const size = (() => { try { return fs.statSync(resolved).size; } catch { return 0; } })();
+  return size > LARGE_FILE_BYTES || DOCUMENT_FILE.test(resolved) ? remind(root, pluginRoot, 'whole-file reads') : null;
+}
+
+function remind(root, pluginRoot, bypass) {
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**
@@ -82,6 +107,10 @@ function samePath(value, expected, cwd) {
 function scriptPath(pluginRoot) { return path.join(pluginRoot, 'skills', 'doktimoi', 'scripts', 'doktimoi.mjs'); }
 
 function output(fields) { return { hookSpecificOutput: { hookEventName: 'PreToolUse', ...fields } }; }
+
+const SHELL_SEARCH = /\b(rg|ag|ack)\s|\bgit\s+grep\b|\bgrep\b[^|;&\n]*\s(-\w*[rR]\w*|--recursive)\b|\b(xargs\s+|-exec\s+)grep\b|\bfindstr\b[^|;&\n]*\/s\b|\b(Get-ChildItem|gci|dir|ls)\b[^;\n]*\|\s*(Select-String|sls)\b/i;
+const DOCUMENT_FILE = /\.(pdf|docx?|xlsx?|pptx?)$/i;
+const LARGE_FILE_BYTES = 50_000;
 
 runHook(import.meta.url, 'doktimoi hook', (input, pluginRoot) => {
   const result = decide(input, pluginRoot);

@@ -68,12 +68,13 @@ The Claude Code plugin also ships hooks:
   permission prompt when they run as a single command in lexical or hybrid mode
   against a folder that already has a `.doktimoi` index (search may refresh that
   index; hybrid only updates existing embeddings and fails if semantic search was
-  never enabled). Folder-wide Grep calls inside an indexed folder get a reminder
-  to use doktimoi. Other commands, `build`, `embed` and unindexed folders go
-  through the normal permission flow.
-- `SessionStart` and `PostToolUse` (Edit/Write) refresh an existing index in the
-  background (`sync`: changed files, plus incremental embeddings when semantic
-  search is enabled). They never create an index. A search that starts during a
+  never enabled). Other commands, `build`, `embed` and unindexed folders go
+  through the normal permission flow. Inside an indexed folder, folder-wide Grep,
+  recursive shell searches (grep -r, rg, git grep, findstr /s, Select-String) and
+  whole reads of large or Office/PDF files get a reminder to use doktimoi.
+- `SessionStart` and `PostToolUse` (Edit/Write) refresh an existing index's changed
+  files in the background. They never create an index and leave embeddings to
+  hybrid search, so the lock is held briefly. A search that starts during a
   refresh waits for it.
 
 With a standalone skill installation, use `/doktimoi` in Claude Code or `$doktimoi`
