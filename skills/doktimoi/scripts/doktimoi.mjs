@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
+import { realpathSync, watch } from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import lockfile from 'proper-lockfile';
-import { createStore, extractSnippet } from '@tobilu/qmd';
-import { get_encoding } from 'tiktoken';
-import { convert, inventory, safePath } from './sources.mjs';
 import { hasSemanticIndex, serve, serverStatus, stopServer, unembeddedChunks, viaServer } from './server.mjs';
 import { MISSING_CONVERTER, atomicWrite, createExtraction, extractionConfig, hash, ifMissing } from './extraction.mjs';
 
-let encoder;
+// QMD, tiktoken, the lock library and the converters load lazily: a CLI call answered by the
+// search server needs none of them, and importing them costs most of a second.
+let encoder, extractSnippet;
 const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
 const since = started => Math.round((performance.now() - started) * 100) / 100;
 const EXCEL_NOTE = 'Excel formula results are cached, not recalculated.';
 export function tokens(text) {
-  encoder ??= get_encoding('o200k_base');
+  encoder ??= createRequire(import.meta.url)('tiktoken').get_encoding('o200k_base');
   return encoder.encode(text, [], []).length;
 }
 
@@ -53,6 +53,21 @@ function fallbackTerms(queries) {
   return unique.length > 1 ? unique.slice(0, 8) : [];
 }
 
+/**
+ * Resolves an absolute path through its nearest existing ancestor, so a Windows 8.3 short name
+ * (RUNNER~1) or other letter case matches the canonical index root, also for a missing file.
+ * @example canonical('C:\\Users\\RUNNER~1\\docs\\new.md') // 'C:\\Users\\runneradmin\\docs\\new.md'
+ */
+function canonical(file) {
+  for (let existing = file; ; existing = path.dirname(existing)) {
+    try { return path.join(realpathSync.native(existing), path.relative(existing, file)); }
+    catch { if (path.dirname(existing) === existing) return file; }
+  }
+}
+
+/** Chunk IDs of a search result: its own, or those of the adjacent hits merged into it. */
+const idsOf = item => item.ids ?? [item.id];
+
 /** Tells whether a root-relative source path is the prefix itself or lies under that folder. */
 const under = (source, prefix) => source === prefix || source.startsWith(`${prefix}/`);
 
@@ -68,7 +83,7 @@ const vanished = source => error => { throw error.code === 'ENOENT' ? sourceChan
  */
 async function retryOnSourceChange(run) {
   for (let attempt = 1; ; attempt++) {
-    try { return await run(); }
+    try { return await run(attempt); }
     catch (error) {
       if (error.code !== SOURCE_CHANGED || attempt >= SOURCE_CHANGE_ATTEMPTS) throw error;
       await new Promise(resolve => setTimeout(resolve, 200 * attempt));
@@ -84,6 +99,13 @@ const NO_MATCH_HINT = 'Lexical search ANDs the terms of a query: use fewer or ra
 const OR_FALLBACK = 'No passage has every term of a query; these match some terms. Use fewer or rarer terms, or one --query per phrasing.';
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
 const SOURCE_CHANGE_ATTEMPTS = 6;
+const SAFETY_SYNC_MS = 60000;
+const QUERY_CACHE_SIZE = 200;
+const BRIEF_CHARS = 120;
+// Only source-line chunks merge: read resolves a joined range for `lines:` alone, other kinds need an exact chunk reference.
+const LINE_SPAN = /^(lines:)(\d+)-(\d+)$/;
+// Git rewrites its own files during our inventory; .doktimoi is written by the index itself.
+const IGNORED_CHANGE = /^\.(doktimoi|git)([\\/]|$)/;
 const LOCK_BUSY = 'Index busy: other doktimoi processes (parallel searches, hybrid model loading or a background index update) held the index lock for over 5 minutes. Run fewer searches at once, or retry later.';
 const LOST_LOCK = 'Index lock lost: this doktimoi process stalled for over 60 s (parallel hybrid searches loading the model, or a busy machine) and another process took over the index. Nothing more was written; retry the search.';
 
@@ -94,7 +116,7 @@ async function removeOrphanTemps(dir) {
   }
 }
 
-export function excerpt(text, query, maxChars = 600, db) {
+export function excerpt(text, query, maxChars = 600, db, words = 48) {
   const terms = (query.match(/[\p{L}\p{N}_]+/gu) ?? []).sort((a, b) => b.length - a.length);
   if (db && terms.length) {
     // Use the same Porter tokenizer as retrieval so inflected/prefix hits survive clipping.
@@ -102,8 +124,8 @@ export function excerpt(text, query, maxChars = 600, db) {
     db.exec('DELETE FROM temp.doktimoi_excerpt');
     try {
       db.prepare('INSERT INTO temp.doktimoi_excerpt(body) VALUES (?)').run(text);
-      const row = db.prepare("SELECT snippet(doktimoi_excerpt, 0, '', '', ' … ', 48) AS text FROM temp.doktimoi_excerpt WHERE doktimoi_excerpt MATCH ?")
-        .get(terms.map(term => `"${term}"*`).join(' OR '));
+      const row = db.prepare("SELECT snippet(doktimoi_excerpt, 0, '', '', ' … ', ?) AS text FROM temp.doktimoi_excerpt WHERE doktimoi_excerpt MATCH ?")
+        .get(words, terms.map(term => `"${term}"*`).join(' OR '));
       if (row?.text) return row.text;
     } finally { db.exec('DELETE FROM temp.doktimoi_excerpt'); }
   }
@@ -120,9 +142,10 @@ export function excerpt(text, query, maxChars = 600, db) {
 
 export function render(payload) {
   if (!payload.results.length) return (payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.') + (payload.note ? `\n[${payload.note}]` : '');
-  let text = payload.results.map(item => {
-    const heading = item.heading && (!item.text.startsWith('#') || item.heading.includes(' > ')) ? `${item.heading}\n` : '';
-    return `${reference(item)}\n${heading}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.warning ? `\n[${item.warning}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
+  // Brief results keep the two innermost headings: the outer ones repeat the document title on every hit.
+  let text = payload.brief ? payload.results.map(item => `${reference(item)}${item.heading ? ` — ${item.heading.split(' > ').slice(-2).join(' > ')}` : ''}\n  ${item.text}`).join('\n') : payload.results.map(item => {
+    const heading = breadcrumb(item);
+    return `${reference(item)}\n${heading ? `${heading}\n` : ''}${item.text}${item.visual ? `\n[Visual: ${item.visual}]` : ''}${item.warning ? `\n[${item.warning}]` : ''}${item.excerpt ? '\n[Excerpt; expand before relying on omitted conditions.]' : ''}`;
   }).join('\n\n');
   if (payload.more) text += '\n[More matches available.]';
   if (payload.note) text += `\n[${payload.note}]`;
@@ -130,14 +153,35 @@ export function render(payload) {
 }
 
 /**
- * Opens a folder's index. Each operation (sync, search, read, refresh, embed) takes the index
- * write lock only while it runs and first reloads manifest.json if another process changed it.
- * @param {string} directory the documentation folder
- * @param {{ modelIdleMs?: number }} [options] how long a loaded embedding model may stay idle
+ * Returns the heading path of a result without the trailing headings its text already starts
+ * with, so a heading is printed once.
+ * @example breadcrumb({ heading: 'Guide > Setup', text: '## Setup\n\nRun it.' }) // 'Guide'
  */
-export async function openProject(directory, { modelIdleMs } = {}) {
+function breadcrumb(item) {
+  if (!item.heading) return '';
+  const lines = item.text.split('\n');
+  const body = lines.findIndex(line => line.trim() && !/^#{1,6}\s/.test(line));
+  const own = new Set(lines.slice(0, body < 0 ? lines.length : body).filter(Boolean).map(line => line.replace(/^#+\s*/, '')));
+  const parts = item.heading.split(' > ');
+  while (parts.length && own.has(parts.at(-1))) parts.pop();
+  return parts.join(' > ');
+}
+
+/**
+ * Opens a folder's index. Index updates (sync, refresh, embed) take the index write lock only
+ * while they write; searches and reads run without it, several at a time, after bringing the
+ * index up to date and reloading manifest.json if another process changed it.
+ * @param {string} directory the documentation folder
+ * @param {{ modelIdleMs?: number, watch?: boolean }} [options] `modelIdleMs`: how long a loaded
+ *   embedding model may stay idle; `watch`: watch the folder and sync before a search or read only
+ *   after a change (or every minute), instead of on every call, for a long-lived process
+ */
+export async function openProject(directory, { modelIdleMs, watch: watchSources = false } = {}) {
+  const [{ default: lockfile }, qmd, { convert, inventory, safePath }] = await Promise.all([
+    import('proper-lockfile'), import('@tobilu/qmd'), import('./sources.mjs')]);
+  extractSnippet = qmd.extractSnippet;
   const root = await fs.realpath(directory);
-  const converterVersion = JSON.stringify({ version: 14, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 15, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
@@ -170,11 +214,12 @@ export async function openProject(directory, { modelIdleMs } = {}) {
     } finally { await release().catch(error => { if (!current.lost) throw error; }); }
   }
 
-  let queue = Promise.resolve();
-  /** Runs this project's operations one at a time, since they share the lock state. */
-  const exclusive = work => (queue = queue.then(work, work));
+  const gate = createGate();
+  const changes = watchSources ? watchFolder(root) : null;
 
-  let store, manifest, manifestStamp, metadata;
+  let store, manifest, manifestStamp, metadata, lastUpdate;
+  const queryEmbeddings = new Map();
+  let embedding = Promise.resolve();
   const manifestSignature = async () => { const stat = await ifMissing(fs.stat(manifestFile, { bigint: true }), null); return stat && stamp(stat); };
 
   /** Reloads manifest.json and chunk metadata when another process rewrote it since this process last read or wrote it. */
@@ -204,7 +249,7 @@ export async function openProject(directory, { modelIdleMs } = {}) {
     await locked(async () => {
       await fs.mkdir(chunkDir, { recursive: true });
       if (!await ifMissing(fs.stat(path.join(cache, 'index.sqlite')), false)) await fs.writeFile(path.join(cache, 'dirty'), 'rebuild missing database\n');
-      store = await createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
+      store = await qmd.createStore({ dbPath: path.join(cache, 'index.sqlite'), config: {
         collections: { docs: { path: chunkDir, pattern: '*.md' } },
       } });
       // QMD unloads the embedding model after 5 idle minutes; the search server keeps it for its own lifetime.
@@ -282,7 +327,7 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       manifest = next;
       manifestStamp = await manifestSignature();
       indexMetadata();
-      return { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
+      return lastUpdate = { files: listing.files.length, chunks: metadata.size, changed, removed, hashedBytes, ...extraction.stats,
         unsupported: listing.unsupported, warnings: Object.entries(next.files).flatMap(([file, value]) => value.warnings.map(warning => ({ file, warning }))),
         ms: since(started) };
     }
@@ -332,7 +377,7 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       const sourcePath = await safePath(root, entry.source);
       if (!verified.has(entry.source)) verified.set(entry.source, ifMissing(fs.readFile(sourcePath), null).then(current => !!current && hash(current) === entry.hash));
       if (!await verified.get(entry.source)) throw sourceChanged(`Source changed during search: ${entry.source}; retry`);
-      const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8');
+      const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8').catch(vanished(entry.source));
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
       if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
       const warnings = manifest.files[entry.source].warnings;
@@ -375,7 +420,7 @@ export async function openProject(directory, { modelIdleMs } = {}) {
      * @example prefixOf('C:\\docs\\Plans\\') // 'Plans' when the index root is C:\docs
      */
     function prefixOf(value) {
-      const relative = path.isAbsolute(value) ? path.relative(root, value) : String(value);
+      const relative = path.isAbsolute(value) ? path.relative(root, canonical(value)) : String(value);
       const prefix = relative.replaceAll('\\', '/').replace(/^(\.\/)+/, '').replace(/\/+$/, '');
       if (!prefix || prefix === '.' || prefix.split('/').includes('..')) throw new Error(`--path and --exclude take a folder or file inside ${root}: ${value}`);
       return prefix;
@@ -393,61 +438,19 @@ export async function openProject(directory, { modelIdleMs } = {}) {
        * Searches the index. `scope`, `paths` and `exclude` are root-relative (or absolute) folder or
        * file prefixes; `maxBytes` caps the rendered results so batch searches can share one output.
        */
-      async search(queries, { mode = 'lexical', limit = 4, budget = 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
+      async search(queries, { mode = 'lexical', brief = false, limit = brief ? 10 : 4, budget = brief ? 800 : 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
         if (!['lexical', 'hybrid'].includes(mode)) throw new Error('mode must be lexical or hybrid');
         if (!Array.isArray(queries) || !queries.length || queries.length > 4 || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) throw new Error('Provide 1–4 single-line queries');
         if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
         budget = Math.min(budget, MAX_BUDGET);
-        const update = await sync({ verify });
-        const started = performance.now();
-        const wanted = sourceFilter(scope, paths, exclude);
-        // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
-        // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
-        const candidates = wanted ? 500 : 20;
-        const lexical = async query => (await store.searchLex(query, { collection: 'docs', limit: candidates })).filter(row => !wanted || wanted(sourceOf(row)));
-        if (mode !== 'lexical') {
-          const health = await store.getStatus();
-          if (!health.hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
-          if (health.needsEmbedding) await embed('Incremental embedding failed; use lexical search or retry');
-        }
-        const lists = [];
-        for (const query of queries) lists.push(await lexical(query));
-        let note;
-        if (mode !== 'lexical') {
-          const vector = await store.searchVector(queries[0], { collection: 'docs', limit: candidates });
-          // QMD can log embedding failures and return []; do not label that a successful hybrid search.
-          if (!vector.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
-          lists.push(vector.filter(row => !wanted || wanted(sourceOf(row))));
-        } else if (lists.every(list => !list.length)) {
-          const terms = fallbackTerms(queries);
-          lists.push(terms.length ? searchAnyTerm(terms, candidates).filter(row => !wanted || wanted(sourceOf(row))) : []);
-          note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
-        }
-        const fused = new Map();
-        for (const list of lists) list.forEach((row, rank) => {
-          const previous = fused.get(row.filepath);
-          fused.set(row.filepath, { row, rank: (previous?.rank ?? 0) + 1 / (60 + rank + 1) });
+        const update = await prepare({ verify, hybrid: mode !== 'lexical' });
+        return gate.read(async () => {
+          const started = performance.now();
+          const payload = await find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes });
+          return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
+            resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
+            unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
         });
-        const found = [...fused.values()].sort((a, b) => b.rank - a.rank).map(x => x.row);
-        const results = [];
-        let omitted = 0;
-        for (const row of found) {
-          if (results.length >= limit) break;
-          const id = path.posix.basename(row.displayPath, '.md');
-          const item = await evidence(id);
-          let candidate = item;
-          const fitting = list => fits(render({ results: list }), budget - 100, maxBytes - 400);
-          if (!fitting([...results, candidate])) {
-            candidate = { ...item, text: excerpt(item.text, queries.join(' '), 600, store.internal.db), excerpt: true };
-          }
-          if (!fitting([...results, candidate])) { omitted++; continue; }
-          results.push(candidate);
-        }
-        const payload = { results, more: omitted > 0 || found.length > results.length };
-        payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note].filter(Boolean).join(' ') || undefined;
-        return { payload, metrics: { updateMs: update.ms, searchMs: since(started),
-          resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
-          unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
       },
       /**
        * Returns the text of a chunk ID or reference (see chunksForReference) from line `from` of
@@ -459,39 +462,8 @@ export async function openProject(directory, { modelIdleMs } = {}) {
       async read(ref, from = 1, lines, budget = 1600) {
         if (!Number.isInteger(from) || from < 1 || (lines !== undefined && (!Number.isInteger(lines) || lines < 1))) throw new Error('from >= 1; lines >= 1');
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
-        budget = Math.min(budget, MAX_BUDGET);
-        await sync();
-        const chunks = chunksForReference(ref);
-        if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
-        const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
-        const item = chunks.range ? clipLines(joined, chunks.range) : joined;
-        lines ??= chunks.range ? Infinity : 40;
-        const all = item.text.split('\n');
-        if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
-        const result = { ...item, text: all.slice(from - 1, from - 1 + lines).join('\n'), excerpt: from > 1 || from + lines - 1 < all.length };
-        let cut = false;
-        if (!fits(render({ results: [result] }), budget - 50, MAX_OUTPUT_BYTES - 500)) {
-          result.excerpt = cut = true;
-          const empty = render({ results: [{ ...result, text: '' }] });
-          const available = budget - tokens(empty) - 50;
-          if (available < 1) throw new Error('Source reference exceeds budget; increase --budget');
-          result.text = truncate(result.text, available, MAX_OUTPUT_BYTES - 500 - Buffer.byteLength(empty));
-        }
-        const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
-        if (!span) return result;
-        // A cut last line is only partly shown: the location includes it and the continuation repeats it.
-        const first = Number(span[1]) + from - 1;
-        const shownLines = result.text.split('\n').length;
-        const complete = shownLines - (cut ? 1 : 0);
-        result.location = `lines:${first}-${first + shownLines - 1}`;
-        if (from + complete <= all.length) {
-          const next = first + complete;
-          const continueFrom = line => `Continue: read "${item.source}:${line}-${span[2]}"`;
-          if (complete) result.continuation = continueFrom(next);
-          else if (budget < MAX_BUDGET) result.continuation = 'Line exceeds budget; increase --budget';
-          else result.continuation = `Line ${next} exceeds the per-call output cap and is cut.${next < Number(span[2]) ? ` ${continueFrom(next + 1)}` : ''}`;
-        }
-        return result;
+        await prepare();
+        return gate.read(() => readReference(ref, from, lines, Math.min(budget, MAX_BUDGET)));
       },
       async refresh() {
         const update = await sync();
@@ -508,22 +480,249 @@ export async function openProject(directory, { modelIdleMs } = {}) {
        * so the next hybrid search skips the load; a no-op for lexical-only folders.
        */
       async warm() {
-        if ((await store.getStatus()).hasVectorIndex) await store.searchVector('warm', { collection: 'docs', limit: 1 });
+        if ((await store.getStatus()).hasVectorIndex) await gate.read(() => vectorSearch('warm', 1));
       },
       /** Removes all embeddings and the vector table; the keyword index stays as it is. */
       async disableSemantic() { store.internal.clearAllEmbeddings(); },
       modelLoaded: () => !!store.internal.llm?.embedModel,
-      async close() { await store.close(); },
+      async close() { changes?.close(); await store.close(); },
     };
-    for (const name of ['sync', 'search', 'read', 'refresh', 'embed', 'disableSemantic']) {
+    for (const name of ['sync', 'refresh', 'embed', 'disableSemantic']) {
       const once = api[name];
-      api[name] = (...args) => retryOnSourceChange(() => exclusive(() => locked(async () => { await loadManifest(); return once(...args); })));
+      api[name] = (...args) => retryOnSourceChange(() => indexWrite(() => once(...args)));
+    }
+    for (const name of ['search', 'read']) {
+      const once = api[name];
+      // A retry follows a source or index change that a lock-free query ran into; sync before it.
+      api[name] = (...args) => retryOnSourceChange(attempt => { if (attempt > 1) changes?.changed(); return once(...args); });
     }
     return api;
+
+    /** Runs an index update in this process alone, under the index lock, on the current manifest. */
+    function indexWrite(work) {
+      return gate.write(() => locked(async () => { await loadManifest(); return work(); }));
+    }
+
+    /**
+     * Brings the index up to date before a search or read: syncs under the lock unless the folder
+     * watcher saw no change since the last sync, else reloads a manifest another process rewrote;
+     * hybrid search also embeds new chunks. Returns the sync result, or the last one when skipped.
+     */
+    async function prepare({ verify = false, hybrid = false } = {}) {
+      let update;
+      // Without a finished sync there is no result to report; a parallel first sync may still fail.
+      if (verify || !changes?.fresh() || !lastUpdate) {
+        changes?.syncing();
+        update = await indexWrite(() => sync({ verify })).catch(error => { changes?.changed(); throw error; });
+      } else if (await manifestSignature() !== manifestStamp) await gate.write(loadManifest);
+      if (hybrid) {
+        const health = await store.getStatus();
+        if (health.hasVectorIndex && health.needsEmbedding) await indexWrite(() => embed('Incremental embedding failed; use lexical search or retry'));
+      }
+      return update ?? { ...lastUpdate, changed: 0, removed: 0, hashedBytes: 0, ms: 0 };
+    }
+
+    /**
+     * Embeds a search query for QMD's vector search one at a time, since a node-llama-cpp embedding
+     * context is not reentrant, and remembers recent queries, which agents often repeat.
+     */
+    function embedQuery(text, options) {
+      const key = `${options?.model}\0${text}`;
+      const cached = queryEmbeddings.get(key);
+      if (cached) { queryEmbeddings.delete(key); queryEmbeddings.set(key, cached); return cached; }
+      const result = embedding.then(() => store.internal.llm.embed(text, options));
+      embedding = result.catch(() => {});
+      queryEmbeddings.set(key, result);
+      // QMD returns null for a failed embedding; never keep a failure.
+      result.then(value => { if (!value) queryEmbeddings.delete(key); }, () => queryEmbeddings.delete(key));
+      if (queryEmbeddings.size > QUERY_CACHE_SIZE) queryEmbeddings.delete(queryEmbeddings.keys().next().value);
+      return result;
+    }
+
+    /**
+     * Runs QMD's vector search with the query embedded through embedQuery. While the index holds
+     * only the `docs` collection it passes no collection filter: with one, QMD scans every vector
+     * in JavaScript (about a second for 10,000 chunks) instead of sqlite-vec's native KNN (~60 ms).
+     */
+    function vectorSearch(query, limit) {
+      const others = store.internal.db.prepare("SELECT 1 FROM documents WHERE active = 1 AND collection <> 'docs' LIMIT 1").get();
+      return store.internal.searchVec(query, store.internal.llm.embedModelName, limit, others ? 'docs' : undefined, { embed: embedQuery });
+    }
+
+    /** Ranks chunks for the queries and renders as many as fit the budget (see search). */
+    async function find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes }) {
+      const wanted = sourceFilter(scope, paths, exclude);
+      // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
+      // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
+      const candidates = wanted ? 500 : 20;
+      const lexical = async query => (await store.searchLex(query, { collection: 'docs', limit: candidates })).filter(row => !wanted || wanted(sourceOf(row)));
+      if (mode !== 'lexical' && !(await store.getStatus()).hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
+      const lists = [];
+      for (const query of queries) lists.push(await lexical(query));
+      let note;
+      if (mode !== 'lexical') {
+        const vector = await vectorSearch(queries[0], candidates);
+        // QMD can log embedding failures and return []; do not label that a successful hybrid search.
+        if (!vector.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
+        lists.push(vector.filter(row => !wanted || wanted(sourceOf(row))));
+      } else if (lists.every(list => !list.length)) {
+        const terms = fallbackTerms(queries);
+        lists.push(terms.length ? searchAnyTerm(terms, candidates).filter(row => !wanted || wanted(sourceOf(row))) : []);
+        note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
+      }
+      const fused = new Map();
+      for (const list of lists) list.forEach((row, rank) => {
+        const previous = fused.get(row.filepath);
+        fused.set(row.filepath, { row, rank: (previous?.rank ?? 0) + 1 / (60 + rank + 1) });
+      });
+      const found = [...fused.values()].sort((a, b) => b.rank - a.rank).map(x => x.row);
+      const results = [];
+      let omitted = 0;
+      const query = queries.join(' ');
+      const verified = new Map();
+      for (const row of found) {
+        if (results.length >= limit) break;
+        const id = path.posix.basename(row.displayPath, '.md');
+        // A lock-free query can meet an index another process is rewriting; retry after syncing.
+        if (!metadata.has(id)) throw sourceChanged(`Index changed during search: ${id}; retry`);
+        const item = await evidence(id, verified);
+        let candidate = brief ? { ...item, text: snippet(item.text, query) } : item;
+        const fitting = list => fits(render({ brief, results: list }), budget - 100, maxBytes - 400);
+        if (!brief && !fitting(mergeAdjacent([...results, candidate]))) {
+          candidate = { ...item, text: excerpt(item.text, query, 600, store.internal.db), excerpt: true };
+        }
+        if (!fitting(brief ? [...results, candidate] : mergeAdjacent([...results, candidate]))) { omitted++; continue; }
+        results.push(candidate);
+      }
+      const payload = { ...(brief && { brief }), results: brief ? results : mergeAdjacent(results), more: omitted > 0 || found.length > results.length };
+      payload.note = [results.some(r => /\.xlsx?$/i.test(r.source)) && EXCEL_NOTE, note].filter(Boolean).join(' ') || undefined;
+      return payload;
+    }
+
+    /** Cuts a chunk to one line around its best match for brief results, past the headings the result line already names. */
+    function snippet(text, query) {
+      const body = text.replace(/^(?:#{1,6}\s.*\n+)+/, '') || text;
+      return excerpt(body, query, BRIEF_CHARS, store.internal.db, 12).replace(/\s+/g, ' ').trim().slice(0, BRIEF_CHARS);
+    }
+
+    /**
+     * Joins results that are consecutive chunks of one line-located source into one result at the
+     * place of the first, so adjacent hits cost one reference and heading.
+     */
+    function mergeAdjacent(results) {
+      for (const [i, before] of results.entries()) {
+        const j = results.findIndex(after => follows(before, after));
+        if (j < 0) continue;
+        const rest = results.filter((_, k) => k !== i && k !== j);
+        rest.splice(Math.min(i, j), 0, joinResults(before, results[j]));
+        return mergeAdjacent(rest);
+      }
+      return results;
+    }
+
+    /** Tells whether `after` holds the full, unexcerpted chunk that directly follows `before` in its source. */
+    function follows(before, after) {
+      if (before.source !== after.source || before.excerpt || after.excerpt || !LINE_SPAN.test(before.location) || !LINE_SPAN.test(after.location)) return false;
+      const chunks = manifest.files[before.source].chunks;
+      const index = chunks.findIndex(chunk => chunk.id === idsOf(before).at(-1));
+      return index >= 0 && chunks[index + 1]?.id === idsOf(after)[0];
+    }
+
+    /** Joins two consecutive results into one; blank lines fill the gap so source lines still count. */
+    function joinResults(before, after) {
+      const [, kind, first, end] = LINE_SPAN.exec(before.location);
+      const [, , start, last] = LINE_SPAN.exec(after.location);
+      return { ...before, location: `${kind}${first}-${last}`, ids: [...idsOf(before), ...idsOf(after)],
+        text: `${before.text}\n${'\n'.repeat(Math.max(0, Number(start) - Number(end) - 1))}${after.text}` };
+    }
+
+    /** Reads a reference for read(), on an up-to-date index. */
+    async function readReference(ref, from, lines, budget) {
+      const chunks = chunksForReference(ref);
+      if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
+      const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
+      const item = chunks.range ? clipLines(joined, chunks.range) : joined;
+      lines ??= chunks.range ? Infinity : 40;
+      const all = item.text.split('\n');
+      if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
+      const result = { ...item, text: all.slice(from - 1, from - 1 + lines).join('\n'), excerpt: from > 1 || from + lines - 1 < all.length };
+      let cut = false;
+      if (!fits(render({ results: [result] }), budget - 50, MAX_OUTPUT_BYTES - 500)) {
+        result.excerpt = cut = true;
+        const empty = render({ results: [{ ...result, text: '' }] });
+        const available = budget - tokens(empty) - 50;
+        if (available < 1) throw new Error('Source reference exceeds budget; increase --budget');
+        result.text = truncate(result.text, available, MAX_OUTPUT_BYTES - 500 - Buffer.byteLength(empty));
+      }
+      const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
+      if (!span) return result;
+      // A cut last line is only partly shown: the location includes it and the continuation repeats it.
+      const first = Number(span[1]) + from - 1;
+      const shownLines = result.text.split('\n').length;
+      const complete = shownLines - (cut ? 1 : 0);
+      result.location = `lines:${first}-${first + shownLines - 1}`;
+      if (from + complete <= all.length) {
+        const next = first + complete;
+        const continueFrom = line => `Continue: read "${item.source}:${line}-${span[2]}"`;
+        if (complete) result.continuation = continueFrom(next);
+        else if (budget < MAX_BUDGET) result.continuation = 'Line exceeds budget; increase --budget';
+        else result.continuation = `Line ${next} exceeds the per-call output cap and is cut.${next < Number(span[2]) ? ` ${continueFrom(next + 1)}` : ''}`;
+      }
+      return result;
+    }
   } catch (error) {
+    changes?.close();
     if (store) await store.close();
     throw error;
   }
+}
+
+/**
+ * Lets this process's searches and reads run together while its index updates run alone: an
+ * update waits for running queries, and queries wait for queued updates, so they never starve.
+ */
+function createGate() {
+  let tail = Promise.resolve(), writers = 0;
+  const readers = new Set();
+  return {
+    write(work) {
+      writers++;
+      const run = tail.then(async () => {
+        while (readers.size) await Promise.allSettled([...readers]);
+        return work();
+      }).finally(() => { writers--; });
+      tail = run.catch(() => {});
+      return run;
+    },
+    async read(work) {
+      while (writers) await tail;
+      const run = work();
+      readers.add(run);
+      try { return await run; } finally { readers.delete(run); }
+    },
+  };
+}
+
+/**
+ * Watches a folder recursively so a long-lived process syncs only after a change. `fresh()` is
+ * false after a change outside `.doktimoi` and `.git`, after a watcher error (then always, as
+ * without a watcher, e.g. on platforms without recursive watching) and a minute after the last
+ * sync, as a safety net for missed events. `syncing()` marks the start of a sync, `changed()`
+ * forces the next one.
+ */
+function watchFolder(root) {
+  let dirty = true, syncedAt = 0, watcher = null;
+  try {
+    watcher = watch(root, { recursive: true }, (event, name) => { if (!name || !IGNORED_CHANGE.test(name)) dirty = true; });
+    watcher.on('error', () => { watcher?.close(); watcher = null; });
+    watcher.unref();
+  } catch { watcher = null; }
+  return {
+    fresh: () => !!watcher && !dirty && Date.now() - syncedAt < SAFETY_SYNC_MS,
+    syncing: () => { dirty = false; syncedAt = Date.now(); },
+    changed: () => { dirty = true; },
+    close: () => watcher?.close(),
+  };
 }
 
 async function main() {
@@ -571,7 +770,7 @@ function parseCommandLine() {
     return parseArgs({ allowPositionals: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
-      budget: { type: 'string', default: '1600' }, limit: { type: 'string', default: '4' },
+      budget: { type: 'string' }, limit: { type: 'string' }, brief: { type: 'boolean', default: false },
       from: { type: 'string', default: '1' }, lines: { type: 'string' },
       metrics: { type: 'boolean', default: false },
       verify: { type: 'boolean', default: false },
@@ -605,7 +804,7 @@ export async function execute(project, { command, id, values, input }) {
     result = outputs.join('\n\n');
   }
   if (command === 'read') {
-    const item = await project.read(id, Number(values.from), values.lines === undefined ? undefined : Number(values.lines), Number(values.budget));
+    const item = await project.read(id, Number(values.from), values.lines === undefined ? undefined : Number(values.lines), Number(values.budget ?? 1600));
     result = render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, capNote(values), item.continuation].filter(Boolean).join(' ') || undefined });
   }
   if (command === 'search') {
@@ -619,7 +818,8 @@ export async function execute(project, { command, id, values, input }) {
 
 /** Maps the CLI search options to search() options. */
 function searchOptions(values) {
-  return { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), paths: values.path ?? [], exclude: values.exclude ?? [] };
+  return { mode: values.mode, brief: values.brief, budget: Number(values.budget ?? (values.brief ? 800 : 1600)), limit: Number(values.limit ?? (values.brief ? 10 : 4)),
+    paths: values.path ?? [], exclude: values.exclude ?? [] };
 }
 
 /** Says that a --budget above the per-call cap was lowered, so the agent knows why output is shorter. */
@@ -673,8 +873,10 @@ function serverLines(server, ownScript) {
   if (error) return [head, `  Did not answer the status request: ${error}${/^no answer/.test(error) ? ' (stalled, e.g. loading the model)' : ''}`];
   const model = state.modelLoaded ? 'loaded' : state.warming ? 'loading in the background' : 'not loaded';
   const work = state.busy ? `busy with ${state.busy.command} for ${seconds(state.busy.ms)}` : 'idle';
+  // Older plugin copies' servers ran requests one at a time and report `queued` instead of `running`.
+  const others = state.running === undefined ? `, ${state.queued} queued` : state.running > 1 ? `, ${state.running - 1} more running` : '';
   const idleExit = state.idleExitAt ? `, exits when idle at ${localTime(new Date(state.idleExitAt))}` : '';
-  return [head, `  Embedding model: ${model}; ${work}, ${state.queued} queued${idleExit}`];
+  return [head, `  Embedding model: ${model}; ${work}${others}${idleExit}`];
 }
 
 /**
@@ -714,10 +916,12 @@ async function runInProcess(root, request) {
 async function serveFolder(directory) {
   const root = await fs.realpath(directory);
   const { version } = JSON.parse(await fs.readFile(new URL('../package.json', import.meta.url), 'utf8'));
-  let project, warming = null;
+  let opening, project, warming = null;
   await serve(root, await scriptPath(), version, async request => {
     if (!['search', 'read', 'batch', 'warm'].includes(request.command)) throw new Error(`Unsupported server command: ${request.command}`);
-    project ??= await openProject(root, { modelIdleMs: SERVER_MODEL_IDLE_MS });
+    // Requests run concurrently, so the first ones share one opening project.
+    opening ??= openProject(root, { modelIdleMs: SERVER_MODEL_IDLE_MS, watch: true }).catch(error => { opening = null; throw error; });
+    project = await opening;
     if (request.command !== 'warm') return execute(project, request);
     // Answer at once so the session-start hook never waits for the model; a failed warm-up only costs the next search the load.
     warming = project.warm().catch(() => {}).finally(() => { warming = null; });
@@ -767,7 +971,9 @@ Options:
   --exclude PREFIX search, batch: leave out sources under this folder or file (repeatable)
   --budget N       output tokens, 256-${MAX_BUDGET} (default 1600); larger values are capped so one
                    call's output stays inline; batch splits ${MAX_BUDGET} across its searches
-  --limit N        search: results, 1-20 (default 4)
+  --limit N        search: results, 1-20 (default 4, with --brief 10)
+  --brief          search, batch: only the reference, heading path and one matching line per
+                   result (default budget 800); read the reference you need afterwards
   --from N         read: start at line N of the returned text, where line 1 is the first
                    source line of the reference's range (default 1)
   --lines N        read: lines to return (default 40 for a search reference, all for a range)

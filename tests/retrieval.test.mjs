@@ -131,10 +131,10 @@ test('path traversal, symlinks and ignored files cannot enter retrieval', async 
 
 test('Git subfolder inventory includes tracked files and excludes ignored directories', async t => {
   const { root, project } = await fixture(t);
-  execFileSync('git', ['init', '-q', root]);
+  execFileSync('git', ['init', '-q', root], { windowsHide: true });
   await fs.mkdir(path.join(root, 'docs/private'), { recursive: true });
   await fs.writeFile(path.join(root, 'docs/visible.md'), '# Visible\n\nPUBLIC_GIT_MARKER');
-  execFileSync('git', ['add', 'docs/visible.md'], { cwd: root });
+  execFileSync('git', ['add', 'docs/visible.md'], { cwd: root, windowsHide: true });
   await fs.writeFile(path.join(root, 'docs/private/secret.md'), 'SECRET_GIT_MARKER');
   await fs.writeFile(path.join(root, '.gitignore'), 'docs/private/\ndocs/visible.md\n');
   assert.equal((await project.search(['PUBLIC_GIT_MARKER'])).payload.results.length, 1);
@@ -280,7 +280,9 @@ test('the CLI runs through the symlink used by npm executables', {
   const link = path.join(root, 'doktimoi');
   await fs.symlink(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url), link);
   await fs.writeFile(path.join(root, 'policy.md'), '# Policy\n\nSYMLINK_CLI requires approval.');
-  const output = execFileSync(process.execPath, [link, 'search', root, '--query', 'SYMLINK_CLI'], { encoding: 'utf8' });
+  // Only build creates an index; search then runs through the same symlink.
+  assert.equal(JSON.parse(execFileSync(process.execPath, [link, 'build', root], { encoding: 'utf8', windowsHide: true })).files, 1);
+  const output = execFileSync(process.execPath, [link, 'search', root, '--query', 'SYMLINK_CLI'], { encoding: 'utf8', windowsHide: true });
   assert.match(output, /policy.md:/);
   assert.match(output, /SYMLINK_CLI requires approval/);
 });
@@ -437,7 +439,7 @@ test('the index lock is held per operation, so another process can sync while a 
     assert.equal((await first.search(['FIRST_TOKEN'])).payload.results.length, 1);
     await fs.writeFile(path.join(root, 'b.md'), '# B\n\nSECOND_TOKEN here.');
     const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
-    assert.equal(JSON.parse(execFileSync(process.execPath, [cli, 'sync', root], { encoding: 'utf8', timeout: 60000 })).update.changed, 1);
+    assert.equal(JSON.parse(execFileSync(process.execPath, [cli, 'sync', root], { encoding: 'utf8', timeout: 60000, windowsHide: true })).update.changed, 1);
     // The open project reloads the other process's manifest, and its store sees that process's index update.
     const result = await first.search(['SECOND_TOKEN']);
     assert.equal(result.metrics.changed, 0);
@@ -462,6 +464,21 @@ test('--path and --exclude restrict search to source prefixes and reject unknown
   assert.ok((await sources({ exclude: ['plans', 'diagrams'] })).every(source => source.startsWith('noise')));
   await assert.rejects(project.search(['FILTER_TERM'], { paths: ['plan'] }), /No indexed source under --path plan$/);
   await assert.rejects(project.search(['FILTER_TERM'], { exclude: ['../x'] }), /inside/);
+});
+
+test('an absolute --path or --exclude in Windows 8.3 short form matches the canonical index root', {
+  skip: process.platform !== 'win32' && '8.3 short names exist only on Windows',
+}, async t => {
+  const { root, project } = await fixture(t);
+  const folder = path.join(root, 'diagrams-long-name');
+  await fs.mkdir(folder);
+  await fs.writeFile(path.join(folder, 'flow.md'), '# Flow\n\nSHORT_NAME_TERM in a diagram.');
+  await fs.writeFile(path.join(root, 'other.md'), '# Other\n\nSHORT_NAME_TERM elsewhere.');
+  const short = execFileSync('cmd', ['/d', '/c', `for %I in ("${folder}") do @echo %~sI`], { encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true }).trim();
+  if (short.toLowerCase() === folder.toLowerCase()) return t.skip('8.3 short names are disabled on this volume');
+  const sources = async options => (await project.search(['SHORT_NAME_TERM'], options)).payload.results.map(r => r.source).sort();
+  assert.deepEqual(await sources({ paths: [short] }), ['diagrams-long-name/flow.md']);
+  assert.deepEqual(await sources({ exclude: [path.join(short, 'missing.md'), short] }), ['other.md']);
 });
 
 test('a lexical search without a passage holding every term falls back to some terms, else hints', async t => {
@@ -497,4 +514,130 @@ test('one call stays below the inline output cap however large --budget is, and 
   }
   const found = render((await project.search(['määrä', 'quantity'], { budget: 12000, limit: 20 })).payload);
   assert.ok(Buffer.byteLength(found) <= 20000 && tokens(found) <= 6000);
+});
+
+/** Opens a watching project, as the search server does, on a fresh folder holding `files`. */
+async function watchedFixture(t, files) {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-watch-')));
+  for (const [name, text] of Object.entries(files)) await fs.writeFile(path.join(root, name), text);
+  const project = await openProject(root, { watch: true });
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  return { root, project };
+}
+
+/** Repeats a search until `done` accepts its result or two seconds pass, since file events arrive asynchronously. */
+async function searchUntil(project, queries, done) {
+  let result;
+  for (let i = 0; i < 40; i++) {
+    result = await project.search(queries);
+    if (done(result)) break;
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  return result;
+}
+
+test('a watching project skips the sync until a source changes, then picks the change up', async t => {
+  const { root, project } = await watchedFixture(t, { 'a.md': '# A\n\nWATCH_TERM first.' });
+  assert.equal((await project.search(['WATCH_TERM'])).payload.results.length, 1);
+  // Let the events of the fixture's own writes pass, then searches must not rescan the folder.
+  await new Promise(resolve => setTimeout(resolve, 300));
+  await project.search(['WATCH_TERM']);
+  const quiet = await project.search(['WATCH_TERM']);
+  assert.deepEqual([quiet.metrics.updateMs, quiet.metrics.changed], [0, 0]);
+  await fs.writeFile(path.join(root, 'b.md'), '# B\n\nWATCH_TERM second.');
+  const added = await searchUntil(project, ['WATCH_TERM'], result => result.payload.results.length === 2);
+  assert.deepEqual(added.payload.results.map(r => r.source).sort(), ['a.md', 'b.md']);
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nWATCH_TERM edited.');
+  const edited = await searchUntil(project, ['WATCH_TERM edited'], result => result.payload.results.length === 1);
+  assert.match(edited.payload.results[0].text, /WATCH_TERM edited/);
+  assert.match((await project.read('a.md:1-3')).text, /edited/);
+});
+
+test('searches and reads run without the index lock while index updates take it', async t => {
+  const { root, project } = await watchedFixture(t, { 'a.md': '# A\n\nLOCK_FREE_TERM here.' });
+  await project.search(['LOCK_FREE_TERM']);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const lockfile = require('proper-lockfile');
+  const release = await lockfile.lock(root, { realpath: false, lockfilePath: path.join(root, '.doktimoi', 'write.lock') });
+  try {
+    const results = await Promise.all([
+      ...Array.from({ length: 5 }, () => project.search(['LOCK_FREE_TERM'])),
+      project.read('a.md:1-3'),
+    ]);
+    assert.ok(results.slice(0, 5).every(result => result.payload.results[0].source === 'a.md'));
+    assert.match(results[5].text, /LOCK_FREE_TERM here/);
+  } finally { await release(); }
+  // A change makes the next search sync, under the lock, before it answers.
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nLOCK_FREE_TERM changed.');
+  const changed = await searchUntil(project, ['LOCK_FREE_TERM'], result => /changed/.test(result.payload.results[0].text));
+  assert.match(changed.payload.results[0].text, /changed/);
+});
+
+test('concurrent searches, reads and syncs of one project give consistent results', async t => {
+  const { root, project } = await fixture(t);
+  for (let i = 0; i < 10; i++) await fs.writeFile(path.join(root, `doc${i}.md`), `# Doc ${i}\n\nPARALLEL_TERM number ${i}.`);
+  const work = [];
+  for (let i = 0; i < 10; i++) {
+    work.push(project.search(['PARALLEL_TERM'], { limit: 20, budget: 6000 }));
+    work.push(project.read(`doc${i}.md:1-3`));
+    if (i === 5) work.push(fs.writeFile(path.join(root, 'late.md'), '# Late\n\nPARALLEL_TERM late.').then(() => project.sync()));
+  }
+  const results = await Promise.all(work);
+  for (const result of results.filter(r => r?.payload)) assert.ok(result.payload.results.length >= 10);
+  assert.match(results[1].text, /PARALLEL_TERM number 0/);
+  assert.equal((await project.search(['PARALLEL_TERM'], { limit: 20, budget: 6000 })).payload.results.length, 11);
+});
+
+test('brief search lists reference, heading path and one matching line per result', async t => {
+  const { root, project } = await fixture(t);
+  const filler = Array.from({ length: 30 }, (_, i) => `Line ${i} of unrelated filler text.`).join('\n');
+  await fs.writeFile(path.join(root, 'guide.md'), `# Guide\n\n## Setup\n\n${filler}\nBRIEF_TERM is configured in settings.\n${filler}`);
+  await fs.writeFile(path.join(root, 'other.md'), '# Other\n\nBRIEF_TERM appears here too.');
+  const { payload } = await project.search(['BRIEF_TERM'], { brief: true });
+  const text = render(payload);
+  assert.match(text, /^guide\.md:1-65 — Guide > Setup\n {2}.*BRIEF_TERM is configured in settings\..*$/m);
+  assert.match(text, /^other\.md:1-3 — Other\n {2}.*BRIEF_TERM appears here too\.$/m);
+  for (const line of text.split('\n').filter(line => line.startsWith('  '))) assert.ok(line.length <= 122, line);
+  assert.ok(tokens(text) < 120);
+});
+
+test('a heading directly followed by another heading is merged into that section', () => {
+  const chunks = chunkMarkdown('# Plan\n\n## Status\n\n### Detail\n\nThe detail text.\n\n## Next\n\nMore text.', 'plan.md');
+  assert.deepEqual(chunks.map(c => [c.location, c.heading]), [['lines:1-7', 'Plan > Status > Detail'], ['lines:9-11', 'Plan > Next']]);
+  assert.equal(render({ results: [{ ...chunks[0], text: chunks[0].text }] }), 'plan.md:1-7\n# Plan\n\n## Status\n\n### Detail\n\nThe detail text.');
+  assert.equal(render({ results: [{ ...chunks[1], text: chunks[1].text }] }), 'plan.md:9-11\nPlan\n## Next\n\nMore text.');
+});
+
+test('adjacent hits of one source are returned as one result with one reference', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'plan.md'), '# One\n\nADJACENT_TERM first.\n\n# Two\n\nADJACENT_TERM second.\n\n# Three\n\nNothing here.\n\n# Four\n\nADJACENT_TERM fourth.');
+  const { payload } = await project.search(['ADJACENT_TERM']);
+  assert.equal(render(payload), 'plan.md:1-7\n# One\n\nADJACENT_TERM first.\n\n# Two\n\nADJACENT_TERM second.\n\nplan.md:13-15\n# Four\n\nADJACENT_TERM fourth.');
+});
+
+test('a search in parallel with a failing first sync of a watching project reports the sync error', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nPAR_TERM alpha.');
+  await fs.writeFile(path.join(root, 'broken.json'), '{ not json');
+  const project = await openProject(root, { watch: true });
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  const results = await Promise.allSettled([project.search(['PAR_TERM']), project.search(['PAR_TERM'])]);
+  for (const result of results) assert.match(result.reason?.message ?? '', /^broken\.json: /);
+});
+
+test('adjacent hits of extracted lines stay separate so each reference can be read back', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'page.html'), '<h1>One</h1><p>MERGE_TERM first.</p><h1>Two</h1><p>MERGE_TERM second.</p>');
+  const { payload } = await project.search(['MERGE_TERM']);
+  assert.equal(payload.results.length, 2);
+  for (const item of payload.results) assert.match((await project.read(reference(item))).text, /MERGE\\_TERM/);
+});
+
+test('a chain of adjacent hits merges into one result whatever their rank order', async t => {
+  const { root, project } = await fixture(t);
+  const filler = 'other words dilute this passage so that it ranks below its neighbours '.repeat(4);
+  await fs.writeFile(path.join(root, 'chain.md'), `# One\n\nCHAIN_TERM CHAIN_TERM.\n\n# Two\n\nCHAIN_TERM ${filler}\n\n# Three\n\nCHAIN_TERM CHAIN_TERM.`);
+  const { payload } = await project.search(['CHAIN_TERM']);
+  assert.deepEqual(payload.results.map(reference), ['chain.md:1-11']);
+  assert.match(payload.results[0].text, /^# One[\s\S]*# Two[\s\S]*# Three\n\nCHAIN_TERM CHAIN_TERM\.$/);
 });

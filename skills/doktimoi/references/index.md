@@ -122,7 +122,10 @@ tracked files. Pick the first existing instruction file:
 2. `CLAUDE.md`.
 3. `.github/copilot-instructions.md`, then a root `copilot-instructions.md`.
 
-Read it and append or update only Doktimoi's block there; never copy it into a new
+Read it and respect it and its recorded search choice unless higher-priority
+instructions differ. If its `doktimoi:start` block differs from the one below,
+replace the block with the current text, keep the recorded choice and tell the
+user. Append or update only Doktimoi's block there; never copy it into a new
 host-specific file or create AGENTS.md when another file exists. If several case
 variants exist, report conflicts instead of choosing. Respect the `applyTo` scope
 of `.github/instructions/*.instructions.md` files; do not make one folder-wide.
@@ -155,7 +158,12 @@ repositories during setup.
 locations), `chunks/` and `visuals/` (normalized images and rendered PDF pages);
 it costs disk, not context. Searches rescan metadata, reconvert only changed
 files, update embeddings when a semantic index exists and fail rather than return
-stale evidence; a per-folder lock serializes them. `build` rehashes every source.
+stale evidence; a per-folder lock serializes index updates, while searches run
+without it (the background server rescans only after a file change, or once a
+minute). `build` rehashes every source, and the first search after a plugin update
+that changes chunking reconverts every source once (unchanged passages keep their
+embeddings). `build` output lists extraction warnings; `status` counts them and
+search shows only those of returned sources.
 The cache is disposable: if it is incompatible or incomplete, rebuild it while
 preserving unrelated user files. A folder with semantic search may have a
 background search server holding `index.sqlite` open; run

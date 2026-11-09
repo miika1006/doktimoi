@@ -103,9 +103,11 @@ In a folder with semantic search enabled, `search` and `read` start a hidden
 background server for that folder and send their requests to it over a local
 named pipe or Unix socket, authenticated by a random token in
 `.doktimoi/server.json`. The server keeps the embedding model loaded, so only the
-first hybrid search waits for it; it takes the index lock per request and exits
-after 30 idle minutes. If the server is unavailable, the command runs in-process
-as before. Keyword-only folders never start a server.
+first hybrid search waits for it. It answers searches and reads in parallel,
+watches the folder and re-indexes only after a change (and at least once a
+minute), taking the index lock only while it writes; it exits after 30 idle
+minutes. If the server is unavailable, the command runs in-process as before.
+Keyword-only folders never start a server.
 
 OCR downloads English/Finnish recognition data on first use and runs locally.
 Legacy `.doc` and `.xls` image conversion also require LibreOffice. OCR can misread text; inspect
@@ -123,6 +125,10 @@ that index and search only that part. Only `build` creates an index. `--path` an
 `--exclude` narrow a search to, or away from, folders and files. A keyword search
 whose terms never occur together returns passages matching some of them, labeled
 as such.
+
+`search --brief` lists only references, heading paths and one matching line per
+hit, so an assistant can locate passages cheaply and then `read` exact ranges.
+Adjacent hits from one file are returned as one passage.
 
 Search checks file metadata and verifies returned sources against their hashes;
 `--verify` rehashes every source. A tiny folder may be cheaper to read directly.

@@ -12,7 +12,6 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import lockfile from 'proper-lockfile';
 import { atomicWrite } from './extraction.mjs';
 
 /**
@@ -23,8 +22,10 @@ import { atomicWrite } from './extraction.mjs';
  * @param {string} script canonical path of the doktimoi.mjs that serves it
  */
 export async function viaServer(root, script, request) {
-  if (process.env.DOKTIMOI_NO_SERVER || !hasSemanticIndex(root)) return null;
+  if (process.env.DOKTIMOI_NO_SERVER) return null;
   let info = await readInfo(root);
+  // Only semantic folders get a server; a running one answers without opening SQLite here.
+  if (!info && !hasSemanticIndex(root)) return null;
   // A newer plugin version takes the folder over; an older client leaves a newer server alone.
   if (info && info.script !== script && isOlder(info.version, await ownVersion())) info = await stopServer(root, info);
   if (!info) info = await waitForInfo(root, start(root, script));
@@ -66,8 +67,8 @@ export async function serverStatus(root) {
 
 /**
  * Serves requests for one folder until it has been idle for `idleMs`; returns at once when
- * another server already owns the folder. A `status` request is answered at once, outside the
- * queue, and does not count as activity.
+ * another server already owns the folder. Requests run concurrently; `run` serializes what must
+ * be. A `status` request is answered at once and does not count as activity.
  * @param {(request: object) => Promise<{ output: string, notices: string[] }>} run handles one request
  * @param {() => Promise<void>} close releases what `run` opened
  * @param {() => object} describe reports the served project's state, such as whether the model is loaded
@@ -76,6 +77,7 @@ export async function serve(root, script, version, run, close, describe, idleMs 
   const info = path.join(root, CACHE_DIR, 'server.json');
   let stopping = null;
   const stop = () => (stopping ??= shutdown());
+  const { default: lockfile } = await import('proper-lockfile');
   const release = await lockfile.lock(info, {
     realpath: false, lockfilePath: path.join(root, CACHE_DIR, 'server.lock'), stale: 60000, update: 5000,
     onCompromised: () => { stop(); },
@@ -84,12 +86,16 @@ export async function serve(root, script, version, run, close, describe, idleMs 
   const token = crypto.randomBytes(32).toString('hex');
   const name = `doktimoi-${crypto.randomBytes(8).toString('hex')}`;
   const pipe = process.platform === 'win32' ? `\\\\.\\pipe\\${name}` : path.join(os.tmpdir(), `${name}.sock`);
-  let queue = Promise.resolve(), pending = 0, idle, idleAt = null, active = null;
-  const resetIdle = () => { clearTimeout(idle); idleAt = null; if (!pending) { idle = setTimeout(stop, idleMs); idleAt = Date.now() + idleMs; } };
+  let idle, idleAt = null;
+  const active = new Set();
+  const resetIdle = () => { clearTimeout(idle); idleAt = null; if (!active.size) { idle = setTimeout(stop, idleMs); idleAt = Date.now() + idleMs; } };
 
-  /** Describes this server for the `status` request. */
-  const state = () => ({ pid: process.pid, version, script, idleExitAt: idleAt, queued: pending - (active ? 1 : 0),
-    busy: active && { command: active.command, ms: Date.now() - active.started }, ...describe() });
+  /** Describes this server for the `status` request; `busy` is its oldest running request. */
+  const state = () => {
+    const oldest = active.values().next().value;
+    return { pid: process.pid, version, script, idleExitAt: idleAt, running: active.size,
+      busy: oldest && { command: oldest.command, ms: Date.now() - oldest.started }, ...describe() };
+  };
 
   /** Answers one connection: a JSON request line with the token, then a JSON reply line. */
   const server = net.createServer(socket => {
@@ -105,25 +111,24 @@ export async function serve(root, script, version, run, close, describe, idleMs 
       const request = parseRequest(data.slice(0, end));
       if (!request || !sameToken(request.token, token)) return socket.end(`${JSON.stringify({ error: 'Unauthorized request' })}\n`);
       if (request.command === 'status') return socket.end(`${JSON.stringify({ output: JSON.stringify(state()), notices: [] })}\n`);
-      pending++;
+      if (request.command === 'stop') return socket.end(`${JSON.stringify({ output: '', notices: [] })}\n`, stop);
+      const entry = { command: request.command, started: Date.now() };
+      active.add(entry);
       clearTimeout(idle);
       idleAt = null;
-      queue = queue.then(async () => {
-        active = { command: request.command, started: Date.now() };
-        const reply = request.command === 'stop' ? { output: '', notices: [] } : await run(request).catch(error => ({ error: error.message }));
-        active = null;
+      entry.done = run(request).catch(error => ({ error: error.message })).then(reply => {
         if (!socket.destroyed) socket.end(`${JSON.stringify(reply)}\n`);
-        pending--;
-        if (request.command === 'stop') stop(); else resetIdle();
+        active.delete(entry);
+        resetIdle();
       });
     });
   });
 
-  /** Stops accepting requests, finishes the queued ones and removes this server's traces. */
+  /** Stops accepting requests, finishes the running ones and removes this server's traces. */
   async function shutdown() {
     clearTimeout(idle);
     server.close();
-    await queue;
+    await Promise.all([...active].map(entry => entry.done));
     const current = JSON.parse(await fs.readFile(info, 'utf8').catch(() => 'null'));
     if (current?.token === token) await fs.rm(info, { force: true });
     await close().catch(() => {});

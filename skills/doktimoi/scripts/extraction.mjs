@@ -158,7 +158,7 @@ export async function legacyOffice(buffer, extension) {
     const executable = await findSoffice();
     try {
       await run(executable, [`-env:UserInstallation=${pathToFileURL(profile).href}`, '--headless', '--nologo', '--nodefault', '--norestore',
-        '--convert-to', conversion[0], '--outdir', temp, input], { timeout: 120000, maxBuffer: 1024 * 1024 });
+        '--convert-to', conversion[0], '--outdir', temp, input], { timeout: 120000, maxBuffer: 1024 * 1024, windowsHide: true });
     } catch (e) {
       if (e.code === 'ENOENT') throw Object.assign(new Error(`Legacy ${extension} requires LibreOffice; install it or set DOKTIMOI_SOFFICE to its executable`), { code: MISSING_CONVERTER });
       throw e;

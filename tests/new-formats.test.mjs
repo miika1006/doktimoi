@@ -240,7 +240,7 @@ test('Office XML BOMs preserve cell, slide and image evidence and allow CLI buil
     await fs.writeFile(path.join(root, name), withBom);
   }
   const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
-  const options = { encoding: 'utf8', env: { ...process.env, DOKTIMOI_OCR: 'off' } };
+  const options = { encoding: 'utf8', env: { ...process.env, DOKTIMOI_OCR: 'off' }, windowsHide: true };
   const built = JSON.parse(execFileSync(process.execPath, [cli, 'build', root], options));
   assert.equal(built.files, 2);
   assert.match(execFileSync(process.execPath, [cli, 'search', root, '--query', 'NATIVE_XLSX_MARKER'], options), /NATIVE_XLSX_MARKER/);
@@ -252,7 +252,7 @@ test('CLI runs when Windows invokes it with differently cased directories', { sk
   await fs.writeFile(path.join(root, 'note.md'), '# Note\n\nCASE_MARKER\n');
   const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
   const recased = path.join(path.dirname(cli).toUpperCase(), path.basename(cli));
-  assert.equal(JSON.parse(execFileSync(process.execPath, [recased, 'build', root], { encoding: 'utf8' })).files, 1);
+  assert.equal(JSON.parse(execFileSync(process.execPath, [recased, 'build', root], { encoding: 'utf8', windowsHide: true })).files, 1);
 });
 
 test('XML strips only the leading BOM and still rejects malformed or unsafe XML', async () => {

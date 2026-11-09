@@ -83,7 +83,7 @@ function remindOnWholeRead(input, pluginRoot) {
 
 function remind(root, pluginRoot, bypass) {
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --brief to locate passages, then read the exact range (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**
@@ -124,7 +124,7 @@ function parseOptions(args) {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, from: { type: 'string' }, lines: { type: 'string' },
-      verify: { type: 'boolean' },
+      verify: { type: 'boolean' }, brief: { type: 'boolean' },
     } });
   } catch { return null; }
 }

@@ -31,6 +31,7 @@ test('approves a single lexical search, read or status against an indexed folder
   const { indexed } = await folders(t);
   assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "XTX Identity" --query 'Entra vieras' --budget 1600`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" search . --query Entra --mode lexical --verify`, indexed), pluginRoot)));
+  assert.ok(allowed(decide(bash(`node "${script}" search . --query Entra --brief --limit 20`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" read "${indexed}" "a.md:1-5" --from 1 --lines 40`, indexed), pluginRoot)));
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" search "${indexed}" --query "ä ö"` }, cwd: indexed }, pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "how is access granted" --mode hybrid`, indexed), pluginRoot)));
@@ -168,7 +169,7 @@ test('sync hook refreshes an edited index so the next search has nothing to upda
   await fs.writeFile(file, '# Access\n\nProduction requires mutual TLS and audited ROTATION.');
   execFileSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
     input: JSON.stringify({ hook_event_name: 'PostToolUse', tool_name: 'Edit', tool_input: { file_path: file }, cwd: root }),
-    env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8',
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8', windowsHide: true,
   });
   project = await openProject(root);
   try {
@@ -180,7 +181,7 @@ test('sync hook refreshes an edited index so the next search has nothing to upda
 test('hook process prints the decision as JSON and nothing for other tools', async t => {
   const { indexed } = await folders(t);
   const run = input => execFileSync(process.execPath, [path.join(pluginRoot, 'hooks', 'pretooluse.mjs')], {
-    input: JSON.stringify(input), env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8',
+    input: JSON.stringify(input), env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8', windowsHide: true,
   });
   assert.ok(allowed(JSON.parse(run(bash(`node "${script}" search "${indexed}" --query x`, indexed)))));
   assert.equal(run({ tool_name: 'Edit', tool_input: {}, cwd: indexed }), '');

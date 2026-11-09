@@ -16,7 +16,7 @@ const lockfile = skillRequire('proper-lockfile');
 
 /** Runs the CLI and returns its stdout, stderr and exit code. */
 function run(args, env = {}, input) {
-  const result = spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', env: { ...process.env, ...env }, input, timeout: 120000 });
+  const result = spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', env: { ...process.env, ...env }, input, timeout: 120000, windowsHide: true });
   return { stdout: result.stdout, stderr: result.stderr, status: result.status };
 }
 
@@ -75,7 +75,7 @@ test('a lexical-only folder never starts a server, from searches or the session-
   const root = await folder(t, false);
   assert.match(run(['search', root, '--query', 'SERVER_TOKEN']).stdout, /needs approval/);
   spawnSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
-    input: JSON.stringify({ hook_event_name: 'SessionStart', cwd: root }), env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8',
+    input: JSON.stringify({ hook_event_name: 'SessionStart', cwd: root }), env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8', windowsHide: true,
   });
   assert.equal(await readInfo(root), null);
 });
@@ -151,12 +151,13 @@ test('status reports a semantic folder server, its busy request and the held loc
   const info = await readInfo(root);
   const idle = run(['status', root]).stdout;
   assert.ok(idle.includes(`Background server: running, pid ${info.pid}, version ${info.version}, ${info.script}\n`), idle);
-  assert.match(idle, /^ {2}Embedding model: not loaded; idle, 0 queued, exits when idle at \d{4}-\d\d-\d\dT[\d:]{8}[+-]\d\d:\d\d$/m);
+  assert.match(idle, /^ {2}Embedding model: not loaded; idle, exits when idle at \d{4}-\d\d-\d\dT[\d:]{8}[+-]\d\d:\d\d$/m);
   await new Promise(resolve => setTimeout(resolve, 1100));
   assert.equal(run(['status', root]).stdout, idle, 'status must not reset the idle timer');
-  // Holding the index lock keeps the server's next search waiting, so status sees it busy.
+  // After a change, holding the index lock keeps the server's next search waiting to sync, so status sees it busy.
+  await fs.writeFile(path.join(root, 'guide.md'), '# Guide\n\nSERVER_TOKEN needs approval again.');
   const release = await lockfile.lock(root, { realpath: false, lockfilePath: path.join(root, '.doktimoi', 'write.lock') });
-  const search = new Promise(resolve => spawn(process.execPath, [cli, 'search', root, '--query', 'SERVER_TOKEN'], { stdio: 'ignore' }).on('exit', resolve));
+  const search = new Promise(resolve => spawn(process.execPath, [cli, 'search', root, '--query', 'SERVER_TOKEN'], { stdio: 'ignore', windowsHide: true }).on('exit', resolve));
   let status = '';
   for (let i = 0; i < 100 && !/busy with search/.test(status); i++) {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -164,7 +165,7 @@ test('status reports a semantic folder server, its busy request and the held loc
   }
   await release();
   assert.match(status, /Index lock: held for \d+\.\d s/);
-  assert.match(status, /Embedding model: not loaded; busy with search for \d+\.\d s, 0 queued$/m);
+  assert.match(status, /Embedding model: not loaded; busy with search for \d+\.\d s$/m);
   assert.equal(await search, 0);
   assert.equal((await readInfo(root)).pid, info.pid);
 });
@@ -249,4 +250,19 @@ test('subfolder scope, --path, --exclude and the budget cap give the same output
   assert.match(run(cases[1]).stdout, /^plans\/[\s\S]*\n\[--budget capped at 6000 tokens per call\.\]\n$/);
   const batch = JSON.stringify([{ queries: ['SERVER_TOKEN'], exclude: ['plans'] }]);
   assert.equal(run(['batch', root], {}, batch).stdout, 'Q1\nguide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n');
+});
+
+test('parallel searches through one server all answer with the in-process output', async t => {
+  const root = await folder(t, true);
+  const args = ['search', root, '--query', 'SERVER_TOKEN'];
+  const direct = run(args, { DOKTIMOI_NO_SERVER: '1' });
+  assert.equal(run(args).stdout, direct.stdout);
+  const runAsync = () => new Promise(resolve => {
+    let stdout = '';
+    const child = spawn(process.execPath, [cli, ...args], { windowsHide: true });
+    child.stdout.on('data', chunk => { stdout += chunk; });
+    child.on('exit', status => resolve({ stdout, status }));
+  });
+  const results = await Promise.all(Array.from({ length: 6 }, runAsync));
+  assert.deepEqual(results, Array(6).fill({ stdout: direct.stdout, status: 0 }));
 });

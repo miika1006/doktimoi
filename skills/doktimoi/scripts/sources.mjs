@@ -66,7 +66,8 @@ export async function inventory(root) {
   return { files: files.sort(), unsupported: unsupported.sort() };
 }
 
-// Keep Markdown blocks intact: a long table/code block is expandable, never silently cut.
+// Keep Markdown blocks intact: a long table/code block is expandable, never silently cut. A
+// heading directly followed by another heading stays with it, so no chunk is a bare heading.
 export function chunkMarkdown(text, source, locationKind = 'lines') {
   const chunks = [];
   const headings = [];
@@ -84,7 +85,7 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
   }
   for (const node of fromMarkdown(text).children) {
     if (node.type === 'heading') {
-      flush();
+      if (pending.some(block => block.type !== 'heading')) flush();
       headings.length = node.depth;
       headings[node.depth - 1] = text.slice(node.position.start.offset, node.position.end.offset).replace(/^#+\s*/, '');
     }
