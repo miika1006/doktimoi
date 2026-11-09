@@ -49,7 +49,7 @@ function remindOnFolderGrep(input, pluginRoot) {
   return {
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
-      additionalContext: `${root} is indexed by doktimoi. For content lookups here (questions, fact checks, verification while editing) search with the doktimoi skill instead of Grep: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --budget 1600 (add --mode hybrid when semantic search is enabled; one command per call, no cd or chaining, so it runs without a permission prompt). Grep stays fine for file names or exact edit locations in a file doktimoi already returned.`,
+      additionalContext: `${root} is indexed by doktimoi. For content lookups and fact checks here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.`,
     },
   };
 }
