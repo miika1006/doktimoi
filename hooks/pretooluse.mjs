@@ -11,8 +11,7 @@
  */
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { fileURLToPath } from 'node:url';
-import { indexedRoot, isFile, readHookInput, resolvePath } from './common.mjs';
+import { indexedRoot, isFile, resolvePath, runHook } from './common.mjs';
 
 export function decide(input, pluginRoot) {
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') return approveDoktimoiCommand(input, pluginRoot);
@@ -28,16 +27,10 @@ function approveDoktimoiCommand(input, pluginRoot) {
   const [, , command, root, ...rest] = words;
   if (!['search', 'read'].includes(command)) return null;
   const options = parseOptions(rest);
-  if (!options || !SEARCH_MODES.includes(options.values.mode)) return null;
+  if (!options || !['lexical', 'hybrid'].includes(options.values.mode)) return null;
   if (options.positionals.length !== (command === 'read' ? 1 : 0)) return null;
   if (!indexedRoot(resolvePath(root, input.cwd), true)) return null;
-  return {
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'allow',
-      permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder`,
-    },
-  };
+  return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder` });
 }
 
 /** Returns a reminder when Grep searches a folder (not a single file) inside a doktimoi index. */
@@ -46,12 +39,7 @@ function remindOnFolderGrep(input, pluginRoot) {
   if (isFile(target)) return null;
   const root = indexedRoot(target);
   if (!root) return null;
-  return {
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      additionalContext: `${root} is indexed by doktimoi. For content lookups and fact checks here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.`,
-    },
-  };
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups and fact checks here use the doktimoi skill instead of Grep, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**
@@ -93,14 +81,9 @@ function samePath(value, expected, cwd) {
 
 function scriptPath(pluginRoot) { return path.join(pluginRoot, 'skills', 'doktimoi', 'scripts', 'doktimoi.mjs'); }
 
-async function main() {
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const output = decide(await readHookInput(), pluginRoot);
-  if (output) process.stdout.write(JSON.stringify(output));
-}
+function output(fields) { return { hookSpecificOutput: { hookEventName: 'PreToolUse', ...fields } }; }
 
-const SEARCH_MODES = ['lexical', 'hybrid'];
-
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch(error => { console.error(`doktimoi hook: ${error.message}`); process.exitCode = 1; });
-}
+runHook(import.meta.url, 'doktimoi hook', (input, pluginRoot) => {
+  const result = decide(input, pluginRoot);
+  if (result) process.stdout.write(JSON.stringify(result));
+});

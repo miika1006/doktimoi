@@ -3,11 +3,13 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /** Walks up from a folder to the nearest one holding a `.doktimoi` index; `exact` checks only the folder itself. */
 export function indexedRoot(folder, exact = false) {
   for (let current = folder; ; current = path.dirname(current)) {
-    if (isDirectory(path.join(current, INDEX_DIR))) return current;
+    // A not-yet-existing file resolves to its unexpanded 8.3 form (RUNNER~1); return the canonical folder.
+    if (isDirectory(path.join(current, INDEX_DIR))) return fs.realpathSync.native(current);
     if (exact || path.dirname(current) === current) return null;
   }
 }
@@ -15,7 +17,7 @@ export function indexedRoot(folder, exact = false) {
 /**
  * Resolves a path given in Git Bash (`/c/...`) or Windows form against a working
  * directory and expands Windows 8.3 short names when the path exists.
- * @example resolvePath('/c/Users/RUNNER~1/docs', 'D:/a') // 'C:\\Users\\runneradmin\\docs'
+ * @example resolvePath('/c/Users/RUNNER~1/docs', 'D:/a') // 'C:\Users\runneradmin\docs'
  */
 export function resolvePath(value, cwd) {
   const native = process.platform === 'win32' ? String(value).replace(/^\/([a-zA-Z])(\/|$)/, '$1:/') : String(value);
@@ -29,11 +31,14 @@ export function insideIndexData(file, root) {
   return !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
-/** Reads and parses the hook's JSON input from stdin. */
-export async function readHookInput() {
-  let raw = '';
-  for await (const part of process.stdin) raw += part;
-  return JSON.parse(raw);
+/** When `url` is the entry script, calls `handler(input, pluginRoot)` with the hook's JSON stdin. */
+export async function runHook(url, name, handler) {
+  if (!process.argv[1] || path.resolve(process.argv[1]) !== fileURLToPath(url)) return;
+  try {
+    let raw = '';
+    for await (const part of process.stdin) raw += part;
+    await handler(JSON.parse(raw), process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
+  } catch (error) { console.error(`${name}: ${error.message}`); process.exitCode = 1; }
 }
 
 export function isDirectory(p) { try { return fs.statSync(p).isDirectory(); } catch { return false; } }

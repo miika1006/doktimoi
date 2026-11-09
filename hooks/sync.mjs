@@ -8,8 +8,8 @@
  * semantic search; existing embeddings are updated incrementally.
  */
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { indexedRoot, insideIndexData, isDirectory, readHookInput, resolvePath } from './common.mjs';
+import { pathToFileURL } from 'node:url';
+import { indexedRoot, insideIndexData, isDirectory, resolvePath, runHook } from './common.mjs';
 
 export function targetRoot(input) {
   if (input.hook_event_name === 'SessionStart') return input.cwd ? indexedRoot(resolvePath(input.cwd)) : null;
@@ -29,12 +29,7 @@ async function refresh(root, pluginRoot) {
   try { await project.refresh(); } finally { await project.close(); }
 }
 
-async function main() {
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const root = targetRoot(await readHookInput());
+runHook(import.meta.url, 'doktimoi sync hook', async (input, pluginRoot) => {
+  const root = targetRoot(input);
   if (root) await refresh(root, pluginRoot);
-}
-
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch(error => { console.error(`doktimoi sync hook: ${error.message}`); process.exitCode = 1; });
-}
+});
