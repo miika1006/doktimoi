@@ -73,7 +73,8 @@ The Claude Code plugin also ships hooks:
   permission prompt when they run as a single command in lexical or hybrid mode
   against a folder that already has a `.doktimoi` index (search may refresh that
   index; hybrid only updates existing embeddings and fails if semantic search was
-  never enabled). Other commands, `build`, `embed`, `disable-semantic` and unindexed folders go
+  never enabled), and `help`/`--help`, which prints the usage text and touches no
+  folder. Other commands, `build`, `embed`, `disable-semantic` and unindexed folders go
   through the normal permission flow. Inside an indexed folder, folder-wide Grep,
   recursive shell searches (grep -r, rg, git grep, findstr /s, Select-String) and
   whole reads of large or Office/PDF files get a reminder to use doktimoi.
@@ -110,6 +111,10 @@ OCR downloads English/Finnish recognition data on first use and runs locally.
 Legacy `.doc` and `.xls` image conversion also require LibreOffice. OCR can misread text; inspect
 the linked image for critical facts and diagrams. Complex chart/diagram/layout content may need direct inspection, and Excel
 formulas use cached results. Token counts are estimates.
+
+`read` expands a search result, or for Markdown and text reads a line range
+(`plan.md:1-400`) as the chunks it overlaps, within the token budget, ending with
+the command that continues a cut read.
 
 Search checks file metadata and verifies returned sources against their hashes;
 `--verify` rehashes every source. A tiny folder may be cheaper to read directly.

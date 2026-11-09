@@ -58,6 +58,19 @@ async function stopServer(root) {
 
 function alive(pid) { try { process.kill(pid, 0); return true; } catch { return false; } }
 
+test('help prints usage without creating an index, taking the lock or starting a server', async t => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-help-')));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  for (const args of [['help'], ['--help'], ['search', root, '--query', 'x', '--help'], ['read', '-h']]) {
+    const result = run(args);
+    assert.equal(result.status, 0, args.join(' '));
+    assert.match(result.stdout, /^Usage: node doktimoi\.mjs[\s\S]*--limit N +search: results, 1-20[\s\S]*file\.md:N-M/);
+    assert.equal(result.stderr, '');
+  }
+  assert.deepEqual(await fs.readdir(root), []);
+  assert.match(run(['search', root, '--nope']).stderr, /^doktimoi: Unknown option '--nope'; run with --help for usage\n$/);
+});
+
 test('a lexical-only folder never starts a server, from searches or the session-start hook', async t => {
   const root = await folder(t, false);
   assert.match(run(['search', root, '--query', 'SERVER_TOKEN']).stdout, /needs approval/);
@@ -76,6 +89,12 @@ test('searches and reads in a semantic folder go through one server with the sam
   const info = await readInfo(root);
   assert.equal(info.script, await fs.realpath(cli));
   assert.deepEqual(run(['read', root, 'guide.md:3']), run(['read', root, 'guide.md:3'], direct));
+  const range = ['read', root, 'guide.md:4-99', '--lines', '400', '--budget', '256'];
+  assert.match(run(range).stdout, /^guide\.md:5-7\n/);
+  assert.deepEqual(run(range), run(range, direct));
+  const whole = ['read', root, 'guide.md:1-99'];
+  assert.match(run(whole).stdout, /^guide\.md:1-7\n# Guide[\s\S]*Unrelated text\.$/m);
+  assert.deepEqual(run(whole), run(whole, direct));
   const failing = ['search', root, '--query', 'x', '--budget', '10'];
   assert.deepEqual(run(failing), { stdout: '', stderr: 'doktimoi: budget >= 256; limit 1–20\n', status: 1 });
   const batch = JSON.stringify([{ queries: ['SERVER_TOKEN'] }]);

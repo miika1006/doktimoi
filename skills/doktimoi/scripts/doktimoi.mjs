@@ -43,7 +43,7 @@ async function retryOnSourceChange(run) {
 }
 
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
-const SOURCE_CHANGE_ATTEMPTS = 4;
+const SOURCE_CHANGE_ATTEMPTS = 6;
 const LOCK_BUSY = 'Index busy: other doktimoi processes (parallel searches, hybrid model loading or a background index update) held the index lock for over 5 minutes. Run fewer searches at once, or retry later.';
 const LOST_LOCK = 'Index lock lost: this doktimoi process stalled for over 60 s (parallel hybrid searches loading the model, or a busy machine) and another process took over the index. Nothing more was written; retry the search.';
 
@@ -248,28 +248,50 @@ export async function openProject(directory, { modelIdleMs } = {}) {
     }
 
     /**
-     * Finds the chunk for a search reference; a `source:N` or `source:N-M` that is not an exact
-     * reference resolves to the `lines:a-b` chunk of that source whose range contains line N.
-     * @example chunkForReference('Raportointi.md:1-60') // id of the chunk 'Raportointi.md:1-24'
+     * Resolves a read reference to chunks. A chunk ID or exact reference gives that chunk. For
+     * `lines:a-b` sources, `source:N` gives the chunk containing line N, else the next chunk after
+     * it, else the last one before it; `source:N-M` gives every chunk overlapping N..M in order
+     * (as `source:N` when none does). Line chunks carry their `first` and `last` lines.
+     * @example chunksForReference('Raportointi.md:1-60') // [{ id, first: 1, last: 24 }, { id, first: 26, last: 58 }]
      */
-    function chunkForReference(ref) {
+    function chunksForReference(ref) {
+      if (metadata.has(ref)) return [{ id: ref }];
       const entries = [...metadata.entries()];
       const exact = entries.find(([, item]) => reference(item) === ref);
-      if (exact) return exact[0];
-      const [, source, line] = /^(.+):(\d+)(?:-\d+)?$/.exec(ref) ?? [];
-      if (!source) return undefined;
-      return entries.find(([, item]) => {
-        const [, first, last] = /^lines:(\d+)-(\d+)$/.exec(item.location) ?? [];
-        return item.source === source && first && Number(first) <= Number(line) && Number(line) <= Number(last);
-      })?.[0];
+      if (exact) return [{ id: exact[0] }];
+      const [, source, start, end = start] = /^(.+):(\d+)(?:-(\d+))?$/.exec(ref) ?? [];
+      const chunks = entries.flatMap(([id, item]) => {
+        const [, first, last] = item.source === source && /^lines:(\d+)-(\d+)$/.exec(item.location) || [];
+        return first ? [{ id, first: Number(first), last: Number(last) }] : [];
+      }).sort((a, b) => a.first - b.first);
+      const overlapping = chunks.filter(chunk => chunk.first <= Number(end) && Number(start) <= chunk.last);
+      if (overlapping.length) return overlapping;
+      const near = chunks.find(chunk => chunk.first > Number(start)) ?? chunks.at(-1);
+      return near ? [near] : [];
     }
 
-    async function evidence(id) {
+    /**
+     * Joins line chunks of one source into one item spanning the first chunk's start to the last
+     * chunk's end; blank lines fill the gaps so `--from` still counts source lines.
+     */
+    async function joinChunks(chunks) {
+      const items = [];
+      const verified = new Map();
+      for (const chunk of chunks) items.push(await evidence(chunk.id, verified));
+      const text = items.map((item, i) => (i ? '\n'.repeat(Math.max(0, chunks[i].first - chunks[i - 1].last - 1)) : '') + item.text).join('\n');
+      return { ...items[0], location: `lines:${chunks[0].first}-${chunks.at(-1).last}`, text };
+    }
+
+    /**
+     * Loads a chunk's text after checking its source, cache body and visual hashes. `verified` lets
+     * one read share a single source read and hash across the chunks of that source.
+     */
+    async function evidence(id, verified = new Map()) {
       const entry = metadata.get(id);
       if (!entry) throw new Error(`Unknown or obsolete chunk: ${id}`);
       const sourcePath = await safePath(root, entry.source);
-      const current = await ifMissing(fs.readFile(sourcePath), null);
-      if (!current || hash(current) !== entry.hash) throw sourceChanged(`Source changed during search: ${entry.source}; retry`);
+      if (!verified.has(entry.source)) verified.set(entry.source, ifMissing(fs.readFile(sourcePath), null).then(current => !!current && hash(current) === entry.hash));
+      if (!await verified.get(entry.source)) throw sourceChanged(`Source changed during search: ${entry.source}; retry`);
       const body = await fs.readFile(await safePath(cache, `chunks/${id}.md`), 'utf8');
       if (hash(`${entry.source}\0${entry.location}\0${body}`).slice(0, 32) !== id) throw new Error('Cached evidence was modified; rebuild the cache');
       if (entry.visual && hash(await fs.readFile(await safePath(root, entry.visual))) !== path.basename(entry.visual, '.png')) throw new Error('Cached visual was modified; rebuild the cache');
@@ -331,20 +353,33 @@ export async function openProject(directory, { modelIdleMs } = {}) {
           resultTokens: tokens(render(payload)), tokenizer: 'o200k_base', changed: update.changed, removed: update.removed,
           unsupportedCount: update.unsupported.length, warningCount: update.warnings.length, hashedBytes: update.hashedBytes } };
       },
-      async read(id, from = 1, lines = 40, budget = 1600) {
-        if (!Number.isInteger(from) || from < 1 || !Number.isInteger(lines) || lines < 1 || lines > 200) throw new Error('from >= 1; lines 1–200');
+      /**
+       * Returns the text of a chunk ID or reference (see chunksForReference) from line `from`, at
+       * most `lines` lines (default 40 for one chunk, all for several) and `budget` tokens. When a
+       * line reference read leaves later lines out, `continuation` says how to read on.
+       */
+      async read(ref, from = 1, lines, budget = 1600) {
+        if (!Number.isInteger(from) || from < 1 || (lines !== undefined && (!Number.isInteger(lines) || lines < 1))) throw new Error('from >= 1; lines >= 1');
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget >= 256');
         await sync();
-        if (!metadata.has(id)) id = chunkForReference(id) ?? id;
-        const item = await evidence(id);
+        const chunks = chunksForReference(ref);
+        if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
+        const item = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
+        lines ??= chunks.length === 1 ? 40 : Infinity;
         const all = item.text.split('\n');
         if (from > all.length) throw new Error(`Chunk has only ${all.length} lines`);
         const result = { ...item, text: all.slice(from - 1, from - 1 + lines).join('\n'), excerpt: from > 1 || from + lines - 1 < all.length };
+        let cut = false;
         if (tokens(render({ results: [result] })) > budget - 50) {
-          result.excerpt = true;
+          result.excerpt = cut = true;
           const available = budget - tokens(render({ results: [{ ...result, text: '' }] })) - 50;
           if (available < 1) throw new Error('Source reference exceeds budget; increase --budget');
           result.text = new TextDecoder().decode(encoder.decode(encoder.encode(result.text, [], []).slice(0, available))).replace(/\uFFFD$/, '');
+        }
+        // A cut last line is only partly shown, so the continuation repeats it.
+        const shown = result.text.split('\n').length - (cut ? 1 : 0);
+        if (chunks[0].first && from + shown <= all.length) {
+          result.continuation = shown ? `Continue: read "${reference(result)}" --from ${from + shown}` : 'Line exceeds budget; increase --budget';
         }
         return result;
       },
@@ -382,21 +417,17 @@ export async function openProject(directory, { modelIdleMs } = {}) {
 }
 
 async function main() {
-  const { values, positionals } = parseArgs({ allowPositionals: true, options: {
-    query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
-    budget: { type: 'string', default: '1600' }, limit: { type: 'string', default: '4' },
-    from: { type: 'string', default: '1' }, lines: { type: 'string', default: '40' },
-    metrics: { type: 'boolean', default: false },
-    verify: { type: 'boolean', default: false },
-  } });
+  const { values, positionals } = parseCommandLine();
   const [command, root, id] = positionals;
+  // Help must not open the index, take the lock or start a server.
+  if (values.help || command === 'help') return console.log(USAGE);
   if (command === 'serve' && root) return serveFolder(root);
   if (command === 'stop' && root) return stopServer(await fs.realpath(root));
   if (command === 'status' && root) return console.log(await status(await fs.realpath(root)));
   if (command === 'disable-semantic' && root) return console.log(await disableSemantic(await fs.realpath(root)));
   if (command === 'build' && root) await stopServer(await fs.realpath(root));
   if (!['build', 'sync', 'search', 'batch', 'read', 'embed'].includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]');
+    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid]; run with --help for details');
   }
   const request = { command, id, values, input: command === 'batch' ? await readStdin() : undefined };
   const served = ['search', 'read', 'batch'].includes(command)
@@ -405,6 +436,20 @@ async function main() {
   const { output, notices } = served || await runInProcess(root, request);
   for (const notice of notices) console.error(notice);
   console.log(output);
+}
+
+/** Parses the CLI arguments; an unknown option error points to --help. */
+function parseCommandLine() {
+  try {
+    return parseArgs({ allowPositionals: true, options: {
+      query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
+      budget: { type: 'string', default: '1600' }, limit: { type: 'string', default: '4' },
+      from: { type: 'string', default: '1' }, lines: { type: 'string' },
+      metrics: { type: 'boolean', default: false },
+      verify: { type: 'boolean', default: false },
+      help: { type: 'boolean', short: 'h', default: false },
+    } });
+  } catch (error) { throw new Error(`${error.message.replace(/\. To specify a positional argument.*$/s, '')}; run with --help for usage`, { cause: error }); }
 }
 
 /**
@@ -429,8 +474,8 @@ export async function execute(project, { command, id, values, input }) {
     result = outputs.join('\n\n');
   }
   if (command === 'read') {
-    const item = await project.read(id, Number(values.from), Number(values.lines), Number(values.budget));
-    result = render({ results: [item], note: /\.xlsx?$/i.test(item.source) ? EXCEL_NOTE : undefined });
+    const item = await project.read(id, Number(values.from), values.lines === undefined ? undefined : Number(values.lines), Number(values.budget));
+    result = render({ results: [item], note: [/\.xlsx?$/i.test(item.source) && EXCEL_NOTE, item.continuation].filter(Boolean).join(' ') || undefined });
   }
   if (command === 'search') {
     const search = await project.search(values.query ?? [], { mode: values.mode, budget: Number(values.budget), limit: Number(values.limit), verify: values.verify });
@@ -555,6 +600,36 @@ async function readStdin() {
 async function scriptPath() { return fs.realpath(fileURLToPath(import.meta.url)); }
 
 const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
+const USAGE = `Usage: node doktimoi.mjs COMMAND ROOT [REFERENCE] [options]
+
+Commands:
+  search ROOT --query TERMS  Search the indexed folder ROOT; prints cited source passages
+  read ROOT REFERENCE        Print source text by reference (see References)
+  batch ROOT                 Run 1-20 searches from a JSON array on stdin: [{"queries": ["terms"]}]
+  status ROOT                Show index, lock and background server state; changes nothing
+  build ROOT                 Rehash all sources and update the index (creates it if missing)
+  sync ROOT                  Index changed sources; updates embeddings if semantic search is on
+  embed ROOT                 Turn semantic search on: downloads a local model (ask the user first)
+  disable-semantic ROOT      Remove embeddings; keyword search keeps working
+  stop ROOT                  Stop the folder's background search server
+  help                       Show this text (also --help or -h with any command)
+
+Options:
+  --query TERMS    search: 1-4 single-line queries (repeat the option); terms in a query are ANDed
+  --mode MODE      lexical (default) or hybrid (needs embed; first query is also the semantic one)
+  --budget N       output tokens, at least 256 (default 1600)
+  --limit N        search: results, 1-20 (default 4)
+  --from N         read: first line of the returned text (default 1)
+  --lines N        read: lines to return (default 40 for one chunk, all for a range of chunks)
+  --verify         search: rehash every source instead of trusting timestamps
+  --metrics        search, batch: print timings and token counts to stderr
+
+References:
+  file.md:12-40    a reference copied from search output, or a chunk ID: that chunk
+  file.md:N        Markdown, text, CSV: the chunk containing line N (or the next one)
+  file.md:N-M      Markdown, text, CSV: all chunks overlapping lines N-M, joined and cut to
+                   --budget; a cut read ends with the command that continues it
+  Other formats (PDF pages, sheets, slides, OCR images) need the exact reference.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {
   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });

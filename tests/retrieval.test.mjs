@@ -314,9 +314,62 @@ test('read accepts a line range inside a chunk and open removes orphaned temp fi
     const exact = reference((await project.search(['LIMIT_RULE'])).payload.results[0]);
     assert.notEqual(exact, 'guide.md:6-60');
     assert.match((await project.read('guide.md:6-60')).text, /LIMIT_RULE/);
-    await assert.rejects(project.read('guide.md:500-600'), /Unknown or obsolete chunk/);
+    assert.equal(reference(await project.read('guide.md:500-600')), 'guide.md:5-7');
+    await assert.rejects(project.read('missing.md:1'), /Unknown or obsolete chunk/);
   } finally { await project.close(); }
 });
+
+test('read resolves gap lines to the next chunk and joins chunks overlapping a range', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'doc.md'), '# Title\n\nIntro.\n\n## A\n\nALPHA text.\n\n\n\n## B\n\nBETA text.\n\n## C\n\nGAMMA text.\n');
+  const { payload } = await project.search(['ALPHA']);
+  const exact = payload.results[0];
+  assert.equal(reference(exact), 'doc.md:5-7');
+  for (const ref of [reference(exact), exact.id]) {
+    const item = await project.read(ref);
+    assert.equal(reference(item), 'doc.md:5-7');
+    assert.equal(item.continuation, undefined);
+  }
+  assert.equal(reference(await project.read('doc.md:9')), 'doc.md:11-13');
+  assert.equal(reference(await project.read('doc.md:99')), 'doc.md:15-17');
+  const range = await project.read('doc.md:4-12');
+  assert.equal(reference(range), 'doc.md:5-13');
+  assert.equal(range.text.split('\n')[13 - 5], 'BETA text.');
+  assert.equal(range.excerpt, false);
+  const whole = await project.read('doc.md:1-200', 1, 400);
+  assert.equal(reference(whole), 'doc.md:1-17');
+  assert.match(whole.text, /Intro\.[\s\S]*ALPHA[\s\S]*BETA[\s\S]*GAMMA text\.$/);
+  await assert.rejects(project.read('doc.md:1-200', 1, 0), /lines >= 1/);
+});
+
+test('a range read beyond the budget is cut and names the read that continues it', async t => {
+  const { root, project } = await fixture(t);
+  const sections = Array.from({ length: 30 }, (_, i) => `## Part ${i}\n\nPART_${i} ${'condition applies here. '.repeat(40)}`);
+  await fs.writeFile(path.join(root, 'plan.md'), `# Plan\n\n${sections.join('\n\n')}\n`);
+  await project.sync();
+  let from = 1;
+  const seen = new Set();
+  for (let call = 0; call < 40 && from; call++) {
+    const item = await project.read('plan.md:1-1000', from, undefined, 400);
+    const note = item.continuation;
+    assert.ok(tokens(render({ results: [item], note })) <= 400);
+    for (const [, part] of item.text.matchAll(/PART_(\d+)/g)) seen.add(part);
+    const next = /^Continue: read "plan\.md:1-\d+" --from (\d+)$/.exec(note ?? '')?.[1];
+    if (next) { assert.ok(item.excerpt); assert.ok(Number(next) > from); }
+    from = next && Number(next);
+  }
+  assert.equal(from, undefined, 'the file is read to its end');
+  assert.equal(seen.size, 30);
+});
+
+test('read keeps exact references for formats without line chunks', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'data.json'), '{\n  "name": "JSON_TOKEN"\n}\n');
+  const ref = reference((await project.search(['JSON_TOKEN'])).payload.results[0]);
+  assert.match((await project.read(ref)).text, /JSON_TOKEN/);
+  await assert.rejects(project.read('data.json:2'), /Unknown or obsolete chunk/);
+});
+
 
 test('search succeeds while another writer keeps changing the matching source', async t => {
   const { root, project } = await fixture(t);
@@ -332,7 +385,7 @@ test('search succeeds while another writer keeps changing the matching source', 
         try { await fs.rename(`${file}.next`, file); break; }
         catch (error) { if (error.code !== 'EPERM' || attempt > 50) throw error; await new Promise(resolve => setTimeout(resolve, 10)); }
       }
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
   })();
   try {

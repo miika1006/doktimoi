@@ -38,6 +38,18 @@ test('approves a single lexical search, read or status against an indexed folder
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" status .` }, cwd: indexed }, pluginRoot)));
 });
 
+test('approves the usage text without a folder and nothing more on the line', async t => {
+  const { indexed } = await folders(t);
+  for (const args of ['help', '--help', '-h', 'search --help', 'read -h', 'disable-semantic --help']) {
+    assert.ok(allowed(decide(bash(`node "${script}" ${args}`, indexed), pluginRoot)), args);
+  }
+  assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" help` }, cwd: indexed }, pluginRoot)));
+  for (const args of ['help extra', 'help; rm -rf /', '--help && echo hi', 'serve --help', `search "${indexed}" --help`, 'help --unknown', '--help -h']) {
+    assert.equal(decide(bash(`node "${script}" ${args}`, indexed), pluginRoot), null, args);
+  }
+  assert.equal(decide(bash(`node "${path.join(indexed, 'doktimoi.mjs')}" help`, indexed), pluginRoot), null);
+});
+
 test('accepts a literal ~ inside an unquoted word but not tilde expansion', async t => {
   const { indexed } = await folders(t);
   const short = path.join(indexed, 'RUNNER~1');

@@ -61,15 +61,21 @@ text and CSV lines, Word/HTML **extracted** lines, PDF pages, Excel sheets/rows/
 slides/notes, structured-data paths, draw.io cells, Mermaid lines, SVG text or OCR
 images. OCR is fallible: open the `[Visual: ...]` path (relative to the folder) for
 critical image facts, diagrams or unclear OCR. When missing evidence matters, check
-the extraction warnings in `build` output. Expand an incomplete excerpt:
+the extraction warnings in `build` output. Expand an incomplete excerpt or read
+a whole section:
 
 ```text
-node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:20-45" --from 1 --lines 40
+node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:20-45"
+node "<skill>/scripts/doktimoi.mjs" read "<folder>" "path.md:1-400" --budget 4000
 ```
 
-Copy the reference from the search result; `--from` counts lines within that chunk.
-Reads obey `--budget` (default 1600); raise it for a large indivisible paragraph or
-table. Expand conditions and related sections before interpreting an excerpt. Cite
+A reference copied from search output returns that chunk (40 lines; `--from` and
+`--lines` page within it). For Markdown and text, `path.md:N-M` returns every
+chunk overlapping those lines, joined; a cut read ends with the exact `read ...
+--from` command that continues it, so a whole file takes a few calls. Prefer this
+over whole-file reads of indexed files. Reads obey `--budget` (default 1600);
+raise it for a large indivisible paragraph or table. `--help` prints all commands
+and options. Expand conditions and related sections before interpreting an excerpt. Cite
 original files, not `.doktimoi/chunks`. Preserve qualifiers, negation, units and
 versions. Excel formula results are cached, not recalculated.
 
@@ -105,5 +111,6 @@ Know these before planning searches, and pass them to subagents that search:
   `Index busy`; a call stalled over 60 s fails with `Index lock lost`. Retry once,
   run fewer searches at once, and never loop with sleeps.
 - **References.** `read` takes a reference from search output. For Markdown and
-  text, any line inside a chunk works (`file.md:120`); other formats need the
-  exact reference. Never guess one for an unsearched file.
+  text, `file.md:120` returns the chunk at (or after) that line and `file.md:1-400`
+  all chunks in that range up to `--budget`; other formats need the exact
+  reference. Never guess one for an unindexed file.
