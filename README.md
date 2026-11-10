@@ -3,8 +3,9 @@
 **Measured: 64% fewer model tokens with Claude Code.** On a 409-file Kubernetes
 documentation task, Claude Code (`claude-opus-5-5`) used a mean 583,475 tokens with
 Doktimoi against 1,624,913 with its own Read/Grep tools. That is 42% less agent time and
-37% less cost over three pairs. With Codex (`gpt-6-astra`) the same task saved nothing:
-it used 20.6% more tokens than an `rg`/`sed` baseline. [Details](#measured-results).
+37% less cost over three pairs. With Codex (`gpt-6-astra`) the same task saved nothing yet:
+it used 20.6% more tokens than an `rg`/`sed` baseline. The reason and the ongoing work are under
+[Measured results](#measured-results).
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -42,8 +43,12 @@ For Markdown-only collections, QMD's own skill may be enough.
 | Codex, macOS | Doktimoi hybrid (CPU) | 274,583 | +9.5% | 197.6 s |
 
 The saving comes from fewer model rounds. Claude's baseline makes about 42 tool calls per
-run, each one re-sending the growing context; Doktimoi needed about 11. Codex's baseline
-already chains searches into about 9 shell commands, so there was little to save.
+run, each one re-sending the growing context; Doktimoi needed about 11.
+
+**Why Codex shows no saving yet:** its baseline already chains several `rg`/`sed` lookups
+into one shell command, about 9 per run, and the Doktimoi runs needed as many (9–11). With
+no rounds saved, the skill instructions and longer commands, re-sent every round, made the
+total larger. Answering all questions in fewer, larger batches is being worked on.
 Cold lexical indexing took 11.6 s on the Mac and 37 s on Windows with real-time virus
 scanning off (about 147 s with it on). The 20-query evidence check scored 20/20 lexical
 and 18/20 hybrid. One task, corpus and model per agent does not establish results elsewhere.
