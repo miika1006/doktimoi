@@ -2,10 +2,21 @@
 
 The benchmark measures the entire assistant task, including repeated model
 context, rather than equating a small tool response with a token saving.
-The lexical results are in [release-2026-11-10](release-2026-11-10/), with a
-separate [semantic CPU comparison](semantic-cpu-2026-11-10/).
+Results are kept per agent: [codex/](codex/) and [claude/](claude/). The Codex
+lexical results are in [release-2026-11-10](codex/release-2026-11-10/), with a
+separate [semantic CPU comparison](codex/semantic-cpu-2026-11-10/). The Claude Code
+results are in [claude/release-2026-11-10-windows](claude/release-2026-11-10-windows/README.md).
 
-## Completed measurements
+## Claude Code, Windows
+
+Same task and corpus, `claude-opus-5-5` at medium effort, three alternating pairs.
+Doktimoi lexical used **64.1% fewer total tokens** than the Read/Grep/Glob baseline
+(mean 583,475 vs 1,624,913), 42.3% less agent time (91.9 s vs 159.3 s) and 37.1% less
+reported cost. Cold indexing (58.9 s mean) is excluded from agent time. The Claude
+baseline made about 42 tool calls per run; Codex's shell baseline made about 9. The saving
+comes from fewer model rounds, so it depends on the agent and is not a general result.
+
+## Codex, macOS: completed measurements
 
 | Arm, 3 fresh contexts each | Total tokens across runs | Mean tokens | Mean agent seconds | Commands across runs |
 | --- | ---: | ---: | ---: | ---: |
@@ -15,7 +26,7 @@ separate [semantic CPU comparison](semantic-cpu-2026-11-10/).
 
 Lexical used 20.6% more total tokens and 13.0% more agent time than baseline;
 hybrid used 9.5% more total tokens and 33.8% more agent time. These results do
-not establish the intended saving. [comparison.json](comparison.json) contains
+not establish the intended saving. [comparison.json](codex/comparison.json) contains
 per-run values, uncached input, output estimates, error counts and setup costs.
 Hybrid's uncached input was 96,434 versus baseline's 104,267 (7.5% lower), while
 its total remained higher. No monetary-cost claim is inferred from that subset.
@@ -91,12 +102,12 @@ on its score. Corpus, task, model, reasoning effort, Node and Codex versions are
 unchanged. Semantic instructions and CPU execution differ; OS/model caches and
 cloud conditions can differ too. This is an exploratory comparison.
 
-The first [semantic attempt](semantic-2026-11-10/README.md) failed inside the
+The first [semantic attempt](codex/semantic-2026-11-10/README.md) failed inside the
 macOS sandbox: the packaged Metal backend could not initialize, and its CPU
 fallback still tried Metal. That interrupted attempt remains archived and is
 excluded from completed-run aggregates. Building node-llama-cpp 3.20.0's bundled
 llama.cpp b10361 with `--gpu false` resolved this environment issue; see the
-[build log](semantic-cpu-build.log) and [sandbox preflight](semantic-cpu-preflight.log).
+[build log](semantic-cpu-build.log) and [sandbox preflight](codex/semantic-cpu-preflight.log).
 The measured semantic agents run with `QMD_FORCE_CPU=1`; sandbox restrictions
 remain enabled. A native-inference preflight now runs before each macOS semantic
 agent, and the trace audit requires successful hybrid calls, not just attempts.
@@ -147,6 +158,10 @@ node benchmarks/agent-benchmark.mjs --output /tmp/doktimoi-new-results --pairs 3
 node benchmarks/check-answers.mjs /tmp/doktimoi-new-results
 ```
 
+For Claude Code, add `--agent claude` (default model `claude-opus-5-5`) and store
+the output under `benchmarks/claude/`. Claude runs load only project settings,
+allow-list their tools and convert stream-json events into the same audit and token count.
+
 After consent to local model use, add `--retrieval hybrid` for a full fresh
 baseline/semantic comparison. For the exact model, set `QMD_EMBED_MODEL` to the
 verified model file from `embedding-model.json`; `XDG_CACHE_HOME` can isolate its
@@ -184,15 +199,15 @@ one small local model and CPU inference; it does not establish GPU performance.
 
 Earlier experiments are retained rather than hidden:
 
-1. [Pilot](pilot-2026-11-10/README.md): more tokens, an unsupported Node selected
+1. [Pilot](codex/pilot-2026-11-10/README.md): more tokens, an unsupported Node selected
    by a login shell, and one intentionally interrupted run.
-2. [First three pairs](results-2026-11-10/README.md): 58.1% more total tokens,
+2. [First three pairs](codex/results-2026-11-10/README.md): 58.1% more total tokens,
    unnecessary setup reading, missing-path retries and one recovered connection
    failure whose precise elapsed time was lost.
-3. [Intermediate optimization](optimized-2026-11-10/README.md): no retrieval
+3. [Intermediate optimization](codex/optimized-2026-11-10/README.md): no retrieval
    errors, but more tokens; host sleep invalidated the baseline duration. A
    checker falsely rejected the skill-file read, and its corrected audit is saved.
-4. [Candidate comparison](final-2026-11-10/README.md): filename ranking fixed,
+4. [Candidate comparison](codex/final-2026-11-10/README.md): filename ranking fixed,
    but 5.8% more tokens and two batches aborting on an absent linked page. Those
    batches motivated the final per-question error isolation.
 
@@ -223,7 +238,7 @@ include the actual final totals. Skips cover platform-specific Windows checks
 and integrations requiring enabled OCR/LibreOffice. These passing unit/integration
 tests do not turn the 18/20 semantic relevance check into a pass.
 
-The skill validator passed, and [Codex plugin discovery](codex-plugin-discovery.json)
+The skill validator passed, and [Codex plugin discovery](codex/codex-plugin-discovery.json)
 recognized `doktimoi@doktimoi` version 0.12.0. Hook behavior is covered by process
 and integration tests; interactive hook trust was not enabled in the user's app.
 CI now adds macOS Node 24 while retaining Linux/Windows and their OCR checks.

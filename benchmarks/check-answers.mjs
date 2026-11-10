@@ -12,7 +12,7 @@ const reports = [];
 for (const directory of directories) {
   for (const file of (await fs.readdir(directory)).filter(name => name.endsWith('.answer.md')).sort()) {
     const text = await fs.readFile(path.join(directory, file), 'utf8');
-    const sections = [...text.matchAll(/^\s*(?:#{1,3}\s*)?(\d+)\.\s/gm)].map(match => Number(match[1]));
+    const sections = [...text.matchAll(/^\s*(?:#{1,3}\s*|\*\*)?(\d+)\.\s/gm)].map(match => Number(match[1]));
     const citations = [];
     for (const match of text.matchAll(/((?:concepts|tasks|reference)\/[^\s`:)]+\.md)(?::|#L)(\d+(?:[-–](?:L)?\d+)?(?:,\s*\d+(?:[-–](?:L)?\d+)?)*)/g)) {
       const source = path.resolve(corpus, match[1]);

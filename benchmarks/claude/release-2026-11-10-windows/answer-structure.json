@@ -1,0 +1,53 @@
+{
+  "method": "Whitespace word count; named colon/#L citation ranges; range existence is not claim support.",
+  "answers": [
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\1-baseline.answer.md",
+      "words": 1748,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 18,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\1-doktimoi.answer.md",
+      "words": 1579,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 15,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\2-baseline.answer.md",
+      "words": 1747,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 21,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\2-doktimoi.answer.md",
+      "words": 1546,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 15,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\3-baseline.answer.md",
+      "words": 1751,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 16,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\release-2026-11-10-windows\\3-doktimoi.answer.md",
+      "words": 1467,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 14,
+      "allRangesValid": true
+    }
+  ]
+}

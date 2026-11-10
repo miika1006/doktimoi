@@ -1,0 +1,281 @@
+{
+  "startedAt": "2026-11-10T10:37:53.845Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.322 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "both",
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "44e41f5539b3af4672b435cc237b42b56a429f71226c4c041a5f4060a5fcddbd",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 99437,
+      "buildMs": 102721,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "5fe8736c-ca22-430e-8f6c-fa8ed74c1c1b",
+      "usage": {
+        "input_tokens": 640067,
+        "cached_input_tokens": 570066,
+        "cache_write_input_tokens": 67598,
+        "output_tokens": 9387,
+        "cost_usd": 0.8423836000000001
+      },
+      "totalTokens": 649454,
+      "uncachedInputTokens": 70001,
+      "commands": 13,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 16189,
+      "audit": {
+        "doktimoiCommands": 12,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01AEJqQgy31S4xk9HFFwDf6V",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/declare-network-policy.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "toolu_01Rr6WcN3WCcuffzSZMU38w9",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 3,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 88019,
+      "buildMs": 36499,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "2c7a88a3-3efd-44cd-b88e-b402c7617241",
+      "usage": {
+        "input_tokens": 517211,
+        "cached_input_tokens": 477659,
+        "cache_write_input_tokens": 37151,
+        "output_tokens": 7783,
+        "cost_usd": 0.5482694
+      },
+      "totalTokens": 524994,
+      "uncachedInputTokens": 39552,
+      "commands": 9,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 14657,
+      "audit": {
+        "doktimoiCommands": 8,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 4,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 154382,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "70de7a0d-d36e-43b2-b294-1712ce54cfb6",
+      "usage": {
+        "input_tokens": 1647522,
+        "cached_input_tokens": 1590280,
+        "cache_write_input_tokens": 54922,
+        "output_tokens": 13803,
+        "cost_usd": 1.0334588
+      },
+      "totalTokens": 1661325,
+      "uncachedInputTokens": 57242,
+      "commands": 47,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 22264,
+      "audit": {
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01V1hUBvL8ueMX9E9cAe4Qsw",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 7,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 164710,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "e01c3fe9-802e-4ff8-960a-0c77646c3814",
+      "usage": {
+        "input_tokens": 1700690,
+        "cached_input_tokens": 1648627,
+        "cache_write_input_tokens": 49740,
+        "output_tokens": 15383,
+        "cost_usd": 1.0352881
+      },
+      "totalTokens": 1716073,
+      "uncachedInputTokens": 52063,
+      "commands": 33,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19867,
+      "audit": {
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01TfUZa6GVcg27MKdEnYQaQx",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 2,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 88319,
+      "buildMs": 37478,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "bf17130c-2b00-4a63-b2e3-b0e6dd2efc27",
+      "usage": {
+        "input_tokens": 567494,
+        "cached_input_tokens": 529858,
+        "cache_write_input_tokens": 35233,
+        "output_tokens": 8482,
+        "cost_usd": 0.5533557
+      },
+      "totalTokens": 575976,
+      "uncachedInputTokens": 37636,
+      "commands": 10,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 12975,
+      "audit": {
+        "doktimoiCommands": 9,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01LqiesedtV2qcANVMRmnuVM",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "toolu_01KsCgZqhzgLDXrydigkkedQ",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/configuration/liveness-readiness-startup-probes.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 158763,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "threadId": "006c954c-2413-4070-ab4d-3d0ee0f0240b",
+      "usage": {
+        "input_tokens": 1482754,
+        "cached_input_tokens": 1424567,
+        "cache_write_input_tokens": 55872,
+        "output_tokens": 14588,
+        "cost_usd": 1.0236001000000001
+      },
+      "totalTokens": 1497342,
+      "uncachedInputTokens": 58187,
+      "commands": 45,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 22781,
+      "audit": {
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 9,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "9c37016babb840e5d329d0c15b3f3a255e45b61ddb25861cd8ba44c04c2f1c3f"
+}

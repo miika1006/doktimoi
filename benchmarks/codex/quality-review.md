@@ -31,7 +31,7 @@ cluster. Answers are judged against the archived v1.32 source, not current APIs.
 
 ## Retrieval checks versus generated-answer checks
 
-The automated [20-query check](retrieval-validation.json) verifies that the
+The automated [20-query check](../retrieval-validation.json) verifies that the
 retriever returns expected evidence and that its text and line references match
 the originals. Its successful result does not establish that an LLM will retain
 every qualifier while writing a memo. Count topic coverage, unsupported claims,

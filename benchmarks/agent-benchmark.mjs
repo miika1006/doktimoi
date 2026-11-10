@@ -19,10 +19,10 @@ export function auditRun(raw, mode) {
   const seen = new Set();
   for (const event of events.filter(e => e.type === 'item.completed')) {
     const item = event.item;
-    if (['web_search', 'mcp_tool_call', 'file_change'].includes(item.type)) audit.violations.push({ id: item.id, type: item.type });
+    if (['web_search', 'mcp_tool_call', 'file_change', 'subagent'].includes(item.type)) audit.violations.push({ id: item.id, type: item.type });
     if (item.type !== 'command_execution') continue;
     const command = item.command ?? '', output = item.aggregated_output ?? '';
-    const doktimoi = command.includes('/scripts/doktimoi.mjs') && /\b(search|read|batch)\b/.test(command);
+    const doktimoi = /[\\/]scripts[\\/]doktimoi\.mjs/.test(command) && /\b(search|read|batch)\b/.test(command);
     // Conservative trace audit, not a shell security boundary: mixed commands need manual review.
     if (doktimoi && /\b(?:rg|grep|sed|cat|head|tail|awk|python3?|perl|Get-Content|Select-String)\s/.test(command)) audit.violations.push({ id: item.id, command });
     if (doktimoi) {
@@ -73,6 +73,53 @@ export function summarizeEvents(raw) {
   };
 }
 
+/**
+ * Converts Claude Code stream-json events to Codex's event shape, so one audit and token count
+ * cover both agents. File tools map to equivalent commands (Read → cat, Grep → rg, Glob → rg --files).
+ * Input counts cache reads and cache writes of every model, Claude Code's helper models included.
+ * @example claudeToCodexEvents(raw).split('\n').at(-1) // '{"type":"turn.completed","usage":{...}}'
+ */
+export function claudeToCodexEvents(raw) {
+  const events = raw.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+  const results = new Map(events.filter(e => e.type === 'user').flatMap(e => e.message.content)
+    .filter(part => part?.type === 'tool_result').map(part => [part.tool_use_id, part]));
+  const out = [];
+  for (const event of events) {
+    if (event.type === 'system' && event.subtype === 'init') out.push({ type: 'thread.started', thread_id: event.session_id });
+    if (event.type === 'assistant') {
+      for (const use of event.message.content.filter(part => part.type === 'tool_use')) {
+        const result = results.get(use.id);
+        const text = typeof result?.content === 'string' ? result.content : (result?.content ?? []).map(part => part.text ?? '').join('\n');
+        out.push({ type: 'item.completed', item: { id: use.id, ...claudeItem(use), aggregated_output: text, exit_code: !result || result.is_error ? 1 : 0 } });
+      }
+    }
+    if (event.type === 'result') {
+      if (event.is_error || event.subtype !== 'success') { out.push({ type: 'turn.failed' }); continue; }
+      const models = Object.values(event.modelUsage ?? {});
+      const sum = key => models.reduce((total, model) => total + (model[key] ?? 0), 0);
+      out.push({ type: 'turn.completed', usage: {
+        input_tokens: sum('inputTokens') + sum('cacheReadInputTokens') + sum('cacheCreationInputTokens'),
+        cached_input_tokens: sum('cacheReadInputTokens'), cache_write_input_tokens: sum('cacheCreationInputTokens'),
+        output_tokens: sum('outputTokens'), cost_usd: event.total_cost_usd } });
+    }
+  }
+  return out.map(e => JSON.stringify(e)).join('\n');
+}
+
+/** Maps one Claude tool call to a Codex item type and command. */
+function claudeItem({ name, input }) {
+  const slash = value => String(value ?? '').replace(/\\/g, '/');
+  if (name === 'Bash' || name === 'PowerShell') return { type: 'command_execution', command: input.command };
+  if (name === 'Read') return { type: 'command_execution', command: `cat "${slash(input.file_path)}"` };
+  if (name === 'Grep') return { type: 'command_execution', command: `rg ${JSON.stringify(input.pattern)} "${slash(input.path ?? '.')}"` };
+  if (name === 'Glob') return { type: 'command_execution', command: `rg --files -g ${JSON.stringify(input.pattern)} "${slash(input.path ?? '.')}"` };
+  if (['WebSearch', 'WebFetch'].includes(name)) return { type: 'web_search' };
+  if (['Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(name)) return { type: 'file_change' };
+  if (name.startsWith('mcp__')) return { type: 'mcp_tool_call' };
+  if (['Agent', 'Task'].includes(name)) return { type: 'subagent' };
+  return { type: 'other_tool', name };
+}
+
 export async function verifyCorpus() {
   const base = path.join(repo, 'examples/kubernetes');
   const manifest = JSON.parse(await fs.readFile(path.join(base, 'sources.json'), 'utf8'));
@@ -102,13 +149,16 @@ async function main() {
   checkRuntime();
   const { values } = parseArgs({ options: {
     output: { type: 'string' }, pairs: { type: 'string', default: '3' },
-    model: { type: 'string', default: 'gpt-6-astra' }, effort: { type: 'string', default: 'medium' },
+    agent: { type: 'string', default: 'codex' },
+    model: { type: 'string' }, effort: { type: 'string', default: 'medium' },
     retrieval: { type: 'string', default: 'lexical' },
     prepared: { type: 'string' },
     arm: { type: 'string', default: 'both' },
     resume: { type: 'boolean', default: false },
   } });
   const pairs = Number(values.pairs);
+  if (!['codex', 'claude'].includes(values.agent)) throw new Error('--agent must be codex or claude');
+  values.model ??= values.agent === 'codex' ? 'gpt-6-astra' : 'claude-opus-5-5';
   if (!['both', 'baseline', 'doktimoi'].includes(values.arm)) throw new Error('--arm must be both, baseline or doktimoi');
   if (!['lexical', 'hybrid'].includes(values.retrieval)) throw new Error('--retrieval must be lexical or hybrid (enable models only with user consent)');
   if (values.prepared && values.retrieval !== 'hybrid') throw new Error('--prepared is only for a prebuilt semantic index');
@@ -133,11 +183,11 @@ async function main() {
       implementation[`${dir}/${file}`] = createHash('sha256').update(await fs.readFile(path.join(skill, dir, file))).digest('hex');
     }
   }
-  const version = spawnSync('codex', ['--version'], { encoding: 'utf8' });
-  if (version.status !== 0) throw new Error(version.stderr || 'Codex CLI unavailable');
+  const version = spawnSync(values.agent, ['--version'], { encoding: 'utf8' });
+  if (version.status !== 0) throw new Error(version.stderr || `${values.agent} CLI unavailable`);
   let report = {
     startedAt: new Date().toISOString(), corpus, node: process.version,
-    platform: `${process.platform}-${process.arch}`, codex: version.stdout.trim(),
+    platform: `${process.platform}-${process.arch}`, [values.agent]: version.stdout.trim(),
     model: values.model, reasoningEffort: values.effort,
     arm: values.arm,
     retrieval: values.retrieval, embeddingModel: values.retrieval === 'hybrid' ? (process.env.QMD_EMBED_MODEL ?? 'QMD default; see embed log') : null,
@@ -149,7 +199,7 @@ async function main() {
   };
   if (values.resume) {
     const previous = JSON.parse(await fs.readFile(path.join(output, 'summary.json'), 'utf8'));
-    for (const key of ['model', 'reasoningEffort', 'arm', 'retrieval', 'embeddingModel', 'forceCpu', 'preparedIndex', 'taskSha256', 'skillSha256', 'implementationSha256', 'node', 'codex']) {
+    for (const key of ['model', 'reasoningEffort', 'arm', 'retrieval', 'embeddingModel', 'forceCpu', 'preparedIndex', 'taskSha256', 'skillSha256', 'implementationSha256', 'node', values.agent]) {
       if (previous[key] !== report[key]) throw new Error(`Cannot resume after changing ${key}`);
     }
     report = previous;
@@ -198,11 +248,15 @@ async function main() {
           if (preflight.status !== 0) throw new Error(`${name}: hybrid sandbox preflight failed; see log before running any agent`);
         }
         const instructions = mode === 'baseline'
-          ? 'Use ordinary local file tools such as rg and sed. Do not use doktimoi or any prebuilt search index.'
+          ? `Use ordinary local file tools such as ${values.agent === 'claude' ? 'Read, Grep and Glob' : 'rg and sed'}. Do not use doktimoi or any prebuilt search index.`
           : `Read and use the doktimoi skill at ${path.join(skill, 'SKILL.md')} for document content searches and reads. ${values.retrieval === 'hybrid' ? 'A semantic index is already built with user-approved local embeddings. Use hybrid mode for topical questions, putting the natural-language question first; exact mode remains available for literal verification.' : 'A lexical index is already built; no setup or semantic model is needed.'} <skill> is ${skill}; <folder> is ${path.join(workspace, 'docs')}.`;
-        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\nNode ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.\n${instructions}\n\n${task}`;
+        // Claude's permission rules match the command text, so one stable executable spelling keeps approved calls approved.
+        const node = values.agent === 'claude'
+          ? `Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
+          : `Node ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.`;
+        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}\n\n${task}`;
         await fs.writeFile(path.join(output, `${name}.prompt.txt`), prompt);
-        const args = ['exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check',
+        const args = values.agent === 'claude' ? claudeArgs(values, mode, path.join(workspace, 'docs')) : ['exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check',
           '--sandbox', 'workspace-write', '--json', '-C', workspace, '-m', values.model,
           '-c', `model_reasoning_effort="${values.effort}"`, '-c', 'web_search="disabled"',
           '-o', path.join(output, `${name}.answer.md`), '-'];
@@ -211,12 +265,16 @@ async function main() {
         console.log(`Starting ${name}`);
         const started = performance.now();
         let run;
-        try { run = spawnSync('codex', args, { env, input: prompt, stdio: ['pipe', stdout, stderr], timeout: 900000 }); }
+        try { run = spawnSync(values.agent, args, { cwd: workspace, env, input: prompt, stdio: ['pipe', stdout, stderr], timeout: 900000 }); }
         finally { closeSync(stdout); closeSync(stderr); }
         const elapsedMs = Math.round(performance.now() - started);
         await fs.writeFile(path.join(output, `${name}.timing.json`), JSON.stringify({ elapsedMs, buildMs, embedMs, indexCopyMs, preflightMs, exitCode: run.status }, null, 2) + '\n');
         if (run.status !== 0) throw new Error(`${name} failed (${run.status}): ${run.error ?? 'see stderr and events'}`);
-        const raw = await fs.readFile(path.join(output, `${name}.events.jsonl`), 'utf8');
+        let raw = await fs.readFile(path.join(output, `${name}.events.jsonl`), 'utf8');
+        if (values.agent === 'claude') {
+          await fs.writeFile(path.join(output, `${name}.answer.md`), raw.trim().split('\n').map(line => JSON.parse(line)).findLast(e => e.type === 'result')?.result ?? '');
+          raw = claudeToCodexEvents(raw);
+        }
         const metrics = summarizeEvents(raw), audit = auditRun(raw, mode);
         report.runs.push({ pair, mode, elapsedMs, buildMs, embedMs, indexCopyMs, preflightMs, ...metrics, audit });
         await fs.writeFile(path.join(output, 'summary.json'), JSON.stringify(report, null, 2) + '\n');
@@ -228,6 +286,21 @@ async function main() {
       }
     }
   }
+}
+
+/**
+ * Claude Code arguments for one fresh, non-persisted run. Only project settings load, so the
+ * user's plugins and hooks stay out; tools are allow-listed because skipping permissions is not
+ * used. The treatment arm may run only Node (the doktimoi CLI), read its skill files and list file
+ * names; Grep and Read of the corpus are denied there, because read-only tools need no approval.
+ */
+function claudeArgs(values, mode, docs) {
+  const absolute = `/${docs.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive) => `/${drive.toLowerCase()}`)}`;
+  const tools = mode === 'baseline' ? ['Read', 'Grep', 'Glob'] : ['Read', 'Glob', 'Bash(node:*)', 'PowerShell(node:*)'];
+  const denied = mode === 'baseline' ? [] : ['Grep', `Read(${absolute}/**)`];
+  return ['-p', '--output-format', 'stream-json', '--verbose', '--model', values.model, '--effort', values.effort,
+    '--setting-sources', 'project', '--strict-mcp-config', '--no-session-persistence',
+    '--allowedTools', ...tools, '--disallowedTools', 'WebSearch', 'WebFetch', 'Agent', 'Edit', 'Write', 'NotebookEdit', 'Skill', 'Workflow', ...denied];
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

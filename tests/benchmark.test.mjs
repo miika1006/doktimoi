@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { auditRun, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { auditRun, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -60,4 +60,31 @@ test('fresh benchmark copies contain exactly the pinned documents and no local i
   const manifest = JSON.parse(await fs.readFile(new URL('../examples/kubernetes/sources.json', import.meta.url), 'utf8'));
   assert.deepEqual(files, manifest.files.map(file => file.path.slice('docs/'.length)).sort());
   assert.ok(!(await fs.readdir(root)).includes('.doktimoi'));
+});
+
+test('Claude events count every model and cache token once and audit file tools like commands', () => {
+  const encode = list => list.map(e => JSON.stringify(e)).join('\n');
+  const use = (id, name, input) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name, input }] } });
+  const result = (id, content, is_error = false) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content, is_error }] } });
+  const events = [
+    { type: 'system', subtype: 'init', session_id: 's1' },
+    use('a', 'Read', { file_path: 'C:\\skill\\skills\\doktimoi\\SKILL.md' }), result('a', 'skill'),
+    use('b', 'Bash', { command: 'node "C:\\skill\\scripts\\doktimoi.mjs" search C:/w/docs --query x' }), result('b', [{ type: 'text', text: 'a.md:1-2' }]),
+    { type: 'result', subtype: 'success', is_error: false, result: 'memo', modelUsage: {
+      big: { inputTokens: 10, cacheReadInputTokens: 800, cacheCreationInputTokens: 100, outputTokens: 50 },
+      small: { inputTokens: 40, outputTokens: 5 } } },
+  ];
+  const converted = claudeToCodexEvents(encode(events));
+  const summary = summarizeEvents(converted);
+  assert.equal(summary.threadId, 's1');
+  assert.equal(summary.totalTokens, 1005);
+  assert.equal(summary.uncachedInputTokens, 150);
+  const audit = auditRun(converted, 'doktimoi');
+  assert.equal(audit.doktimoiCommands, 1);
+  assert.equal(audit.referenceReads, 1);
+  assert.equal(audit.passed, true);
+  const bypass = claudeToCodexEvents(encode([...events.slice(0, 1), use('c', 'Grep', { pattern: 'x', path: 'C:\\w\\docs' }), result('c', 'hit'), events.at(-1)]));
+  assert.equal(auditRun(bypass, 'doktimoi').passed, false);
+  assert.equal(auditRun(bypass, 'baseline').passed, true);
+  assert.throws(() => summarizeEvents(claudeToCodexEvents(encode([{ ...events.at(-1), is_error: true }]))), /completed turn/);
 });
