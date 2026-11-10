@@ -1,0 +1,236 @@
+{
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "build": {
+    "files": 409,
+    "chunks": 10297,
+    "changed": 409,
+    "removed": 0,
+    "hashedBytes": 8513875,
+    "index": "full",
+    "ocrCalls": 0,
+    "ocrCacheHits": 0,
+    "unsupported": [],
+    "warnings": [],
+    "ms": 14109.54
+  },
+  "passed": 19,
+  "afterRefinement": 20,
+  "total": 20,
+  "results": [
+    {
+      "id": "pdb-rollout",
+      "found": true,
+      "reference": "concepts/workloads/pods/disruptions.md:126-141",
+      "exactLines": [
+        135
+      ],
+      "resultTokens": 266,
+      "ms": 399
+    },
+    {
+      "id": "pdb-failure",
+      "found": true,
+      "reference": "concepts/workloads/pods/disruptions.md:126-141",
+      "exactLines": [
+        130
+      ],
+      "resultTokens": 266,
+      "ms": 265
+    },
+    {
+      "id": "rollout-limit",
+      "found": true,
+      "reference": "concepts/workloads/controllers/deployment.md:1189-1216",
+      "exactLines": [
+        638,
+        1191,
+        1203
+      ],
+      "resultTokens": 2952,
+      "ms": 615
+    },
+    {
+      "id": "zone-skew",
+      "found": true,
+      "reference": "concepts/scheduling-eviction/topology-spread-constraints.md:82-190",
+      "exactLines": [
+        88,
+        91,
+        110,
+        111
+      ],
+      "resultTokens": 4381,
+      "ms": 352
+    },
+    {
+      "id": "zone-loss",
+      "found": true,
+      "reference": "concepts/scheduling-eviction/topology-spread-constraints.md:82-190",
+      "exactLines": [
+        110
+      ],
+      "resultTokens": 4381,
+      "ms": 350
+    },
+    {
+      "id": "startup",
+      "found": true,
+      "reference": "concepts/workloads/pods/pod-lifecycle.md:474-497",
+      "exactLines": [
+        494
+      ],
+      "resultTokens": 367,
+      "ms": 400
+    },
+    {
+      "id": "termination-clock",
+      "found": true,
+      "reference": "reference/kubernetes-api/workload-resources/pod-v1.md:992-1032",
+      "exactLines": [
+        1008,
+        1701
+      ],
+      "resultTokens": 2249,
+      "ms": 396
+    },
+    {
+      "id": "terminating-endpoints",
+      "found": true,
+      "reference": "concepts/workloads/pods/pod-lifecycle.md:581-645",
+      "exactLines": [
+        627
+      ],
+      "resultTokens": 1205,
+      "ms": 338
+    },
+    {
+      "id": "cpu-limit",
+      "found": true,
+      "reference": "concepts/configuration/manage-resources-containers.md:27-46",
+      "exactLines": [
+        43
+      ],
+      "resultTokens": 1553,
+      "ms": 754
+    },
+    {
+      "id": "oom",
+      "found": true,
+      "reference": "concepts/configuration/manage-resources-containers.md:48-67",
+      "exactLines": [
+        52
+      ],
+      "resultTokens": 287,
+      "ms": 254
+    },
+    {
+      "id": "hpa-requests",
+      "found": true,
+      "reference": "tasks/run-application/horizontal-pod-autoscale.md:89-111",
+      "exactLines": [
+        101
+      ],
+      "resultTokens": 789,
+      "ms": 661
+    },
+    {
+      "id": "hpa-missing",
+      "found": true,
+      "reference": "tasks/run-application/horizontal-pod-autoscale.md:167-202",
+      "exactLines": [
+        184
+      ],
+      "resultTokens": 470,
+      "ms": 258
+    },
+    {
+      "id": "hpa-downscale",
+      "found": true,
+      "reference": "tasks/run-application/horizontal-pod-autoscale.md:204-218",
+      "exactLines": [
+        216
+      ],
+      "resultTokens": 758,
+      "ms": 426
+    },
+    {
+      "id": "network-additive",
+      "found": true,
+      "reference": "concepts/services-networking/network-policies.md:51-81",
+      "exactLines": [
+        75
+      ],
+      "resultTokens": 4202,
+      "ms": 968
+    },
+    {
+      "id": "network-both-ends",
+      "found": true,
+      "reference": "concepts/services-networking/network-policies.md:67-81",
+      "exactLines": [
+        79
+      ],
+      "resultTokens": 3632,
+      "ms": 532
+    },
+    {
+      "id": "network-plugin",
+      "found": true,
+      "reference": "concepts/services-networking/network-policies.md:45-49",
+      "exactLines": [
+        49
+      ],
+      "resultTokens": 973,
+      "ms": 503
+    },
+    {
+      "id": "secret-encoding",
+      "found": true,
+      "reference": "concepts/configuration/secret.md:305-310",
+      "exactLines": [
+        306
+      ],
+      "resultTokens": 103,
+      "ms": 258
+    },
+    {
+      "id": "secret-pod-access",
+      "found": false,
+      "refinement": {
+        "query": "create Pod read Secret",
+        "found": true,
+        "reference": "concepts/configuration/secret.md:32-48",
+        "resultTokens": 3122
+      },
+      "exactLines": [
+        38
+      ],
+      "resultTokens": 3231,
+      "ms": 1880
+    },
+    {
+      "id": "pv-delete",
+      "found": true,
+      "reference": "concepts/storage/persistent-volumes.md:201-210",
+      "exactLines": [
+        204
+      ],
+      "resultTokens": 151,
+      "ms": 253
+    },
+    {
+      "id": "pvc-retain",
+      "found": true,
+      "reference": "concepts/workloads/controllers/statefulset.md:406-425",
+      "exactLines": [
+        414
+      ],
+      "resultTokens": 1986,
+      "ms": 341
+    }
+  ]
+}

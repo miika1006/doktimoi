@@ -1,0 +1,28 @@
+[
+  {
+    "pair": 1,
+    "mode": "baseline",
+    "doktimoiCommands": 0,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [],
+    "cappedOutputs": 0,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 1,
+    "mode": "doktimoi",
+    "doktimoiCommands": 10,
+    "referenceReads": 1,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [],
+    "cappedOutputs": 1,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  }
+]

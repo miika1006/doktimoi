@@ -6,11 +6,18 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { execute, openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
+import { checkRuntime, execute, openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
 import { chunkMarkdown, safePath } from '../skills/doktimoi/scripts/sources.mjs';
 
 const require = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
 const XLSX = require('xlsx');
+
+test('unsupported Node versions fail before loading native dependencies', () => {
+  for (const version of ['20.18.0', '22.22.1', '23.0.0', '24.14.0', '25.0.0']) {
+    assert.throws(() => checkRuntime(version), /quoted absolute path.*different PATH/);
+  }
+  for (const version of ['22.22.2', '22.23.0', '24.15.0', '26.0.0']) checkRuntime(version);
+});
 
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-test-'));
@@ -81,6 +88,43 @@ test('Markdown conditions and code fences remain intact', () => {
   assert.equal(chunks.length, 1);
   assert.match(chunks[0].text, /Do not disable TLS unless/);
   assert.match(chunks[0].text, /```md\n# This is not a heading\n```/);
+});
+
+test('large lists split between complete items, preserving nested conditions and source lines', () => {
+  const text = '# Rules\n\n' + Array.from({ length: 5 }, (_, i) => `${i + 1}. Rule ${i}: ${'Keep the stated limit. '.repeat(45)}\n   - Except when authorization is absent.\n   - Never waive this condition.\n`).join('\n');
+  const chunks = chunkMarkdown(text, 'rules.md');
+  assert.ok(chunks.length > 1);
+  for (const item of chunks) {
+    const [first, last] = item.location.slice('lines:'.length).split('-').map(Number);
+    assert.equal(item.text, text.split('\n').slice(first - 1, last).join('\n'));
+    for (const [, rule] of item.text.matchAll(/Rule (\d+)/g)) {
+      assert.match(item.text, new RegExp(`Rule ${rule}:[\\s\\S]*Except when authorization is absent\\.[\\s\\S]*Never waive this condition\\.`));
+    }
+  }
+  assert.equal(chunks.flatMap(item => [...item.text.matchAll(/Rule (\d+)/g)].map(match => match[1])).join(','), '0,1,2,3,4');
+});
+
+test('filename-only matches cannot outrank source evidence or masquerade as it', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'startup-readiness-liveness.md'), '---\n\n# Unrelated\n\nNo behavior is documented here.');
+  await fs.writeFile(path.join(root, 'lifecycle.md'), '# Probes\n\nStartup blocks readiness and liveness until initialization succeeds.');
+  const { payload } = await project.search(['startup readiness liveness'], { limit: 1 });
+  assert.equal(payload.results[0].source, 'lifecycle.md');
+  assert.match(payload.results[0].text, /until initialization succeeds/);
+  assert.equal((await project.search(['startup readiness liveness'], { paths: ['startup-readiness-liveness.md'] })).payload.results.length, 0);
+});
+
+test('inline batches keep question-specific scopes and work without stdin', async t => {
+  const { root } = await fixture(t);
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nALPHA matches the first question.');
+  await fs.writeFile(path.join(root, 'b.md'), '# B\n\nBETA matches the second question.');
+  const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
+  const requests = JSON.stringify([{ queries: ['ALPHA'], paths: ['a.md'] }, { queries: ['BETA'], paths: ['b.md'] }]);
+  const output = execFileSync(process.execPath, [cli, 'batch', root, '--requests', requests], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  assert.match(output, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\nb\.md:[\s\S]*BETA/);
+  const partialRequests = JSON.stringify([{ queries: ['ALPHA'], paths: ['a.md'] }, { queries: ['ALPHA'], paths: ['missing.md'] }, { queries: ['BETA'], paths: ['b.md'] }]);
+  const partial = execFileSync(process.execPath, [cli, 'batch', root, '--requests', partialRequests], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  assert.match(partial, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\n\[Error: No indexed source under --path missing\.md; locate the source without a path filter\.\]\n\nQ3\nb\.md:[\s\S]*BETA/);
 });
 
 test('read caps long lines and marks omitted lines and parent context', async t => {
@@ -455,15 +499,26 @@ test('--path and --exclude restrict search to source prefixes and reject unknown
   await fs.writeFile(path.join(root, 'plans', 'other.md'), '# Other\n\nFILTER_TERM in another plan.');
   await fs.writeFile(path.join(root, 'diagrams', 'flow.md'), '# Flow\n\nFILTER_TERM in a diagram.');
   // Many better-ranked matches elsewhere must not starve the filtered results.
-  for (let i = 0; i < 40; i++) await fs.writeFile(path.join(root, `noise${i}.md`), `# Noise\n\nFILTER_TERM FILTER_TERM FILTER_TERM ${i}.`);
+  for (let i = 0; i < 600; i++) await fs.writeFile(path.join(root, `noise${i}.md`), `# Noise\n\nFILTER_TERM FILTER_TERM FILTER_TERM ${i}.`);
   const sources = async options => (await project.search(['FILTER_TERM'], { limit: 20, budget: 6000, ...options })).payload.results.map(r => r.source).sort();
   assert.deepEqual(await sources({ paths: ['plans'] }), ['plans/other.md', 'plans/own/draft.md']);
   assert.deepEqual(await sources({ paths: ['plans/'], exclude: ['plans/own'] }), ['plans/other.md']);
+  const fallback = await project.search(['FILTER_TERM absentword'], { paths: ['plans'] });
+  assert.deepEqual(fallback.payload.results.map(r => r.source).sort(), ['plans/other.md', 'plans/own/draft.md']);
   assert.deepEqual(await sources({ paths: [path.join(root, 'diagrams')] }), ['diagrams/flow.md']);
   assert.deepEqual(await sources({ scope: 'plans', paths: ['diagrams'] }), []);
   assert.ok((await sources({ exclude: ['plans', 'diagrams'] })).every(source => source.startsWith('noise')));
   await assert.rejects(project.search(['FILTER_TERM'], { paths: ['plan'] }), /No indexed source under --path plan$/);
   await assert.rejects(project.search(['FILTER_TERM'], { exclude: ['../x'] }), /inside/);
+});
+
+test('OR fallback never relaxes a caller\'s negative query constraints', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'private.md'), '# Private\n\nALPHA secret restricted.');
+  for (const query of ['ALPHA missing -secret', 'ALPHA missing -"secret restricted"']) {
+    assert.equal((await project.search([query])).payload.results.length, 0);
+  }
+  assert.equal((await project.search(['ALPHA missing'])).payload.results.length, 1);
 });
 
 test('an absolute --path or --exclude in Windows 8.3 short form matches the canonical index root', {

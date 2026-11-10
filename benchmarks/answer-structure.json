@@ -1,0 +1,77 @@
+{
+  "method": "Whitespace word count; named colon/#L citation ranges; range existence is not claim support.",
+  "answers": [
+    {
+      "file": "benchmarks/release-2026-11-10/1-baseline.answer.md",
+      "words": 1169,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/release-2026-11-10/1-doktimoi.answer.md",
+      "words": 1207,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 23,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/release-2026-11-10/2-baseline.answer.md",
+      "words": 1146,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 24,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/release-2026-11-10/2-doktimoi.answer.md",
+      "words": 1154,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 29,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/release-2026-11-10/3-baseline.answer.md",
+      "words": 1174,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 29,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/release-2026-11-10/3-doktimoi.answer.md",
+      "words": 1117,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/semantic-cpu-2026-11-10/1-doktimoi.answer.md",
+      "words": 1191,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 25,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/semantic-cpu-2026-11-10/2-doktimoi.answer.md",
+      "words": 1218,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 20,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/semantic-cpu-2026-11-10/3-doktimoi.answer.md",
+      "words": 1184,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 27,
+      "allRangesValid": true
+    }
+  ]
+}

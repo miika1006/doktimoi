@@ -1,0 +1,155 @@
+{
+  "startedAt": "2026-11-10T09:09:00.009Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v24.15.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "medium",
+  "arm": "doktimoi",
+  "retrieval": "hybrid",
+  "embeddingModel": "/private/tmp/doktimoi-embeddinggemma-300M-Q8_0.gguf",
+  "forceCpu": "1",
+  "preparedIndex": "/var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-semantic-corpus-PRhX45",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "d86b4a5f5f9a3c365f987b4a73700c9fc6858ada30cf92833799f121f9300418",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 195221,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 4338,
+      "preflightMs": 2144,
+      "threadId": "01a1c4b7-de30-75f3-9b56-cac1a8429921",
+      "usage": {
+        "input_tokens": 254795,
+        "cached_input_tokens": 228736,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4233,
+        "reasoning_output_tokens": 48
+      },
+      "totalTokens": 259028,
+      "uncachedInputTokens": 26059,
+      "commands": 9,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 18982,
+      "audit": {
+        "doktimoiCommands": 8,
+        "hybridCommands": 5,
+        "successfulHybridCommands": 5,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/containers/container-lifecycle-hooks.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 203225,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 4254,
+      "preflightMs": 2211,
+      "threadId": "01a1c4ba-f4bb-7ad1-8ae5-69c55e0f90a9",
+      "usage": {
+        "input_tokens": 264666,
+        "cached_input_tokens": 231808,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4528,
+        "reasoning_output_tokens": 45
+      },
+      "totalTokens": 269194,
+      "uncachedInputTokens": 32858,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21488,
+      "audit": {
+        "doktimoiCommands": 10,
+        "hybridCommands": 5,
+        "successfulHybridCommands": 4,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/containers/container-lifecycle-hooks.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 1,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 194458,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 4307,
+      "preflightMs": 2198,
+      "threadId": "01a1c4be-2a81-7923-a000-790e107a07c0",
+      "usage": {
+        "input_tokens": 290829,
+        "cached_input_tokens": 253312,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4699,
+        "reasoning_output_tokens": 64
+      },
+      "totalTokens": 295528,
+      "uncachedInputTokens": 37517,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 20553,
+      "audit": {
+        "doktimoiCommands": 11,
+        "hybridCommands": 5,
+        "successfulHybridCommands": 5,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/declare-network-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "e0208fc3039b0f220084fcc0df6f26f8fb4d74091e706c03bb03847fda93b3e7"
+}

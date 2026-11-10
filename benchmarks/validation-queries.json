@@ -1,0 +1,123 @@
+[
+  {
+    "id": "pdb-rollout",
+    "query": "PDBs rolling upgrades",
+    "source": "concepts/workloads/pods/disruptions.md",
+    "phrase": "are not limited by PDBs"
+  },
+  {
+    "id": "pdb-failure",
+    "query": "involuntary disruptions prevented",
+    "source": "concepts/workloads/pods/disruptions.md",
+    "phrase": "cannot be prevented by PDBs"
+  },
+  {
+    "id": "rollout-limit",
+    "query": "maxUnavailable maximum unavailable",
+    "source": "concepts/workloads/controllers/deployment.md",
+    "phrase": "maximum number"
+  },
+  {
+    "id": "zone-skew",
+    "query": "maxSkew global minimum",
+    "source": "concepts/scheduling-eviction/topology-spread-constraints.md",
+    "phrase": "global minimum"
+  },
+  {
+    "id": "zone-loss",
+    "query": "minDomains zero",
+    "source": "concepts/scheduling-eviction/topology-spread-constraints.md",
+    "phrase": "global minimum as 0"
+  },
+  {
+    "id": "startup",
+    "query": "startupProbe disabled succeeds",
+    "source": "concepts/workloads/pods/pod-lifecycle.md",
+    "phrase": "all other probes are disabled"
+  },
+  {
+    "id": "termination-clock",
+    "query": "grace period countdown preStop",
+    "source": "reference/kubernetes-api/workload-resources/pod-v1.md",
+    "phrase": "countdown begins before"
+  },
+  {
+    "id": "terminating-endpoints",
+    "query": "terminating endpoints ready false",
+    "source": "concepts/workloads/pods/pod-lifecycle.md",
+    "phrase": "Terminating endpoints always"
+  },
+  {
+    "id": "cpu-limit",
+    "query": "CPU limits throttling",
+    "source": "concepts/configuration/manage-resources-containers.md",
+    "phrase": "limits are enforced by CPU throttling"
+  },
+  {
+    "id": "oom",
+    "query": "memory limits reactively",
+    "source": "concepts/configuration/manage-resources-containers.md",
+    "phrase": "limits are enforced reactively"
+  },
+  {
+    "id": "hpa-requests",
+    "query": "CPU utilization request defined",
+    "source": "tasks/run-application/horizontal-pod-autoscale.md",
+    "phrase": "not take any action for that metric"
+  },
+  {
+    "id": "hpa-missing",
+    "query": "missing metrics conservatively",
+    "source": "tasks/run-application/horizontal-pod-autoscale.md",
+    "phrase": "100% of the desired"
+  },
+  {
+    "id": "hpa-downscale",
+    "query": "downscale stabilization defaults",
+    "source": "tasks/run-application/horizontal-pod-autoscale.md",
+    "phrase": "defaults to 5 minutes"
+  },
+  {
+    "id": "network-additive",
+    "query": "network policies additive",
+    "source": "concepts/services-networking/network-policies.md",
+    "phrase": "Network policies do not conflict"
+  },
+  {
+    "id": "network-both-ends",
+    "query": "source egress destination ingress",
+    "source": "concepts/services-networking/network-policies.md",
+    "phrase": "both the egress policy"
+  },
+  {
+    "id": "network-plugin",
+    "query": "network plugin supports NetworkPolicy",
+    "source": "concepts/services-networking/network-policies.md",
+    "phrase": "Creating a NetworkPolicy resource"
+  },
+  {
+    "id": "secret-encoding",
+    "query": "base64 obscured secret",
+    "source": "concepts/configuration/secret.md",
+    "phrase": "it is obscured but not secret"
+  },
+  {
+    "id": "secret-pod-access",
+    "query": "create Pod namespace Secrets",
+    "refinedQuery": "create Pod read Secret",
+    "source": "concepts/configuration/secret.md",
+    "phrase": "authorized to create a Pod in a namespace"
+  },
+  {
+    "id": "pv-delete",
+    "query": "Delete removes storage asset",
+    "source": "concepts/storage/persistent-volumes.md",
+    "phrase": "both the PersistentVolume object"
+  },
+  {
+    "id": "pvc-retain",
+    "query": "Retain default volumeClaimTemplate",
+    "source": "concepts/workloads/controllers/statefulset.md",
+    "phrase": "PVCs from the `volumeClaimTemplate` are not affected"
+  }
+]

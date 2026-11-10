@@ -1,0 +1,67 @@
+QMD Warning: no GPU acceleration, running on CPU (slow). Run 'qmd doctor' for device diagnostics.
+[node-llama-cpp] Failed to get swap info
+{"updateMs":78.77,"searchMs":4271.75,"resultTokens":590,"tokenizer":"o200k_base","changed":0,"removed":0,"unsupportedCount":0,"warningCount":0,"hashedBytes":0}
+tasks/inject-data-application/distribute-credentials-secure.md:17-34
+{{% heading "prerequisites" %}}
+### Convert your secret data to a base-64 representation
+
+Suppose you want to have two pieces of secret data: a username `my-app` and a password
+`39528$vdg7Jb`. First, use a base64 encoding tool to convert your username and password to a base64 representation. Here's an example using the commonly available base64 program:
+
+```shell
+echo -n 'my-app' | base64
+echo -n '39528$vdg7Jb' | base64
+```
+
+The output shows that the base-64 representation of your username is `bXktYXBw`,
+and the base-64 representation of your password is `Mzk1MjgkdmRnN0pi`.
+
+{{< caution >}}
+Use a local tool trusted by your OS to decrease the security risks of external tools.
+{{< /caution >}}
+
+<!-- steps -->
+
+concepts/configuration/secret.md:312-337
+Types of Secret {#secret-types}
+### Basic authentication Secret
+
+The `kubernetes.io/basic-auth` type is provided for storing credentials needed
+for basic authentication. When using this Secret type, the `data` field of the
+Secret must contain one of the following two keys:
+
+- `username`: the user name for authentication
+- `password`: the password or token for authentication
+
+Both values for the above two keys are base64 encoded strings. You can
+alternatively provide the clear text content using the `stringData` field in the
+Secret manifest.
+
+The following manifest is an example of a basic authentication Secret:
+
+{{% code language="yaml" file="secret/basicauth-secret.yaml" %}}
+
+{{< note >}}
+The `stringData` field for a Secret does not work well with server-side apply.
+{{< /note >}}
+
+The basic authentication Secret type is provided only for convenience.
+You can create an `Opaque` type for credentials used for basic authentication.
+However, using the defined and public Secret type (`kubernetes.io/basic-auth`) helps other
+people to understand the purpose of your Secret, and sets a convention for what key names
+to expect.
+
+tasks/inject-data-application/distribute-credentials-secure.md:84-94
+Create a Secret
+### Create a Secret directly with kubectl
+
+If you want to skip the Base64 encoding step, you can create the
+same Secret using the `kubectl create secret` command. For example:
+
+```shell
+kubectl create secret generic test-secret --from-literal='username=my-app' --from-literal='password=39528$vdg7Jb'
+```
+
+This is more convenient. The detailed approach shown earlier runs
+through each step explicitly to demonstrate what is happening.
+[More matches available.]

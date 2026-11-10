@@ -1,0 +1,137 @@
+[
+  {
+    "pair": 1,
+    "mode": "baseline",
+    "doktimoiCommands": 0,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [
+      {
+        "id": "item_6",
+        "exitCode": 2,
+        "messages": []
+      }
+    ],
+    "cappedOutputs": 0,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 1,
+    "mode": "doktimoi",
+    "doktimoiCommands": 23,
+    "referenceReads": 1,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [
+      {
+        "id": "item_8",
+        "exitCode": 1,
+        "messages": [
+          "doktimoi: No indexed source under --path concepts/configuration/liveness-readiness-startup-probes.md"
+        ]
+      },
+      {
+        "id": "item_20",
+        "exitCode": 1,
+        "messages": [
+          "doktimoi: No indexed source under --path concepts/containers/container-lifecycle-hooks.md"
+        ]
+      }
+    ],
+    "cappedOutputs": 1,
+    "emptySearches": 1,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 2,
+    "mode": "doktimoi",
+    "doktimoiCommands": 15,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [
+      {
+        "id": "item_11",
+        "exitCode": 1,
+        "messages": [
+          "doktimoi: No indexed source under --path concepts/security/secrets-good-practices.md"
+        ]
+      },
+      {
+        "id": "item_12",
+        "exitCode": 0,
+        "messages": [
+          "[Error: Unknown or obsolete chunk: concepts/security/secrets-good-practices.md:20-90]"
+        ]
+      },
+      {
+        "id": "item_15",
+        "exitCode": 1,
+        "messages": [
+          "doktimoi: No indexed source under --path concepts/containers/container-lifecycle-hooks.md"
+        ]
+      }
+    ],
+    "cappedOutputs": 1,
+    "emptySearches": 2,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 2,
+    "mode": "baseline",
+    "doktimoiCommands": 0,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [
+      {
+        "id": "item_6",
+        "exitCode": 1,
+        "messages": []
+      }
+    ],
+    "cappedOutputs": 0,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 3,
+    "mode": "baseline",
+    "doktimoiCommands": 0,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [],
+    "cappedOutputs": 0,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  },
+  {
+    "pair": 3,
+    "mode": "doktimoi",
+    "doktimoiCommands": 16,
+    "referenceReads": 0,
+    "filenameCommands": 0,
+    "violations": [],
+    "operationErrors": [
+      {
+        "id": "item_13",
+        "exitCode": 1,
+        "messages": [
+          "doktimoi: No indexed source under --path concepts/containers/container-lifecycle-hooks.md"
+        ]
+      }
+    ],
+    "cappedOutputs": 1,
+    "emptySearches": 0,
+    "repeatedCommands": 0,
+    "passed": true
+  }
+]

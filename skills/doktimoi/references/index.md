@@ -6,6 +6,18 @@ Requires Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+. Check `node --version`,
 `npm --version` and the resolved executable paths before changing anything.
 The marketplace installs skill files, not npm packages.
 
+On macOS/Linux with nvm, reuse `nvm install --lts` / `nvm use --lts` if an upgrade
+is needed. Check the assistant's own `command -v node` and `node --version`:
+desktop apps and login shells may retain a different PATH. Use the quoted
+absolute executable from `nvm which --lts` when necessary; do not install a
+second system Node to work around that. The CLI rejects unsupported versions
+before loading native modules.
+
+Codex plugin installations use root `plugin.json` and the shared
+`hooks/hooks.json`; Codex supplies `CLAUDE_PLUGIN_ROOT` for compatibility and
+`PLUGIN_ROOT` natively. Hook trust is reviewed in the host, never self-approved
+by setup. A standalone SKILL.md installation does not install these hooks.
+
 On Windows, check `Get-Command nvm -ErrorAction SilentlyContinue`, `nvm version` and
 `nvm list`. With [nvm-windows](https://github.com/nvm-windows/nvm), reuse a
 compatible installed version, or pick a supported LTS from `nvm list available`
@@ -84,8 +96,22 @@ Record semantic search as enabled only after it completes. On failure, report it
 keep keyword search and record enablement as pending; never present lexical
 results as semantic. Afterwards use `--mode hybrid` for meaning-based questions
 and keyword search for exact identifiers. Documents are never uploaded. Models
-use QMD's local cache (`XDG_CACHE_HOME` isolates it); `QMD_FORCE_CPU=1` forces
-CPU when Metal/CUDA is unavailable; report the mode when benchmarking.
+use QMD's local cache (`XDG_CACHE_HOME` isolates it). `QMD_FORCE_CPU=1` requests
+CPU execution; report the actual backend when benchmarking.
+
+On Apple Silicon, the packaged backend includes Metal. With QMD 2.8.3 and
+node-llama-cpp 3.20.0, CPU mode can still initialize Metal when no CPU binary is
+installed; a sandbox may reject this too. Do not keep retrying or call a lexical
+fallback semantic. To use CPU inside that sandbox, build the dependency's CPU
+backend from the installed skill directory, then retry with `QMD_FORCE_CPU=1`:
+
+```sh
+node node_modules/node-llama-cpp/dist/cli/cli.js source download --gpu false --noUsageExample
+```
+
+This is a one-time native build requiring compiler tools; it can download CMake
+and uses the dependency's bundled llama.cpp revision. It does not change sandbox
+permissions. See [node-llama-cpp's Metal instructions](https://node-llama-cpp.withcat.ai/guide/Metal).
 
 ## Turn semantic search on or off; check status
 

@@ -66,7 +66,7 @@ export async function inventory(root) {
   return { files: files.sort(), unsupported: unsupported.sort() };
 }
 
-// Keep Markdown blocks intact: a long table/code block is expandable, never silently cut. A
+// Keep Markdown blocks and individual list items intact; large lists split only between items. A
 // heading directly followed by another heading stays with it, so no chunk is a bare heading.
 export function chunkMarkdown(text, source, locationKind = 'lines') {
   const chunks = [];
@@ -83,14 +83,16 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
     pending = [];
     length = 0;
   }
-  for (const node of fromMarkdown(text).children) {
+  const sizeOf = node => node.position.end.offset - node.position.start.offset;
+  const blocks = fromMarkdown(text).children.flatMap(node => node.type === 'list' && sizeOf(node) > 2400 ? node.children : [node]);
+  for (const node of blocks) {
     if (node.type === 'heading') {
       if (pending.some(block => block.type !== 'heading')) flush();
       headings.length = node.depth;
       headings[node.depth - 1] = text.slice(node.position.start.offset, node.position.end.offset).replace(/^#+\s*/, '');
     }
-    const size = node.position.end.offset - node.position.start.offset;
-    if (length + size > 1200 && pending.some(block => block.type !== 'heading')) flush();
+    const size = sizeOf(node);
+    if (length + size > 2400 && pending.some(block => block.type !== 'heading')) flush();
     pending.push(node);
     length += size;
   }

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "doktimoi",
+  "version": "0.12.0",
+  "description": "Search local documentation with source citations and a token budget.",
+  "author": { "name": "miika1006" },
+  "repository": "https://github.com/miika1006/doktimoi",
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/hooks.json",
+      "interface": {
+        "displayName": "Doktimoi",
+        "shortDescription": "Find cited answers in local documentation",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": ["Use doktimoi to find source-backed answers in this documentation folder."]
+      }
+    }
+  }
+}

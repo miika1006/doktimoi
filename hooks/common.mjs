@@ -41,7 +41,7 @@ export async function runHook(url, name, handler) {
   try {
     let raw = '';
     for await (const part of process.stdin) raw += part;
-    await handler(JSON.parse(raw), process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
+    await handler(JSON.parse(raw), process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
   } catch (error) { console.error(`${name}: ${error.message}`); process.exitCode = 1; }
 }
 

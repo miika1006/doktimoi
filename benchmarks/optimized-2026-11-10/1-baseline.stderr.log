@@ -1,0 +1,2 @@
+2026-11-10T05:50:05.355651Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-11-10T07:23:34.934913Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (1/5 in 185ms)... turn_id=01a1c401-a853-73e1-8c36-68ef99157103 retries=1 max_retries=5 sampling_error=stream disconnected before completion: idle timeout waiting for websocket

@@ -1,0 +1,242 @@
+diff --git a/skills/doktimoi/SKILL.md b/skills/doktimoi/SKILL.md
+index 1950354..1a8e513 100644
+--- a/skills/doktimoi/SKILL.md
++++ b/skills/doktimoi/SKILL.md
+@@ -17,8 +17,8 @@ folder, else the working directory.
+ ## Commands
+ 
+ ```text
+-node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "exact terms" --brief
+-node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "terms" --query "other phrasing" --next --query "second question" --brief
++node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "exact terms"
++node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "terms" --query "other phrasing" --next --query "second question" --limit 2
+ node "<skill>/scripts/doktimoi.mjs" search "<folder>" --query "Log.Rest" --mode exact
+ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "a.md:20-45" "b.md:1-30" "guide.docx:extracted-lines:5-9"
+ node "<skill>/scripts/doktimoi.mjs" status "<folder>"
+@@ -26,6 +26,8 @@ node "<skill>/scripts/doktimoi.mjs" status "<folder>"
+ 
+ - Double-quote both paths: Bash (also Git Bash) strips unquoted backslashes and
+   `node C:\Users\...` fails with `MODULE_NOT_FOUND`.
++- Use a supported Node executable. On macOS a login shell or desktop app may use
++  a different Node than your terminal; use its quoted absolute path if needed.
+ - Run each call as one command with absolute paths: no `cd`, variables, `;`, `&&`,
+   pipes or redirection. The plugin hook then approves it without a prompt. If a
+   call is denied or fails, say so instead of silently switching to Grep.
+@@ -34,16 +36,20 @@ node "<skill>/scripts/doktimoi.mjs" status "<folder>"
+   and `--exclude PREFIX` narrow further (repeatable). Only `build` creates an
+   index; never build a subfolder of an indexed folder. `--help` lists all options.
+ 
+-## Locate, then read
++## Answer with few calls
+ 
+-1. Locate with `--brief`: up to 10 hits (`--limit` up to 20), each a reference,
+-   heading path and one matching line, in a few hundred tokens.
+-2. Read only the ranges you need, copying references exactly. For Markdown and
++1. For factual questions, start with passages (omit `--brief`). Batch the known
++   questions with `--next`; `--limit 2` is a useful start for a broad task. A
++   complete passage may already answer a question without another read.
++2. Use `--brief` when locating a file or section, or when the right terminology
++   is unclear: each hit gives a reference, heading and matching line.
++3. Read only unresolved evidence or omitted conditions, copying references
++   exactly. Avoid rereading overlapping ranges or broad sections when the
++   returned passage is sufficient. For Markdown and
+    text, `path.md:N-M` reads source lines N-M. Read output starts with the lines
+    it shows (`path.md:20-64`); count edit lines from there. A cut read ends with
+    `[Continue: read "path.md:65-400"]`.
+-3. Without `--brief`, search returns whole passages (default 1600 tokens); use it
+-   when the top hits are likely enough.
++   Search defaults to 1600 tokens per question; the call-wide cap is shared.
+ 
+ Batch: every call resends the conversation, so the number of calls drives cost.
+ Put independent questions in one search, separated by `--next` (own `Q1`, `Q2`
+@@ -53,6 +59,8 @@ the rest). For names, numbers or phrases use `--mode exact` instead of `grep`:
+ up to 20 `--query` phrases are alternatives, and it lists every matching line, Office/PDF/OCR text included, as the file, then
+ `N: line` (read `file:N`) or `LOCATION: line` (read `file:LOCATION`). To read a
+ whole Markdown file, read `file.md:1-99999 --budget 6000` and follow `Continue`.
++`--path` and `--exclude` affect **every question** in a call; batch questions
++with the same scope together. Do not add a path intended for just one question.
+ 
+ Start with exact names, identifiers or keywords. Terms in a query are ANDed;
+ repeat `--query` for up to four phrasings of one intent, including the
+diff --git a/skills/doktimoi/package-lock.json b/skills/doktimoi/package-lock.json
+index 81babeb..39a949b 100644
+--- a/skills/doktimoi/package-lock.json
++++ b/skills/doktimoi/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "doktimoi",
+-  "version": "0.11.2",
++  "version": "0.12.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "doktimoi",
+-      "version": "0.11.2",
++      "version": "0.12.0",
+       "dependencies": {
+         "@napi-rs/canvas": "1.1.0",
+         "@tobilu/qmd": "2.8.3",
+diff --git a/skills/doktimoi/package.json b/skills/doktimoi/package.json
+index 88f5558..1e6002e 100644
+--- a/skills/doktimoi/package.json
++++ b/skills/doktimoi/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "doktimoi",
+-  "version": "0.11.2",
++  "version": "0.12.0",
+   "private": true,
+   "type": "module",
+   "engines": {
+diff --git a/skills/doktimoi/references/index.md b/skills/doktimoi/references/index.md
+index 930bdfd..3d39d07 100644
+--- a/skills/doktimoi/references/index.md
++++ b/skills/doktimoi/references/index.md
+@@ -6,6 +6,18 @@ Requires Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+. Check `node --version`,
+ `npm --version` and the resolved executable paths before changing anything.
+ The marketplace installs skill files, not npm packages.
+ 
++On macOS/Linux with nvm, reuse `nvm install --lts` / `nvm use --lts` if an upgrade
++is needed. Check the assistant's own `command -v node` and `node --version`:
++desktop apps and login shells may retain a different PATH. Use the quoted
++absolute executable from `nvm which --lts` when necessary; do not install a
++second system Node to work around that. The CLI rejects unsupported versions
++before loading native modules.
++
++Codex plugin installations use root `plugin.json` and the shared
++`hooks/hooks.json`; Codex supplies `CLAUDE_PLUGIN_ROOT` for compatibility and
++`PLUGIN_ROOT` natively. Hook trust is reviewed in the host, never self-approved
++by setup. A standalone SKILL.md installation does not install these hooks.
++
+ On Windows, check `Get-Command nvm -ErrorAction SilentlyContinue`, `nvm version` and
+ `nvm list`. With [nvm-windows](https://github.com/nvm-windows/nvm), reuse a
+ compatible installed version, or pick a supported LTS from `nvm list available`
+diff --git a/skills/doktimoi/scripts/doktimoi.mjs b/skills/doktimoi/scripts/doktimoi.mjs
+index 463b5d3..172680f 100644
+--- a/skills/doktimoi/scripts/doktimoi.mjs
++++ b/skills/doktimoi/scripts/doktimoi.mjs
+@@ -15,6 +15,11 @@ let encoder, extractSnippet;
+ const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
+ const since = started => Math.round((performance.now() - started) * 100) / 100;
+ const EXCEL_NOTE = 'Excel formula results are cached, not recalculated.';
++export function checkRuntime(version = process.versions.node) {
++  const [major, minor, patch] = version.split('.').map(Number);
++  if ((major === 22 && (minor > 22 || (minor === 22 && patch >= 2))) || (major === 24 && minor >= 15) || major >= 26) return;
++  throw new Error(`Node ${version} is unsupported; use Node 22.22.2+, 24.15+ or 26+. This shell uses ${process.execPath}. Use the quoted absolute path of a supported Node executable; desktop apps and login shells may have a different PATH.`);
++}
+ export function tokens(text) {
+   encoder ??= createRequire(import.meta.url)('tiktoken').get_encoding('o200k_base');
+   return encoder.encode(text, [], []).length;
+@@ -47,7 +52,8 @@ function clipLines(item, [start, end]) {
+  * @example fallbackTerms(['ABC XYZ analyysi 5–7 vk']) // ['ABC', 'XYZ', 'analyysi', 'vk']
+  */
+ function fallbackTerms(queries) {
+-  // Terms negated with a leading - stay excluded: the lookbehinds skip them, as QMD's AND search does.
++  // Relaxing a negative query to OR would return evidence the caller explicitly excluded.
++  if (queries.some(query => /(?:^|\s)-\S/.test(query))) return [];
+   const terms = queries.flatMap(query => query.match(/(?<![\p{L}\p{N}_])(?<!(?:^|\s)-)[\p{L}\p{N}_]+/gu) ?? []).filter(term => term.length > 1);
+   const unique = [...new Map(terms.map(term => [term.toLowerCase(), term])).values()];
+   return unique.length > 1 ? unique.slice(0, 8) : [];
+@@ -220,12 +226,13 @@ function breadcrumb(item) {
+  *   after a change (or every minute), instead of on every call, for a long-lived process
+  */
+ export async function openProject(directory, { modelIdleMs, watch: watchSources = false } = {}) {
++  checkRuntime();
+   const [{ default: lockfile }, qmd, { convert, inventory, safePath }] = await Promise.all([
+     import('proper-lockfile'), import('@tobilu/qmd'), import('./sources.mjs')]);
+   extractSnippet = qmd.extractSnippet;
+   const root = await fs.realpath(directory);
+   const qmdStore = await qmdInternals();
+-  const converterVersion = JSON.stringify({ version: 15, ...extractionConfig() });
++  const converterVersion = JSON.stringify({ version: 16, ...extractionConfig() });
+   const cache = await safePath(root, '.doktimoi');
+   await fs.mkdir(cache, { recursive: true });
+   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
+@@ -730,22 +737,30 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources
+     /** Ranks chunks for the queries and renders as many as fit the budget (see search). */
+     async function find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale }) {
+       const wanted = sourceFilter(scope, paths, exclude);
+-      // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
+-      // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
+-      const candidates = wanted ? 500 : 20;
+-      const lexical = async query => (await store.searchLex(query, { collection: 'docs', limit: candidates })).filter(row => !wanted || wanted(sourceOf(row)));
++      // QMD cannot filter by source. Expand until enough eligible hits survive or the ranking is exhausted.
++      const ranked = async search => {
++        for (let count = 20; ; count *= 2) {
++          const rows = await search(count);
++          const selected = rows.filter(row => !wanted || wanted(sourceOf(row)));
++          if (!wanted || selected.length >= 20 || rows.length < count || count >= metadata.size) return selected.slice(0, 20);
++        }
++      };
++      const lexical = query => ranked(count => store.searchLex(query, { collection: 'docs', limit: count }));
+       if (mode !== 'lexical' && !(await store.getStatus()).hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
+       const lists = [];
+       for (const query of queries) lists.push(await lexical(query));
+       let note;
+       if (mode !== 'lexical') {
+-        const vector = await vectorSearch(queries[0], candidates);
+-        // QMD can log embedding failures and return []; do not label that a successful hybrid search.
+-        if (!vector.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
+-        lists.push(vector.filter(row => !wanted || wanted(sourceOf(row))));
++        const vector = await ranked(async count => {
++          const rows = await vectorSearch(queries[0], count);
++          // QMD can log embedding failures and return []; do not label that a successful hybrid search.
++          if (!rows.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
++          return rows;
++        });
++        lists.push(vector);
+       } else if (lists.every(list => !list.length)) {
+         const terms = fallbackTerms(queries);
+-        lists.push(terms.length ? searchAnyTerm(terms, candidates).filter(row => !wanted || wanted(sourceOf(row))) : []);
++        lists.push(terms.length ? await ranked(count => searchAnyTerm(terms, count)) : []);
+         note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
+       }
+       const fused = new Map();
+@@ -1007,6 +1022,7 @@ async function main() {
+   const [command, root, ...refs] = positionals;
+   // Help must not open the index, take the lock or start a server.
+   if (values.help || command === 'help') return console.log(USAGE);
++  checkRuntime();
+   if (command === 'serve' && root) return serveFolder(root);
+   if (!CLI_COMMANDS.includes(command) || !root) {
+     throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid|exact]; run with --help for details');
+@@ -1225,7 +1241,7 @@ async function disableSemantic(root) {
+ 
+ /** Opens the folder in this process, runs the command and closes the folder again. */
+ async function runInProcess(root, request) {
+-  const project = await openProject(root);
++  const project = await openProject(root, { watch: true });
+   try { return await execute(project, request); } finally { await project.close(); }
+ }
+ 
+@@ -1311,12 +1327,13 @@ Options:
+ 
+ References:
+   file.md:12-40    a reference copied from search output, or a chunk ID: that chunk
+-  file.md:N        Markdown, text, CSV: the chunk containing line N (or the next one)
+-  file.md:N-M      Markdown, text, CSV: source lines N-M (within indexed chunks), cut to --budget
++  file.md:N        Markdown, text: the chunk containing line N (or the next one)
++  file.md:N-M      Markdown, text: source lines N-M (within indexed chunks), cut to --budget
+   Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
+   with [Continue: read "file.md:65-120"], the range that reads on. References that did not
+   fit a multi-reference read are named in [Output cap reached; not read: ...].
+-  Other formats (PDF pages, sheets, slides, OCR images) need the exact reference.`;
++  Other formats (CSV/TSV, PDF pages, sheets, slides, OCR images) need the exact reference.
++  CSV/TSV csv-lines:N-M names the original physical lines; its field text is normalized.`;
+ 
+ if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {
+   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });
+diff --git a/skills/doktimoi/scripts/structured.mjs b/skills/doktimoi/scripts/structured.mjs
+index df79a30..9e44045 100644
+--- a/skills/doktimoi/scripts/structured.mjs
++++ b/skills/doktimoi/scripts/structured.mjs
+@@ -26,7 +26,7 @@ export function csv(source, buffer) {
+   let group = [], first = 1 + offset, previous = offset, size = 0;
+   function flush(last) {
+     if (!group.length) return;
+-    chunks.push({ source, location: `lines:${first}-${last}`, heading: tsv ? 'TSV' : 'CSV',
++    chunks.push({ source, location: `csv-lines:${first}-${last}`, heading: tsv ? 'TSV' : 'CSV',
+       text: `${first === 1 + offset ? '' : `columns: ${header}\n`}${group.join('\n')}` });
+     group = []; size = 0;
+   }

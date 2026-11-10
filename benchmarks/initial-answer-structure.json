@@ -1,0 +1,58 @@
+[
+  {
+    "run": "benchmarks/results-2026-11-10/1-baseline.answer.md",
+    "words": 1185,
+    "sections": 10,
+    "citationSpans": 25,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/results-2026-11-10/1-doktimoi.answer.md",
+    "words": 1141,
+    "sections": 10,
+    "citationSpans": 24,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/results-2026-11-10/2-baseline.answer.md",
+    "words": 1193,
+    "sections": 10,
+    "citationSpans": 29,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/results-2026-11-10/2-doktimoi.answer.md",
+    "words": 1127,
+    "sections": 10,
+    "citationSpans": 30,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/results-2026-11-10/3-baseline.answer.md",
+    "words": 1100,
+    "sections": 10,
+    "citationSpans": 30,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/results-2026-11-10/3-doktimoi.answer.md",
+    "words": 1195,
+    "sections": 10,
+    "citationSpans": 23,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/optimized-2026-11-10/1-baseline.answer.md",
+    "words": 1052,
+    "sections": 10,
+    "citationSpans": 28,
+    "invalidSpans": []
+  },
+  {
+    "run": "benchmarks/optimized-2026-11-10/1-doktimoi.answer.md",
+    "words": 1193,
+    "sections": 10,
+    "citationSpans": 27,
+    "invalidSpans": []
+  }
+]

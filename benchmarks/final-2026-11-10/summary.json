@@ -1,0 +1,238 @@
+{
+  "startedAt": "2026-11-10T07:29:46.621Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v24.15.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "medium",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "8d87e8151bfaa226e82c64987134b22efc9677d3cdf016335b5a7f1fdf5addd5",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 164409,
+      "buildMs": 0,
+      "threadId": "01a1c45c-ed19-7a40-a5e2-60b8fbe48ebb",
+      "usage": {
+        "input_tokens": 271165,
+        "cached_input_tokens": 237824,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4066,
+        "reasoning_output_tokens": 154
+      },
+      "totalTokens": 275231,
+      "uncachedInputTokens": 33341,
+      "commands": 10,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21912,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 156906,
+      "buildMs": 11348,
+      "threadId": "01a1c45f-9d43-7ef1-9e5a-a85fc23e9bcc",
+      "usage": {
+        "input_tokens": 288544,
+        "cached_input_tokens": 233600,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4128,
+        "reasoning_output_tokens": 76
+      },
+      "totalTokens": 292672,
+      "uncachedInputTokens": 54944,
+      "commands": 10,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19804,
+      "audit": {
+        "doktimoiCommands": 9,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_6",
+            "exitCode": 1,
+            "messages": [
+              "doktimoi: No indexed source under --path concepts/security/secrets-good-practices.md"
+            ]
+          }
+        ],
+        "cappedOutputs": 1,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 135654,
+      "buildMs": 11277,
+      "threadId": "01a1c462-308f-7b63-8ffb-a7dc93e97d41",
+      "usage": {
+        "input_tokens": 219172,
+        "cached_input_tokens": 169088,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3727,
+        "reasoning_output_tokens": 50
+      },
+      "totalTokens": 222899,
+      "uncachedInputTokens": 50084,
+      "commands": 9,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19979,
+      "audit": {
+        "doktimoiCommands": 8,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 1,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 158091,
+      "buildMs": 0,
+      "threadId": "01a1c464-44cf-7fd1-9888-e30d02662bd5",
+      "usage": {
+        "input_tokens": 242050,
+        "cached_input_tokens": 203520,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3735,
+        "reasoning_output_tokens": 262
+      },
+      "totalTokens": 245785,
+      "uncachedInputTokens": 38530,
+      "commands": 9,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21648,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 145666,
+      "buildMs": 0,
+      "threadId": "01a1c466-af54-7e22-82d7-6e78680011cf",
+      "usage": {
+        "input_tokens": 242235,
+        "cached_input_tokens": 213376,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3607,
+        "reasoning_output_tokens": 125
+      },
+      "totalTokens": 245842,
+      "uncachedInputTokens": 28859,
+      "commands": 9,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 22074,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_7",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 153313,
+      "buildMs": 11269,
+      "threadId": "01a1c469-1568-74b0-a725-fc5b8558237c",
+      "usage": {
+        "input_tokens": 292078,
+        "cached_input_tokens": 264192,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4064,
+        "reasoning_output_tokens": 67
+      },
+      "totalTokens": 296142,
+      "uncachedInputTokens": 27886,
+      "commands": 10,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 20546,
+      "audit": {
+        "doktimoiCommands": 9,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 1,
+            "messages": [
+              "doktimoi: No indexed source under --path concepts/security/secrets-good-practices.md"
+            ]
+          }
+        ],
+        "cappedOutputs": 1,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "5daa57667bca769c0c3d0de510f3d5cf7aacbca81518ac5ef2ba644c1ef421f5"
+}

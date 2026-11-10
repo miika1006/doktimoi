@@ -1,0 +1,3 @@
+# Preserve upstream checksums and recorded evidence on Windows checkouts too.
+examples/kubernetes/docs/** -text
+benchmarks/** -text

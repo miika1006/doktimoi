@@ -1,0 +1,140 @@
+{
+  "startedAt": "2026-11-10T05:14:22.986Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v24.15.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "medium",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "7d1886a74a233521abfebad573d684a558e254997f55713b324821b91f2faf64",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 115238,
+      "buildMs": 0,
+      "threadId": "01a1c3e0-f929-74a3-b473-8ac8f100418c",
+      "usage": {
+        "input_tokens": 187116,
+        "cached_input_tokens": 160768,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3275,
+        "reasoning_output_tokens": 51
+      },
+      "totalTokens": 190391,
+      "uncachedInputTokens": 26348,
+      "commands": 7,
+      "failedCommands": 1,
+      "toolOutputTokensEstimate": 20062
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": null,
+      "eventFileDurationMs": 739691,
+      "timingNote": "The first runner rejected a recovered transport error after completion, before saving elapsed time. File timestamps are an approximate duration only; exclude this run from elapsed-time aggregates.",
+      "buildMs": null,
+      "threadId": "01a1c3e2-f09f-74f0-a64d-7ef1ec130fd6",
+      "usage": {
+        "input_tokens": 365344,
+        "cached_input_tokens": 335616,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5795,
+        "reasoning_output_tokens": 70
+      },
+      "totalTokens": 371139,
+      "uncachedInputTokens": 29728,
+      "commands": 24,
+      "failedCommands": 2,
+      "transportErrors": [
+        "Reconnecting... 2/5 (stream disconnected before completion: IO error: Connection reset by peer (os error 54))"
+      ],
+      "toolOutputTokensEstimate": 20384
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 157788,
+      "buildMs": 16142,
+      "threadId": "01a1c3f3-2e9a-7a23-ad9b-ef4a6fcfa279",
+      "usage": {
+        "input_tokens": 291285,
+        "cached_input_tokens": 266880,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4873,
+        "reasoning_output_tokens": 142
+      },
+      "totalTokens": 296158,
+      "uncachedInputTokens": 24405,
+      "commands": 15,
+      "failedCommands": 2,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 15702
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 119551,
+      "buildMs": 0,
+      "threadId": "01a1c3f5-9988-7a52-825c-bfdae40d485a",
+      "usage": {
+        "input_tokens": 213262,
+        "cached_input_tokens": 175488,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3304,
+        "reasoning_output_tokens": 73
+      },
+      "totalTokens": 216566,
+      "uncachedInputTokens": 37774,
+      "commands": 8,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21662
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 125135,
+      "buildMs": 0,
+      "threadId": "01a1c3f8-4595-7202-ae72-ac195fb7e32a",
+      "usage": {
+        "input_tokens": 318392,
+        "cached_input_tokens": 259840,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3700,
+        "reasoning_output_tokens": 145
+      },
+      "totalTokens": 322092,
+      "uncachedInputTokens": 58552,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 26673
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 176569,
+      "buildMs": 13332,
+      "threadId": "01a1c3fa-63cf-7e43-87d0-5bebbd801e65",
+      "usage": {
+        "input_tokens": 480492,
+        "cached_input_tokens": 442752,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4848,
+        "reasoning_output_tokens": 99
+      },
+      "totalTokens": 485340,
+      "uncachedInputTokens": 37740,
+      "commands": 16,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 16882
+    }
+  ]
+}

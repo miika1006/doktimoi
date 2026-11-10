@@ -1,0 +1,6 @@
+reference/kubectl/generated/kubectl_certificate/kubectl_certificate_approve.md:1-1
+---
+[More matches available.]
+QMD Warning: no GPU acceleration, running on CPU (slow). Run 'qmd doctor' for device diagnostics.
+[node-llama-cpp] Failed to get swap info
+{"updateMs":217.29,"searchMs":1610.9,"resultTokens":27,"tokenizer":"o200k_base","changed":0,"removed":0,"unsupportedCount":0,"warningCount":0,"hashedBytes":8513875}

@@ -22,6 +22,13 @@ export function targetRoot(input) {
   return root && !insideIndexData(resolved, root) ? root : null;
 }
 
+/** Codex apply_patch may edit, delete or move files in several indexed folders. */
+export function targetRoots(input) {
+  if (input.tool_name !== 'apply_patch') return [targetRoot(input)].filter(Boolean);
+  const files = [...String(input.tool_input?.command ?? '').matchAll(/^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)\r?$/gm)];
+  return [...new Set(files.map(([, file]) => targetRoot({ ...input, tool_input: { file_path: file.replace(/\r$/, '') } })).filter(Boolean))];
+}
+
 /** Runs the incremental refresh, or does nothing until the skill's dependencies are installed. */
 async function refresh(root, pluginRoot) {
   const skill = path.join(pluginRoot, 'skills', 'doktimoi');
@@ -46,8 +53,8 @@ export async function warmServer(root, pluginRoot) {
 }
 
 runHook(import.meta.url, 'doktimoi sync hook', async (input, pluginRoot) => {
-  const root = targetRoot(input);
-  if (!root) return;
-  try { await refresh(root, pluginRoot); }
-  finally { if (input.hook_event_name === 'SessionStart') await warmServer(root, pluginRoot); }
+  for (const root of targetRoots(input)) {
+    try { await refresh(root, pluginRoot); }
+    finally { if (input.hook_event_name === 'SessionStart') await warmServer(root, pluginRoot); }
+  }
 });

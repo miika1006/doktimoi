@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Claude Code PreToolUse hook for doktimoi.
+ * Shared Claude Code / Codex retrieval and session reminder hook.
  *
- * Auto-approves doktimoi's usage text (`help`, `--help`) and its own `search` (also exact mode and
+ * Auto-approves doktimoi's usage text (`help`, `--help`) and its own `search`/inline `batch` (also exact mode and
  * several questions with --next), `read` (1-20 references) and `status` commands on an already
  * indexed folder or a path inside one, so retrieval never stalls on a permission prompt and silently falls back to Grep. Hybrid mode is included: it only updates existing
  * embeddings and refuses to run when no semantic index was enabled. Adds a
@@ -16,6 +16,10 @@ import { parseArgs } from 'node:util';
 import { indexedRoot, insideIndexData, isFile, resolvePath, runHook } from './common.mjs';
 
 export function decide(input, pluginRoot) {
+  if (['SessionStart', 'SubagentStart'].includes(input.hook_event_name)) {
+    const reminder = input.cwd && remind(indexedRoot(resolvePath(input.cwd)), pluginRoot, 'folder-wide searches');
+    return reminder ? { hookSpecificOutput: { ...reminder.hookSpecificOutput, hookEventName: input.hook_event_name } } : null;
+  }
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') {
     return approveDoktimoiCommand(input, pluginRoot) ?? remindOnShellSearch(input, pluginRoot);
   }
@@ -33,18 +37,29 @@ function approveDoktimoiCommand(input, pluginRoot) {
   const original = String(input.tool_input?.command ?? '').trim();
   const line = input.tool_name === 'Bash' && process.platform === 'win32' ? slashUnquotedPaths(original) : original;
   const words = splitCommand(line);
-  if (!words || words.length < 3 || !/^node(\.exe)?$/i.test(words[0])) return null;
+  if (!words || words.length < 3) return null;
+  if (!/^node(\.exe)?$/i.test(words[0]) && !(path.isAbsolute(words[0]) && samePath(words[0], process.execPath, input.cwd))) return null;
   if (!samePath(words[1], scriptPath(pluginRoot), input.cwd)) return null;
   const updated = line === original ? {} : { updatedInput: { ...input.tool_input, command: line } };
   if (isHelp(words.slice(2))) return output({ permissionDecision: 'allow', permissionDecisionReason: 'doktimoi usage text', ...updated });
   if (words.length < 4) return null;
   const [, , command, root, ...rest] = words;
-  if (!['search', 'read', 'status'].includes(command)) return null;
+  if (!['search', 'batch', 'read', 'status'].includes(command)) return null;
   if (command === 'status' && rest.length) return null;
   const options = parseOptions(rest);
   if (!options || !['lexical', 'hybrid', 'exact'].includes(options.values.mode)) return null;
   const references = options.positionals.length;
   if (command === 'read' ? references < 1 || references > MAX_REFS : references) return null;
+  if (options.values.requests !== undefined) {
+    if (command !== 'batch') return null;
+    try {
+      const requests = JSON.parse(options.values.requests);
+      if (!Array.isArray(requests) || !requests.length || requests.length > 20 || requests.some(request =>
+        !request || typeof request !== 'object' || !Array.isArray(request.queries) ||
+        Object.keys(request).some(key => !['queries', 'paths', 'exclude', 'mode', 'limit', 'brief', 'budget', 'verify'].includes(key)) ||
+        !['lexical', 'hybrid', 'exact'].includes(request.mode ?? 'lexical'))) return null;
+    } catch { return null; }
+  } else if (command === 'batch') return null;
   // A path inside an indexed folder uses that folder's index; the CLI never creates one outside build.
   if (!indexedRoot(resolvePath(root, input.cwd))) return null;
   return output({ permissionDecision: 'allow', permissionDecisionReason: `doktimoi read-only ${command} in an indexed folder`, ...updated });
@@ -84,7 +99,7 @@ function remindOnWholeRead(input, pluginRoot) {
 
 function remind(root, pluginRoot, bypass) {
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}, as one command without cd or chaining so it runs without a permission prompt: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" --brief to locate passages (--next separates further questions; --mode exact lists every line holding a name or phrase), then read the exact ranges, several per call (add --mode hybrid if semantic search is enabled). Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" for cited passages. Batch independent questions with --next; read only unresolved evidence, several references per call. Use --brief to locate sections and --mode exact for literal phrases. Run each call as one command without cd or chaining. Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**
@@ -123,6 +138,7 @@ function parseOptions(args) {
   try {
     return parseArgs({ args, allowPositionals: true, strict: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' }, next: { type: 'boolean', multiple: true },
+      requests: { type: 'string' },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, from: { type: 'string' }, lines: { type: 'string' },
       verify: { type: 'boolean' }, brief: { type: 'boolean' },

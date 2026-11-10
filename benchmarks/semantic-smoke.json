@@ -1,0 +1,49 @@
+{
+  "query": "Does encoding a credential in base64 protect its confidentiality?",
+  "mode": "hybrid",
+  "limit": 3,
+  "corpusFiles": 409,
+  "expectedPhrase": "obscured but not secret",
+  "foundExpectedPhrase": false,
+  "returnedSourceTextAndRangesMatchOriginals": true,
+  "copiedIndexChangedFiles": 0,
+  "result": {
+    "payload": {
+      "results": [
+        {
+          "id": "06d9fcfdb30c8f0c03e66bf989709cce",
+          "source": "tasks/inject-data-application/distribute-credentials-secure.md",
+          "location": "lines:17-34",
+          "heading": "{{% heading \"prerequisites\" %}} > Convert your secret data to a base-64 representation",
+          "text": "### Convert your secret data to a base-64 representation\n\nSuppose you want to have two pieces of secret data: a username `my-app` and a password\n`39528$vdg7Jb`. First, use a base64 encoding tool to convert your username and password to a base64 representation. Here's an example using the commonly available base64 program:\n\n```shell\necho -n 'my-app' | base64\necho -n '39528$vdg7Jb' | base64\n```\n\nThe output shows that the base-64 representation of your username is `bXktYXBw`,\nand the base-64 representation of your password is `Mzk1MjgkdmRnN0pi`.\n\n{{< caution >}}\nUse a local tool trusted by your OS to decrease the security risks of external tools.\n{{< /caution >}}\n\n<!-- steps -->"
+        },
+        {
+          "id": "623ce793bcfb53c6760b9e241bf0b5b1",
+          "source": "concepts/configuration/secret.md",
+          "location": "lines:312-337",
+          "heading": "Types of Secret {#secret-types} > Basic authentication Secret",
+          "text": "### Basic authentication Secret\n\nThe `kubernetes.io/basic-auth` type is provided for storing credentials needed\nfor basic authentication. When using this Secret type, the `data` field of the\nSecret must contain one of the following two keys:\n\n- `username`: the user name for authentication\n- `password`: the password or token for authentication\n\nBoth values for the above two keys are base64 encoded strings. You can\nalternatively provide the clear text content using the `stringData` field in the\nSecret manifest.\n\nThe following manifest is an example of a basic authentication Secret:\n\n{{% code language=\"yaml\" file=\"secret/basicauth-secret.yaml\" %}}\n\n{{< note >}}\nThe `stringData` field for a Secret does not work well with server-side apply.\n{{< /note >}}\n\nThe basic authentication Secret type is provided only for convenience.\nYou can create an `Opaque` type for credentials used for basic authentication.\nHowever, using the defined and public Secret type (`kubernetes.io/basic-auth`) helps other\npeople to understand the purpose of your Secret, and sets a convention for what key names\nto expect."
+        },
+        {
+          "id": "0a8229021497f85023a0abc122650256",
+          "source": "tasks/inject-data-application/distribute-credentials-secure.md",
+          "location": "lines:84-94",
+          "heading": "Create a Secret > Create a Secret directly with kubectl",
+          "text": "### Create a Secret directly with kubectl\n\nIf you want to skip the Base64 encoding step, you can create the\nsame Secret using the `kubectl create secret` command. For example:\n\n```shell\nkubectl create secret generic test-secret --from-literal='username=my-app' --from-literal='password=39528$vdg7Jb'\n```\n\nThis is more convenient. The detailed approach shown earlier runs\nthrough each step explicitly to demonstrate what is happening."
+        }
+      ],
+      "more": true
+    },
+    "metrics": {
+      "updateMs": 68.75,
+      "searchMs": 1759.17,
+      "resultTokens": 590,
+      "tokenizer": "o200k_base",
+      "changed": 0,
+      "removed": 0,
+      "unsupportedCount": 0,
+      "warningCount": 0,
+      "hashedBytes": 0
+    }
+  }
+}

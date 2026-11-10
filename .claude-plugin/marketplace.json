@@ -1,6 +1,6 @@
 {
   "name": "doktimoi",
-  "description": "Doktimoi documentation retrieval skill for Claude Code.",
+  "description": "Doktimoi documentation retrieval skill for Claude Code and Codex.",
   "owner": { "name": "miika1006" },
   "plugins": [
     {

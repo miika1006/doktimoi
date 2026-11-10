@@ -1,0 +1,16 @@
+QMD Warning: no GPU acceleration, running on CPU (slow). Run 'qmd doctor' for device diagnostics.
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Evidence remains missing after the recorded query refinement; see results
+    at file:///Users/miikam/Projects/doktimoi/benchmarks/validate-retrieval.mjs:52:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

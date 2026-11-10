@@ -52,18 +52,18 @@ test('SVG indexes visible text once and draw.io exports reuse the diagram conver
 
 test('CSV preserves quoted newlines, leading zeroes, formulas as text and physical line citations', async () => {
   const result = await convert('case.csv', Buffer.from('ID;Note;Amount\r\n0012;"needs; approval\nnot self-approved";"=2+2"\r\n'));
-  assert.equal(result.chunks[0].location, 'lines:1-3');
+  assert.equal(result.chunks[0].location, 'csv-lines:1-3');
   assert.match(result.chunks[0].text, /"0012"/);
   assert.match(result.chunks[0].text, /needs; approval\\nnot self-approved/);
   assert.match(result.chunks[0].text, /"=2\+2"/);
   const directive = await convert('export.csv', Buffer.from('sep=,\nID,Value\n001,42\n'));
-  assert.equal(directive.chunks[0].location, 'lines:2-3');
+  assert.equal(directive.chunks[0].location, 'csv-lines:2-3');
   await assert.rejects(convert('broken.csv', Buffer.from('ID,Note\n1,"unterminated')));
 });
 
 test('CSV keeps quotes inside unquoted fields and build errors name the failing file', async t => {
   const result = await convert('results.csv', Buffer.from('﻿Case;Status;Notes;Images\n002;PARTIAL;Main menu "V1 | TEST" was open;\n'));
-  assert.equal(result.chunks[0].location, 'lines:1-2');
+  assert.equal(result.chunks[0].location, 'csv-lines:1-2');
   assert.match(result.chunks[0].text, /3="Main menu \\"V1 \| TEST\\" was open"/);
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-csv-error-'));
   const project = await openProject(root);
@@ -71,6 +71,18 @@ test('CSV keeps quotes inside unquoted fields and build errors name the failing 
   await fs.mkdir(path.join(root, 'runs'));
   await fs.writeFile(path.join(root, 'runs', 'broken.csv'), 'ID,Note\n1,"unterminated');
   await assert.rejects(project.search(['unterminated']), /^Error: runs\/broken\.csv: /);
+});
+
+test('CSV reads and exact hits keep physical source ranges after multiline records', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-csv-lines-'));
+  const project = await openProject(root);
+  t.after(async () => { await project.close(); await fs.rm(root, { recursive: true, force: true }); });
+  await fs.writeFile(path.join(root, 'case.csv'), 'ID,Note\n1,"first\nsecond"\n2,AFTER_MULTILINE\n');
+  const { payload } = await project.search(['AFTER_MULTILINE'], { mode: 'exact' });
+  assert.equal(payload.results[0].lines[0].at, 'csv-lines:1-4');
+  const item = await project.read('case.csv:csv-lines:1-4');
+  assert.equal(reference(item), 'case.csv:csv-lines:1-4');
+  assert.match(item.text, /AFTER_MULTILINE/);
 });
 
 test('JSON/YAML split large structures with parent paths and preserve exact scalar values', async () => {
@@ -149,7 +161,7 @@ test('TSV keeps literal quotes and HTML task lists retain checked states', async
   const tsv = await convert('equipment.tsv', Buffer.from('Name\tDescription\nBasic\tSupports 6" displays\nPro\t"Quoted" label\n'));
   assert.match(tsv.chunks[0].text, /Supports 6\\" displays/);
   assert.match(tsv.chunks[0].text, /\\"Quoted\\" label/);
-  assert.equal(tsv.chunks[0].location, 'lines:1-3');
+  assert.equal(tsv.chunks[0].location, 'csv-lines:1-3');
   const result = await convert('checklist.html', Buffer.from('<ul><li><input type="checkbox" checked disabled>Reviewed</li><li><input type="checkbox" disabled>Approved</li></ul>'));
   assert.match(result.chunks[0].text, /\[x\] Reviewed/);
   assert.match(result.chunks[0].text, /\[ \] Approved/);
@@ -195,7 +207,7 @@ test('plain documentation and TSV refresh additions, changes, deletions and cach
     assert.ok(item, source);
     const read = await project.read(reference(item));
     assert.match(read.text, /TEXT_MARKER/);
-    assert.ok(item.location.startsWith('lines:'));
+    assert.ok(item.location.startsWith(ext === 'tsv' ? 'csv-lines:' : 'lines:'));
     if (ext === 'tsv') assert.match(read.text, /1="0012" \| 2="TEXT_MARKER"/);
     await fs.writeFile(file, content.replace('TEXT_MARKER', 'CHANGED_MARKER'));
     assert.ok((await project.search(['CHANGED_MARKER'])).payload.results.some(r => r.source === source));

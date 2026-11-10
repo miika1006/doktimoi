@@ -26,7 +26,7 @@ export function csv(source, buffer) {
   let group = [], first = 1 + offset, previous = offset, size = 0;
   function flush(last) {
     if (!group.length) return;
-    chunks.push({ source, location: `lines:${first}-${last}`, heading: tsv ? 'TSV' : 'CSV',
+    chunks.push({ source, location: `csv-lines:${first}-${last}`, heading: tsv ? 'TSV' : 'CSV',
       text: `${first === 1 + offset ? '' : `columns: ${header}\n`}${group.join('\n')}` });
     group = []; size = 0;
   }

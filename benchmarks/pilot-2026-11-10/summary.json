@@ -1,0 +1,55 @@
+{
+  "startedAt": "2026-11-10T05:05:31.283Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v24.15.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "medium",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "f643271f8a2ec13b97bbe1de42faee5d8aad332ce5e2798b7f13c295539ee3a5",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 107425,
+      "buildMs": 0,
+      "threadId": "01a1c3d8-dc41-7a80-a8eb-100770fe5fe6",
+      "usage": {
+        "input_tokens": 173542,
+        "cached_input_tokens": 132480,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3266,
+        "reasoning_output_tokens": 45
+      },
+      "totalTokens": 176808,
+      "uncachedInputTokens": 41062,
+      "commands": 7,
+      "failedCommands": 1,
+      "toolOutputTokensEstimate": 17792
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 153406,
+      "buildMs": 14088,
+      "threadId": "01a1c3da-b8ac-7720-8d44-812fda1123c8",
+      "usage": {
+        "input_tokens": 367326,
+        "cached_input_tokens": 339072,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4679,
+        "reasoning_output_tokens": 230
+      },
+      "totalTokens": 372005,
+      "uncachedInputTokens": 28254,
+      "commands": 13,
+      "failedCommands": 3,
+      "toolOutputTokensEstimate": 18960
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "repository": "ggml-org/embeddinggemma-300M-GGUF",
+  "revision": "0f741b5a6585bd53aeb15cd1372c56f2a0f65e12",
+  "file": "embeddinggemma-300M-Q8_0.gguf",
+  "bytes": 333590944,
+  "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63",
+  "downloadTiming": "real 12.56\nuser 2.97\nsys 0.96"
+}

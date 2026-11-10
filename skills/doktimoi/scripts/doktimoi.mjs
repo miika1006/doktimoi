@@ -15,6 +15,11 @@ let encoder, extractSnippet;
 const stamp = stat => [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs].join(':');
 const since = started => Math.round((performance.now() - started) * 100) / 100;
 const EXCEL_NOTE = 'Excel formula results are cached, not recalculated.';
+export function checkRuntime(version = process.versions.node) {
+  const [major, minor, patch] = version.split('.').map(Number);
+  if ((major === 22 && (minor > 22 || (minor === 22 && patch >= 2))) || (major === 24 && minor >= 15) || major >= 26) return;
+  throw new Error(`Node ${version} is unsupported; use Node 22.22.2+, 24.15+ or 26+. This shell uses ${process.execPath}. Use the quoted absolute path of a supported Node executable; desktop apps and login shells may have a different PATH.`);
+}
 export function tokens(text) {
   encoder ??= createRequire(import.meta.url)('tiktoken').get_encoding('o200k_base');
   return encoder.encode(text, [], []).length;
@@ -47,7 +52,8 @@ function clipLines(item, [start, end]) {
  * @example fallbackTerms(['ABC XYZ analyysi 5–7 vk']) // ['ABC', 'XYZ', 'analyysi', 'vk']
  */
 function fallbackTerms(queries) {
-  // Terms negated with a leading - stay excluded: the lookbehinds skip them, as QMD's AND search does.
+  // Relaxing a negative query to OR would return evidence the caller explicitly excluded.
+  if (queries.some(query => /(?:^|\s)-\S/.test(query))) return [];
   const terms = queries.flatMap(query => query.match(/(?<![\p{L}\p{N}_])(?<!(?:^|\s)-)[\p{L}\p{N}_]+/gu) ?? []).filter(term => term.length > 1);
   const unique = [...new Map(terms.map(term => [term.toLowerCase(), term])).values()];
   return unique.length > 1 ? unique.slice(0, 8) : [];
@@ -220,12 +226,13 @@ function breadcrumb(item) {
  *   after a change (or every minute), instead of on every call, for a long-lived process
  */
 export async function openProject(directory, { modelIdleMs, watch: watchSources = false } = {}) {
+  checkRuntime();
   const [{ default: lockfile }, qmd, { convert, inventory, safePath }] = await Promise.all([
     import('proper-lockfile'), import('@tobilu/qmd'), import('./sources.mjs')]);
   extractSnippet = qmd.extractSnippet;
   const root = await fs.realpath(directory);
   const qmdStore = await qmdInternals();
-  const converterVersion = JSON.stringify({ version: 15, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 18, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
@@ -350,7 +357,8 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
           throw new Error(`${source}: ${error.message}`, { cause: error });
         });
         next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, ...(result.skipped && { skipped: true }), warnings: result.warnings, chunks: result.chunks.map(chunk => {
-          const body = `# ${source} | ${chunk.heading}\n\n${chunk.text}`;
+          // Repeating the source path makes filename-only hits outrank actual evidence in BM25.
+          const body = `# ${chunk.heading || 'Document'}\n\n${chunk.text}`;
           const id = hash(`${source}\0${chunk.location}\0${body}`).slice(0, 32);
           writes.push({ id, body });
           return { id, location: chunk.location, heading: chunk.heading, visual: chunk.visual };
@@ -518,7 +526,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       const [include, skip] = [paths, exclude].map(list => list.map(prefixOf));
       const sources = Object.keys(manifest.files);
       const unknown = include.find(prefix => !sources.some(source => under(source, prefix)));
-      if (unknown) throw new Error(`No indexed source under --path ${unknown}`);
+      if (unknown) throw Object.assign(new Error(`No indexed source under --path ${unknown}`), { code: 'UNKNOWN_SOURCE_PATH' });
       if (!scope && !include.length && !skip.length) return null;
       return source => !!source && (!scope || under(source, scope))
         && (!include.length || include.some(prefix => under(source, prefix))) && !skip.some(prefix => under(source, prefix));
@@ -730,22 +738,30 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     /** Ranks chunks for the queries and renders as many as fit the budget (see search). */
     async function find(queries, { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale }) {
       const wanted = sourceFilter(scope, paths, exclude);
-      // QMD cannot filter by source, so a filtered search ranks more candidates and drops the others.
-      // shortcut: a scope holding few of many matching chunks may still miss ones ranked below 500; filter inside the FTS query if that shows up.
-      const candidates = wanted ? 500 : 20;
-      const lexical = async query => (await store.searchLex(query, { collection: 'docs', limit: candidates })).filter(row => !wanted || wanted(sourceOf(row)));
+      // QMD cannot filter by source. Expand until enough eligible hits survive or the ranking is exhausted.
+      const ranked = async search => {
+        for (let count = 20; ; count *= 2) {
+          const rows = await search(count);
+          const selected = rows.filter(row => !wanted || wanted(sourceOf(row)));
+          if (!wanted || selected.length >= 20 || rows.length < count || count >= metadata.size) return selected.slice(0, 20);
+        }
+      };
+      const lexical = query => ranked(count => store.searchLex(query, { collection: 'docs', limit: count }));
       if (mode !== 'lexical' && !(await store.getStatus()).hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
       const lists = [];
       for (const query of queries) lists.push(await lexical(query));
       let note;
       if (mode !== 'lexical') {
-        const vector = await vectorSearch(queries[0], candidates);
-        // QMD can log embedding failures and return []; do not label that a successful hybrid search.
-        if (!vector.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
-        lists.push(vector.filter(row => !wanted || wanted(sourceOf(row))));
+        const vector = await ranked(async count => {
+          const rows = await vectorSearch(queries[0], count);
+          // QMD can log embedding failures and return []; do not label that a successful hybrid search.
+          if (!rows.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
+          return rows;
+        });
+        lists.push(vector);
       } else if (lists.every(list => !list.length)) {
         const terms = fallbackTerms(queries);
-        lists.push(terms.length ? searchAnyTerm(terms, candidates).filter(row => !wanted || wanted(sourceOf(row))) : []);
+        lists.push(terms.length ? await ranked(count => searchAnyTerm(terms, count)) : []);
         note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
       }
       const fused = new Map();
@@ -1007,6 +1023,7 @@ async function main() {
   const [command, root, ...refs] = positionals;
   // Help must not open the index, take the lock or start a server.
   if (values.help || command === 'help') return console.log(USAGE);
+  checkRuntime();
   if (command === 'serve' && root) return serveFolder(root);
   if (!CLI_COMMANDS.includes(command) || !root) {
     throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid|exact]; run with --help for details');
@@ -1018,7 +1035,7 @@ async function main() {
   if (command === 'stop') return index && stopServer(index.root);
   if (!index) throw new Error(`No doktimoi index in ${folder} or its parent folders. Set one up first (the doktimoi skill's setup guide), or run: node doktimoi.mjs build "${folder}"`);
   if (command === 'disable-semantic') return console.log(await disableSemantic(index.root));
-  const request = { command, refs, values: index.scope ? { ...values, scope: index.scope } : values, input: command === 'batch' ? await readStdin() : undefined };
+  const request = { command, refs, values: index.scope ? { ...values, scope: index.scope } : values, input: command === 'batch' ? (values.requests ?? await readStdin()) : undefined };
   const served = ['search', 'read', 'batch'].includes(command)
     && await viaServer(index.root, await scriptPath(), request).catch(() => null);
   if (served?.error !== undefined) throw new Error(served.error);
@@ -1048,6 +1065,7 @@ function parseCommandLine() {
     parsed = parseArgs({ allowPositionals: true, tokens: true, options: {
       query: { type: 'string', multiple: true }, mode: { type: 'string', default: 'lexical' },
       next: { type: 'boolean', multiple: true },
+      requests: { type: 'string' },
       path: { type: 'string', multiple: true }, exclude: { type: 'string', multiple: true },
       budget: { type: 'string' }, limit: { type: 'string' }, brief: { type: 'boolean', default: false },
       from: { type: 'string', default: '1' }, lines: { type: 'string' },
@@ -1087,7 +1105,7 @@ export async function execute(project, { command, refs: given = [], id, values, 
   if (command === 'sync') result = await project.refresh();
   if (command === 'embed') result = await project.embed();
   if (command === 'batch') {
-    const requests = JSON.parse(input);
+    const requests = JSON.parse(input ?? values.requests);
     if (!Array.isArray(requests) || requests.length < 1 || requests.length > MAX_QUESTIONS) throw new Error(`Batch requires 1–${MAX_QUESTIONS} search requests`);
     result = await searchEach(project, requests.map(request => ({ ...searchOptions(values), ...request })), values, notices);
   }
@@ -1126,9 +1144,15 @@ async function searchEach(project, requests, values, notices) {
   const outputs = [];
   const share = { budget: Math.max(256, Math.floor(MAX_BUDGET / requests.length)), maxBytes: Math.floor(MAX_OUTPUT_BYTES / requests.length) };
   for (const [index, request] of requests.entries()) {
-    const found = await project.search(request.queries, { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
-    outputs.push(`Q${index + 1}\n${render(found.payload)}`);
-    if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
+    try {
+      const found = await project.search(request.queries, { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
+      outputs.push(`Q${index + 1}\n${render(found.payload)}`);
+      if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
+    } catch (error) {
+      if (error.code !== 'UNKNOWN_SOURCE_PATH') throw error;
+      // One absent path must not discard other questions' evidence or silently widen its scope.
+      outputs.push(`Q${index + 1}\n[Error: ${error.message}; locate the source without a path filter.]`);
+    }
   }
   return outputs.join('\n\n');
 }
@@ -1225,7 +1249,7 @@ async function disableSemantic(root) {
 
 /** Opens the folder in this process, runs the command and closes the folder again. */
 async function runInProcess(root, request) {
-  const project = await openProject(root);
+  const project = await openProject(root, { watch: true });
   try { return await execute(project, request); } finally { await project.close(); }
 }
 
@@ -1275,7 +1299,7 @@ Commands:
   search ROOT --query TERMS  Search the index; prints cited source passages
                              Several questions in one call: --query a --query "a alt" --next --query b
   read ROOT REFERENCE...     Print source text by 1-${MAX_REFS} references in order (see References)
-  batch ROOT                 Run 1-20 searches from a JSON array on stdin: [{"queries": ["terms"]}]
+  batch ROOT                 Run 1-20 searches from --requests JSON or a JSON array on stdin
   status ROOT                Show index, lock and background server state; changes nothing
   build ROOT                 Rehash all sources and update the index (creates it in ROOT if missing)
   sync ROOT                  Index changed sources; updates embeddings if semantic search is on
@@ -1285,6 +1309,8 @@ Commands:
   help                       Show this text (also --help or -h with any command)
 
 Options:
+  --requests JSON  batch: [{"queries":["terms"],"paths":["known/file.md"]},...]; each request
+                   has its own queries, paths, exclude, mode, limit, brief and budget
   --query TERMS    search: 1-${MAX_PHRASINGS} single-line queries (exact mode 1-${MAX_EXACT_PHRASES}; repeat the option); terms in a query are
                    ANDed; when no passage has them all, results matching some terms are labeled
   --next           search: starts the next question; each gets its own section (Q1, Q2, …) and
@@ -1311,12 +1337,13 @@ Options:
 
 References:
   file.md:12-40    a reference copied from search output, or a chunk ID: that chunk
-  file.md:N        Markdown, text, CSV: the chunk containing line N (or the next one)
-  file.md:N-M      Markdown, text, CSV: source lines N-M (within indexed chunks), cut to --budget
+  file.md:N        Markdown, text: the chunk containing line N (or the next one)
+  file.md:N-M      Markdown, text: source lines N-M (within indexed chunks), cut to --budget
   Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
   with [Continue: read "file.md:65-120"], the range that reads on. References that did not
   fit a multi-reference read are named in [Output cap reached; not read: ...].
-  Other formats (PDF pages, sheets, slides, OCR images) need the exact reference.`;
+  Other formats (CSV/TSV, PDF pages, sheets, slides, OCR images) need the exact reference.
+  CSV/TSV csv-lines:N-M names the original physical lines; its field text is normalized.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {
   main().catch(error => { console.error(`doktimoi: ${error.message}`); process.exitCode = 1; });

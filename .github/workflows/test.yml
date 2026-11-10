@@ -12,10 +12,12 @@ jobs:
         include:
           - os: windows-latest
             node: '26.13.0'
+          - os: macos-latest
+            node: '24'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
-      DOKTIMOI_TEST_OCR: '1'
+      DOKTIMOI_TEST_OCR: ${{ runner.os == 'macOS' && '0' || '1' }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -29,7 +31,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libreoffice-writer libreoffice-calc
       - if: runner.os == 'Windows'
         run: choco install libreoffice-fresh --yes --no-progress
-      - run: node --test tests/retrieval.test.mjs tests/extraction.test.mjs tests/new-formats.test.mjs tests/hook.test.mjs
+      - run: node --test
         env:
           DOKTIMOI_OCR_CACHE: ${{ runner.temp }}/doktimoi-ocr
       - run: npm audit --prefix skills/doktimoi --audit-level=moderate

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { decide, splitCommand } from '../hooks/pretooluse.mjs';
-import { targetRoot } from '../hooks/sync.mjs';
+import { targetRoot, targetRoots } from '../hooks/sync.mjs';
 import { openProject } from '../skills/doktimoi/scripts/doktimoi.mjs';
 
 const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -26,6 +26,41 @@ async function folders(t) {
 
 const bash = (command, cwd) => ({ tool_name: 'Bash', tool_input: { command }, cwd });
 const allowed = output => output?.hookSpecificOutput?.permissionDecision === 'allow';
+
+test('Codex sessions and subagents receive the indexed-folder reminder', async t => {
+  const { indexed, plain } = await folders(t);
+  for (const hook_event_name of ['SessionStart', 'SubagentStart']) {
+    const result = decide({ hook_event_name, cwd: indexed }, pluginRoot).hookSpecificOutput;
+    assert.equal(result.hookEventName, hook_event_name);
+    assert.match(result.additionalContext, /indexed by doktimoi/);
+    assert.equal(decide({ hook_event_name, cwd: plain }, pluginRoot), null);
+  }
+});
+
+test('Codex patch hooks refresh every affected index, including moves and deletions', async t => {
+  const { indexed, plain } = await folders(t);
+  const other = path.join(plain, 'other');
+  await fs.mkdir(path.join(other, '.doktimoi'), { recursive: true });
+  const patch = `*** Begin Patch\n*** Update File: a.md\n*** Move to: ${other}/moved.md\n@@\n-old\n+new\n*** Delete File: gone.md\n*** Add File: .doktimoi/ignore.md\n+ignore\n*** End Patch`;
+  const input = { hook_event_name: 'PostToolUse', tool_name: 'apply_patch', tool_input: { command: patch }, cwd: indexed };
+  assert.deepEqual(targetRoots(input), [await fs.realpath(indexed), await fs.realpath(other)]);
+  assert.deepEqual(targetRoots({ ...input, tool_input: { command: 'not a patch' } }), []);
+});
+
+test('an absolute Node path is approved only for the hook\'s own interpreter', async t => {
+  const { indexed } = await folders(t);
+  assert.ok(allowed(decide(bash(`"${process.execPath}" "${script}" search "${indexed}" --query x`, indexed), pluginRoot)));
+  assert.equal(decide(bash(`"${path.join(indexed, 'node')}" "${script}" search "${indexed}" --query x`, indexed), pluginRoot), null);
+});
+
+test('inline retrieval batches are approved but unknown operations or shell expansion are not', async t => {
+  const { indexed } = await folders(t);
+  const command = json => `node "${script}" batch "${indexed}" --requests '${json}'`;
+  assert.ok(allowed(decide(bash(command('[{"queries":["alpha"],"paths":["a.md"]},{"queries":["beta"],"mode":"exact"}]'), indexed), pluginRoot)));
+  for (const json of ['[]', 'invalid', '[{"queries":["a"],"mode":"embed"}]', '[{"queries":["a"],"command":"build"}]', '[{"queries":["$(pwd)"]}]']) {
+    assert.equal(allowed(decide(bash(command(json), indexed), pluginRoot)), false);
+  }
+});
 
 test('approves a single lexical search, read or status against an indexed folder', async t => {
   const { indexed } = await folders(t);
@@ -193,6 +228,13 @@ test('sync hook refreshes an edited index so the next search has nothing to upda
   try {
     assert.equal((await project.sync()).changed, 0);
     assert.match((await project.search(['ROTATION'])).payload.results[0].text, /audited ROTATION/);
+    await fs.writeFile(file, '# Access\n\nCODEX_PATCH is indexed.');
+    execFileSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
+      input: JSON.stringify({ hook_event_name: 'PostToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: rules.md\n@@\n-old\n+new\n*** End Patch' }, cwd: root }),
+      env: { ...process.env, PLUGIN_ROOT: pluginRoot, CLAUDE_PLUGIN_ROOT: path.join(root, 'unused') }, encoding: 'utf8', windowsHide: true,
+    });
+    assert.equal((await project.sync()).changed, 0);
+    assert.match((await project.search(['CODEX_PATCH'])).payload.results[0].text, /is indexed/);
   } finally { await project.close(); }
 });
 

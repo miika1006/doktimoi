@@ -1,0 +1,165 @@
+{
+  "control": "All three baseline runs in release-2026-11-10; semantic treatments collected in a later phase.",
+  "metadata": {
+    "corpus": {
+      "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+      "files": 409,
+      "bytes": 8513875
+    },
+    "node": "v24.15.0",
+    "platform": "darwin-arm64",
+    "codex": "codex-cli 0.166.0",
+    "model": "gpt-6-astra",
+    "reasoningEffort": "medium",
+    "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315"
+  },
+  "groups": [
+    {
+      "arm": "baseline",
+      "runs": 3,
+      "totalTokens": 752574,
+      "meanTokens": 250858,
+      "tokensByRun": [
+        244030,
+        271300,
+        237244
+      ],
+      "meanAgentMs": 147750.66666666666,
+      "agentMsByRun": [
+        144047,
+        146614,
+        152591
+      ],
+      "totalUncachedInputTokens": 104267,
+      "toolOutputTokensEstimate": 62001,
+      "commands": 28,
+      "nonzeroExitCommands": 3,
+      "operationsWithErrors": 3,
+      "successfulHybridCommands": 0,
+      "cappedOutputs": 0,
+      "emptySearches": 0,
+      "transportErrors": 0,
+      "allToolAuditsPassed": true,
+      "meanIndexCopyMs": 0,
+      "meanPreflightMs": 0,
+      "meanBuildMs": 0
+    },
+    {
+      "arm": "lexical",
+      "runs": 3,
+      "totalTokens": 907979,
+      "meanTokens": 302659.6666666667,
+      "tokensByRun": [
+        252049,
+        315200,
+        340730
+      ],
+      "meanAgentMs": 167005,
+      "agentMsByRun": [
+        170307,
+        149853,
+        180855
+      ],
+      "totalUncachedInputTokens": 141994,
+      "toolOutputTokensEstimate": 64140,
+      "commands": 31,
+      "nonzeroExitCommands": 0,
+      "operationsWithErrors": 3,
+      "successfulHybridCommands": 0,
+      "cappedOutputs": 1,
+      "emptySearches": 2,
+      "transportErrors": 0,
+      "allToolAuditsPassed": true,
+      "meanIndexCopyMs": 0,
+      "meanPreflightMs": 0,
+      "meanBuildMs": 11629,
+      "tokenChangePercent": 20.649796564856082,
+      "agentTimeChangePercent": 13.03163888713419
+    },
+    {
+      "arm": "hybrid_cpu",
+      "runs": 3,
+      "totalTokens": 823750,
+      "meanTokens": 274583.3333333333,
+      "tokensByRun": [
+        259028,
+        269194,
+        295528
+      ],
+      "meanAgentMs": 197634.66666666666,
+      "agentMsByRun": [
+        195221,
+        203225,
+        194458
+      ],
+      "totalUncachedInputTokens": 96434,
+      "toolOutputTokensEstimate": 61023,
+      "commands": 32,
+      "nonzeroExitCommands": 0,
+      "operationsWithErrors": 3,
+      "successfulHybridCommands": 14,
+      "cappedOutputs": 1,
+      "emptySearches": 1,
+      "transportErrors": 0,
+      "allToolAuditsPassed": true,
+      "meanIndexCopyMs": 4299.666666666667,
+      "meanPreflightMs": 2184.3333333333335,
+      "meanBuildMs": 0,
+      "tokenChangePercent": 9.457674594126297,
+      "agentTimeChangePercent": 33.76228420853149
+    }
+  ],
+  "semanticSetup": {
+    "corpus": {
+      "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+      "files": 409,
+      "bytes": 8513875
+    },
+    "node": "v24.15.0",
+    "platform": "darwin-arm64",
+    "model": {
+      "repository": "ggml-org/embeddinggemma-300M-GGUF",
+      "revision": "0f741b5a6585bd53aeb15cd1372c56f2a0f65e12",
+      "file": "embeddinggemma-300M-Q8_0.gguf",
+      "bytes": 333590944,
+      "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63",
+      "downloadTiming": "real 12.56\nuser 2.97\nsys 0.96"
+    },
+    "build": {
+      "files": 409,
+      "chunks": 8338,
+      "changed": 409,
+      "removed": 0,
+      "hashedBytes": 8513875,
+      "index": "full",
+      "ocrCalls": 0,
+      "ocrCacheHits": 0,
+      "unsupported": [],
+      "warnings": [],
+      "ms": 11153.53
+    },
+    "buildMs": 11155,
+    "embedding": {
+      "update": {
+        "files": 409,
+        "chunks": 8338,
+        "changed": 0,
+        "removed": 0,
+        "hashedBytes": 0,
+        "ocrCalls": 0,
+        "ocrCacheHits": 0,
+        "unsupported": [],
+        "warnings": [],
+        "ms": 70.78
+      },
+      "embeddings": {
+        "docsProcessed": 7384,
+        "chunksEmbedded": 7860,
+        "errors": 0,
+        "failures": [],
+        "durationMs": 470737
+      }
+    },
+    "embedMs": 470850
+  }
+}

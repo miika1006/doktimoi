@@ -1,0 +1,245 @@
+{
+  "startedAt": "2026-11-10T08:16:07.295Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v24.15.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "medium",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "da3c63180b65ecb8f8bbcbdfed30995c3c3d44f839ea06a61806326db01bcb9b",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 144047,
+      "buildMs": 0,
+      "threadId": "01a1c487-5b13-7bc1-8cef-f6914ca15224",
+      "usage": {
+        "input_tokens": 240774,
+        "cached_input_tokens": 213760,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3256,
+        "reasoning_output_tokens": 35
+      },
+      "totalTokens": 244030,
+      "uncachedInputTokens": 27014,
+      "commands": 9,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 20104,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 170307,
+      "buildMs": 11517,
+      "threadId": "01a1c489-bca4-7f02-a125-663067789d84",
+      "usage": {
+        "input_tokens": 248133,
+        "cached_input_tokens": 221696,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3916,
+        "reasoning_output_tokens": 73
+      },
+      "totalTokens": 252049,
+      "uncachedInputTokens": 26437,
+      "commands": 9,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19890,
+      "audit": {
+        "doktimoiCommands": 8,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_10",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/security/secrets-good-practices.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 149853,
+      "buildMs": 11628,
+      "threadId": "01a1c48c-858e-7b31-aead-349a6fdb2e1b",
+      "usage": {
+        "input_tokens": 310828,
+        "cached_input_tokens": 233344,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4372,
+        "reasoning_output_tokens": 180
+      },
+      "totalTokens": 315200,
+      "uncachedInputTokens": 77484,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 23693,
+      "audit": {
+        "doktimoiCommands": 10,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 146614,
+      "buildMs": 0,
+      "threadId": "01a1c48e-d103-7840-bf21-80f3079bc347",
+      "usage": {
+        "input_tokens": 267908,
+        "cached_input_tokens": 238592,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3392,
+        "reasoning_output_tokens": 62
+      },
+      "totalTokens": 271300,
+      "uncachedInputTokens": 29316,
+      "commands": 10,
+      "failedCommands": 2,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 22234,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_11",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 152591,
+      "buildMs": 0,
+      "threadId": "01a1c491-0ea2-7a61-9d9f-11424bcaf147",
+      "usage": {
+        "input_tokens": 233793,
+        "cached_input_tokens": 185856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3451,
+        "reasoning_output_tokens": 85
+      },
+      "totalTokens": 237244,
+      "uncachedInputTokens": 47937,
+      "commands": 9,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19663,
+      "audit": {
+        "doktimoiCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 180855,
+      "buildMs": 11742,
+      "threadId": "01a1c493-929f-7241-a7c9-7ffa7250f7aa",
+      "usage": {
+        "input_tokens": 336185,
+        "cached_input_tokens": 298112,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4545,
+        "reasoning_output_tokens": 138
+      },
+      "totalTokens": 340730,
+      "uncachedInputTokens": 38073,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 20557,
+      "audit": {
+        "doktimoiCommands": 10,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/security/secrets-good-practices.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "item_11",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/containers/container-lifecycle-hooks.md; locate the source without a path filter.]",
+              "[Error: No indexed source under --path concepts/storage/dynamic-provisioning.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 1,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "be12be434d1706eaeee57151f9f524f433811fcc36e447fc23631a05f685c15b"
+}

@@ -1,0 +1,2054 @@
+{
+  "repository": "https://github.com/kubernetes/website",
+  "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+  "upstreamDirectory": "content/en/docs",
+  "selection": "Every .md file with at least 8192 bytes, unchanged",
+  "license": "CC-BY-4.0",
+  "files": [
+    {
+      "path": "docs/concepts/architecture/_index.md",
+      "bytes": 10177,
+      "sha256": "043cdd5426297b2fb484d923887d4f0cb1d514b7d712d0de2a37d9c8be9550f0"
+    },
+    {
+      "path": "docs/concepts/architecture/garbage-collection.md",
+      "bytes": 10828,
+      "sha256": "d011d9161f33439579ae18682c4c80b93c38881944ab674c5548eedb060b0e47"
+    },
+    {
+      "path": "docs/concepts/architecture/nodes.md",
+      "bytes": 17590,
+      "sha256": "e7f3dcb19a5d1601d966d3ff11cf114d46e8a05e6cc7bc959de069e54fecaaa9"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/admission-webhooks-good-practices.md",
+      "bytes": 30345,
+      "sha256": "1952bb0a6a514b78ea5136186abf0832351228432a59d632c4dcea1dc962c571"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/flow-control.md",
+      "bytes": 42567,
+      "sha256": "c78bbe9e7fe604976d7d534ced88315bfe5110488efffd989c880529e404b0bb"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/logging.md",
+      "bytes": 17339,
+      "sha256": "4bdb32d8092f2dc70cd951ce64a82386f6fb4561dc9637e73a1ec8aa4afaca5b"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/node-autoscaling.md",
+      "bytes": 15379,
+      "sha256": "f5378adfd5f9c669976d4ad07275986691ab9b402e62ecb3cbf493343aeeb200"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/node-shutdown.md",
+      "bytes": 14773,
+      "sha256": "c59d434a26716935aa78c69a5cf53008175ffc3bd161b03fee84bc573931429c"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/system-logs.md",
+      "bytes": 13704,
+      "sha256": "d8046dae71c5ad244beb80b9b3d18be9e2e3c6b23b9b48ee0686044d87fd9f7f"
+    },
+    {
+      "path": "docs/concepts/cluster-administration/system-metrics.md",
+      "bytes": 9951,
+      "sha256": "9db1426e5c5742985ccceadb29bbc7fd4245ddf805bdbcd122d485da2479e8b0"
+    },
+    {
+      "path": "docs/concepts/configuration/configmap.md",
+      "bytes": 12933,
+      "sha256": "8e04b9e5c6fea6ac1507fabf2f23040f4d93dd027c0ec8c6a53ce554e2af34b7"
+    },
+    {
+      "path": "docs/concepts/configuration/manage-resources-containers.md",
+      "bytes": 41332,
+      "sha256": "dddce38fdb3880f1f0348ba3c0490f34c6eb9878b38a981c89deab5d99e28807"
+    },
+    {
+      "path": "docs/concepts/configuration/overview.md",
+      "bytes": 8797,
+      "sha256": "157225dd5dad066e1fca6f63e13db3dad28b115049e3b1c5e7957e7f88f9a2c1"
+    },
+    {
+      "path": "docs/concepts/configuration/secret.md",
+      "bytes": 32368,
+      "sha256": "488b0cccd1e91c96aec44cde09c7a236ad89033054da843885072a0a46daa0a7"
+    },
+    {
+      "path": "docs/concepts/containers/images.md",
+      "bytes": 24448,
+      "sha256": "7b7cabdbc6e81a59435a5990a9758d8611cd31b7cc1e039cd8fdedaed530eecc"
+    },
+    {
+      "path": "docs/concepts/extend-kubernetes/_index.md",
+      "bytes": 17983,
+      "sha256": "a61786d4e72564b601381c92e64bf8bab7556a3100a2cad43fed358c532e1730"
+    },
+    {
+      "path": "docs/concepts/extend-kubernetes/api-extension/custom-resources.md",
+      "bytes": 21382,
+      "sha256": "118d600e7371909f9a6f789c872ed8777131ccd432cec2e74e40edb9556e4094"
+    },
+    {
+      "path": "docs/concepts/extend-kubernetes/compute-storage-net/device-plugins.md",
+      "bytes": 23730,
+      "sha256": "3d3b3c2ae80eccb4a616c8bed3aacb523dbe0c021e2ee2b3eb8e6d021f275d76"
+    },
+    {
+      "path": "docs/concepts/overview/_index.md",
+      "bytes": 10412,
+      "sha256": "58a010469cd00779f3ed37c12b84f39252e5f9ae983c0734bd52b830c080e70f"
+    },
+    {
+      "path": "docs/concepts/overview/kubernetes-api.md",
+      "bytes": 15435,
+      "sha256": "12051903c398c11b0e126fa41081e11aadcabf0503b0d018b6778099bbb8ce8c"
+    },
+    {
+      "path": "docs/concepts/overview/working-with-objects/_index.md",
+      "bytes": 8503,
+      "sha256": "24159c5880c0515f1a4560e8314f1a77728229c498fe5041baf7c5abef5fb0e8"
+    },
+    {
+      "path": "docs/concepts/overview/working-with-objects/labels.md",
+      "bytes": 15147,
+      "sha256": "7ddb23792baad75f7fdc86d6fe580b6131c69e5543b3f8080ed5b4315eb99f01"
+    },
+    {
+      "path": "docs/concepts/policy/node-resource-managers.md",
+      "bytes": 15062,
+      "sha256": "1e1b377d3daad8bafe95065b8b9ce855e76cf067a73df998589d1ea3a6cd66a1"
+    },
+    {
+      "path": "docs/concepts/policy/resource-quotas.md",
+      "bytes": 24715,
+      "sha256": "a3ded2d55b9714d4707c11a257a92656a93306b3a0e65c12a8e130147b620420"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/assign-pod-node.md",
+      "bytes": 29647,
+      "sha256": "f956b6c166d706d23121e51bb57191136edc1c31d73d03aabedd3e425a9b7fda"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/dynamic-resource-allocation.md",
+      "bytes": 14318,
+      "sha256": "81a09c75879fec5fa83046cc50513c28e39341e2f27445e40bb411b864ee3022"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/node-pressure-eviction.md",
+      "bytes": 27710,
+      "sha256": "89df671ac2728176ee4fe9a221490cb0b7f6120141b22ebc025179175a8f1857"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/pod-priority-preemption.md",
+      "bytes": 17182,
+      "sha256": "9814e53fcc34460c5659b02c35f54959f3e87e669ee34c064225684d6930f812"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/scheduling-framework.md",
+      "bytes": 11412,
+      "sha256": "b64250ca5275a5587713505e045925a55e62f733e7b09ebb88491e05df958112"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/taint-and-toleration.md",
+      "bytes": 14712,
+      "sha256": "dda9b2724c95b3cc937e077fce9979556045ffdce242da0b83e045a54162e9e6"
+    },
+    {
+      "path": "docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+      "bytes": 27187,
+      "sha256": "7e4756cc6b87c2d331c0f70a92483ab1643c5cc5a8879d8c3932a5d497a3eee4"
+    },
+    {
+      "path": "docs/concepts/security/api-server-bypass-risks.md",
+      "bytes": 8241,
+      "sha256": "3cc464e27f2fa22fda09352361d3b881faf50cca7f7ce8975f0319e53096a3ad"
+    },
+    {
+      "path": "docs/concepts/security/cloud-native-security.md",
+      "bytes": 11558,
+      "sha256": "00f6d64780a0e5839acf6849d29d731cbfd8dd1d7bc420bfbb85a590849ccbb7"
+    },
+    {
+      "path": "docs/concepts/security/controlling-access.md",
+      "bytes": 8373,
+      "sha256": "bf6f6c5c64a1e47fcbba4aebecdc7d0d361d85db7d50c68366bd4ede99f6eed2"
+    },
+    {
+      "path": "docs/concepts/security/hardening-guide/authentication-mechanisms.md",
+      "bytes": 9128,
+      "sha256": "faba8cc9fc8d4ec692d4cb7e1e88ed2875c1a4ad65037099762846f59920f17c"
+    },
+    {
+      "path": "docs/concepts/security/linux-kernel-security-constraints.md",
+      "bytes": 14833,
+      "sha256": "0ec3d32e655e085c109d2365ec1bf7a4031a63fbf2a6231d4c64a8713af22634"
+    },
+    {
+      "path": "docs/concepts/security/multi-tenancy.md",
+      "bytes": 30999,
+      "sha256": "b741cefcc004b5bd5cab2f2d0159a563c46dee161eaef3e3799a9e54c13ad59c"
+    },
+    {
+      "path": "docs/concepts/security/pod-security-standards.md",
+      "bytes": 23077,
+      "sha256": "7a69b5c8a135c94d1982b3f175a02e9d29c1b44517733bd00afc32b2b576f2ad"
+    },
+    {
+      "path": "docs/concepts/security/rbac-good-practices.md",
+      "bytes": 11536,
+      "sha256": "ffc1ba948a242fc7c7e35150647ef18ea0b9126bc1a50199e035b7d0071c8f30"
+    },
+    {
+      "path": "docs/concepts/security/security-checklist.md",
+      "bytes": 22986,
+      "sha256": "45b19b870fae7739107ae83966b3babee3b23db3e623abbef87660a426493a34"
+    },
+    {
+      "path": "docs/concepts/security/service-accounts.md",
+      "bytes": 17303,
+      "sha256": "f7e035661d191c09348c07d163cca0d4586f79cdc455a145374c6953fcbbb85c"
+    },
+    {
+      "path": "docs/concepts/services-networking/dns-pod-service.md",
+      "bytes": 14844,
+      "sha256": "59e2a60aef3cfbd2b16e757ac9eb745cee188cb571ea119c7f3741ffec5b6841"
+    },
+    {
+      "path": "docs/concepts/services-networking/dual-stack.md",
+      "bytes": 12568,
+      "sha256": "db2069b44faf45e1fe4233b3ffaf9c6426a04990f264d4342cb36f6548d9a527"
+    },
+    {
+      "path": "docs/concepts/services-networking/endpoint-slices.md",
+      "bytes": 12249,
+      "sha256": "e0a1b072067f64182f398062718e48189d9dad5bdc149f0dca845fb486aff9bd"
+    },
+    {
+      "path": "docs/concepts/services-networking/gateway.md",
+      "bytes": 9588,
+      "sha256": "f43b5a6b6be12fd26facec8ba50fd3cb18a44abcb964456a5b01ea766343b994"
+    },
+    {
+      "path": "docs/concepts/services-networking/ingress-controllers.md",
+      "bytes": 8481,
+      "sha256": "c58482ead7ee05345a0febe39abc6285f28aac6cee83cbda4efa0424bfe0f68e"
+    },
+    {
+      "path": "docs/concepts/services-networking/ingress.md",
+      "bytes": 30138,
+      "sha256": "5b182d4a8e7cfe2836e7b1813d412bffe344eca9aabfb6e6c900eb29407c20bc"
+    },
+    {
+      "path": "docs/concepts/services-networking/network-policies.md",
+      "bytes": 22867,
+      "sha256": "55e432cb948b392b42b406afb9fb81b1e64b4ada6acb57ba65acbb6fbff77d60"
+    },
+    {
+      "path": "docs/concepts/services-networking/service.md",
+      "bytes": 44829,
+      "sha256": "9e99a6f9814da55e0655ec2af52ba9b809c149b6793e52a06edaa9aa351ac190"
+    },
+    {
+      "path": "docs/concepts/services-networking/topology-aware-routing.md",
+      "bytes": 8712,
+      "sha256": "b758dbbafd56482bb92eb9b391c0f0114a6e8a7eba7a52155c49c9ec37453678"
+    },
+    {
+      "path": "docs/concepts/services-networking/windows-networking.md",
+      "bytes": 12945,
+      "sha256": "0308592e1f1ad272aba45026f5bd69d4916346d5ae6f6eb2b41cddbf4fb328ad"
+    },
+    {
+      "path": "docs/concepts/storage/ephemeral-volumes.md",
+      "bytes": 11697,
+      "sha256": "744e348c120e63c183b43e1dcb96373f7e83153dcd1b21766c28e9802be6b76f"
+    },
+    {
+      "path": "docs/concepts/storage/persistent-volumes.md",
+      "bytes": 54272,
+      "sha256": "8d92bbff9752f22eed41e4b3c38732f37ac6d2276b22ca9cb424f70f15006662"
+    },
+    {
+      "path": "docs/concepts/storage/projected-volumes.md",
+      "bytes": 9018,
+      "sha256": "51915f5ed7143cc28fe9281f73bcd99770f896540ea101ad6d6aa7bd100f4fbc"
+    },
+    {
+      "path": "docs/concepts/storage/storage-classes.md",
+      "bytes": 23443,
+      "sha256": "fc1544f7f09c8f4889740259665697aed947b2a2c7989cb2e811153adafc3fe8"
+    },
+    {
+      "path": "docs/concepts/storage/volume-snapshots.md",
+      "bytes": 10820,
+      "sha256": "5b834391ef0a4b388a7b4b2ab5584eb0cd1627c78d6eaca24372cd82d65f2d4f"
+    },
+    {
+      "path": "docs/concepts/storage/volumes.md",
+      "bytes": 54449,
+      "sha256": "32f1aea5f8bf09986b69b7253ca8628541587255d88843d487bf1aa1638f9a0e"
+    },
+    {
+      "path": "docs/concepts/windows/intro.md",
+      "bytes": 22177,
+      "sha256": "702b2a0190b753c404b157b8b3b4afbb6d8680c49db762397842fbdc9daa6e14"
+    },
+    {
+      "path": "docs/concepts/windows/user-guide.md",
+      "bytes": 13126,
+      "sha256": "e9411b135b13fff200cd93c431fb2098c3fe9f764b0e42af26f7a687b1f43549"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/cron-jobs.md",
+      "bytes": 13984,
+      "sha256": "7dc6c1ac95d8f76ee4420ab5d888ebe41ce4c2a0765093c42dcd7c3b5bbcc839"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/daemonset.md",
+      "bytes": 14756,
+      "sha256": "6db9fac50aae25c265094ff22b53702a146dfd89b85a07e74d0071abe10650ae"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/deployment.md",
+      "bytes": 58311,
+      "sha256": "e616926c0fc61a406ab08f9c380a32176d4f5141d5694ee09a6afd06e59f3121"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/job.md",
+      "bytes": 58304,
+      "sha256": "cf8aca7a7bc9920f27516a4c5a0df8bb42dc8fa9ce06a7b0e0062caf39f0fc5e"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/replicaset.md",
+      "bytes": 18600,
+      "sha256": "a9fd61803c13e3dcab40b8b2d7f1da2d0111dc845ca38de2eb59138a7ddd7635"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/replicationcontroller.md",
+      "bytes": 18793,
+      "sha256": "cfa6347ddbd66bacb98ff9d05ffbca768e38a0adfcb8054ce2c08e2e5dade514"
+    },
+    {
+      "path": "docs/concepts/workloads/controllers/statefulset.md",
+      "bytes": 23763,
+      "sha256": "47b453e949780370358861d5d962b7e72302520a577f15d4f75faf8fcb72db0c"
+    },
+    {
+      "path": "docs/concepts/workloads/management.md",
+      "bytes": 15893,
+      "sha256": "9ac054206a6303a6904da30055b9fa6158f12a0395f01cfae38dbd0c87e5b043"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/_index.md",
+      "bytes": 21170,
+      "sha256": "4ae6720026977aad52da06ae73a6a0b073b1498c374f4443184e0fa3e627f687"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/disruptions.md",
+      "bytes": 16702,
+      "sha256": "a26210af7e033525a02dab59a24f4a30db681db378ca29e7aa6742a59df0aa2d"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/init-containers.md",
+      "bytes": 15716,
+      "sha256": "770728807f4f2d66ef63a5cbd2e8f94df60dd1286136190c5317c2c00dfda417"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/pod-lifecycle.md",
+      "bytes": 39046,
+      "sha256": "0dcab17136d206739df423a424225d8f07c59f5dd3825037cf7cfe5c19f6575d"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/sidecar-containers.md",
+      "bytes": 8743,
+      "sha256": "fb7c360bbeb727493b9b51c6ef2e9940c58f3415951f3ce1bfd5a932378b47ca"
+    },
+    {
+      "path": "docs/concepts/workloads/pods/user-namespaces.md",
+      "bytes": 12119,
+      "sha256": "b1d9302972bf8556fdab59aabff1500ce9b84859e6ce66e801340b05d5d002dc"
+    },
+    {
+      "path": "docs/contribute/advanced.md",
+      "bytes": 9547,
+      "sha256": "0ec20e125d340b64d5ab70fa54950a7cbc1c8c84e57934d7eb208905033a0926"
+    },
+    {
+      "path": "docs/contribute/blog/guidelines.md",
+      "bytes": 8611,
+      "sha256": "781eb586cf8d30f503954ac8b566e445ef4e135b7976981d930fe0b7d8a325f8"
+    },
+    {
+      "path": "docs/contribute/blog/submission.md",
+      "bytes": 11298,
+      "sha256": "6933d4613a03eae28b9c0759b5050b95439a03a8d4a4c2f4db9919f6b5954310"
+    },
+    {
+      "path": "docs/contribute/docs.md",
+      "bytes": 8980,
+      "sha256": "4188774553ed406751c4e45340003349dbb78c9aaba84cdbecda302bd572a331"
+    },
+    {
+      "path": "docs/contribute/generate-ref-docs/contribute-upstream.md",
+      "bytes": 10476,
+      "sha256": "495863243cde6c04e29501b213bce080f3a9b99b3695cd85a088aeed12937858"
+    },
+    {
+      "path": "docs/contribute/generate-ref-docs/kubectl.md",
+      "bytes": 9536,
+      "sha256": "9b28b8f01d7fef52f5570d423a2440cf65e831f7d4bf2a6e957e6293c8940772"
+    },
+    {
+      "path": "docs/contribute/generate-ref-docs/quickstart.md",
+      "bytes": 10083,
+      "sha256": "44ecb2d824cef3ecfc4903a49fc7c96c8c5a8829c998809def86d70e9cd639ae"
+    },
+    {
+      "path": "docs/contribute/localization.md",
+      "bytes": 23130,
+      "sha256": "67d48af6e05cd5406735fb0a1e1c158bcfdb198cf8a7925410bb82d8a8d75909"
+    },
+    {
+      "path": "docs/contribute/new-content/new-features.md",
+      "bytes": 10243,
+      "sha256": "ac5c44e46258bdc706f8054960ca4d0ce1e74f37937334a8253ceb2678a33807"
+    },
+    {
+      "path": "docs/contribute/new-content/open-a-pr.md",
+      "bytes": 21272,
+      "sha256": "939a22d958ee24ee65fd5df116570bc806ca7015df1aeba5c5c4cf4d5abdca62"
+    },
+    {
+      "path": "docs/contribute/participate/roles-and-responsibilities.md",
+      "bytes": 9164,
+      "sha256": "f2b9cd65794b38e98241e0f185bc72fdd77d2932073e85792257d90c2cc638a1"
+    },
+    {
+      "path": "docs/contribute/review/for-approvers.md",
+      "bytes": 13378,
+      "sha256": "08b00cda6506ba4936c8db69f750980bd5a7feb6a5fea6c2eb8d9d5ed2deb548"
+    },
+    {
+      "path": "docs/contribute/review/reviewing-prs.md",
+      "bytes": 10754,
+      "sha256": "272c92835a95149404dc8c8d58458ca33610b4e0bf8b3581543ceee61c12b1e7"
+    },
+    {
+      "path": "docs/contribute/style/diagram-guide.md",
+      "bytes": 58307,
+      "sha256": "2ebf7234ae8c36f6f98bc59c129c2b7d5bd1faee6755cdd8374b4e44d1acb96c"
+    },
+    {
+      "path": "docs/contribute/style/hugo-shortcodes/index.md",
+      "bytes": 14953,
+      "sha256": "41bd8ced6a6f5e7ea7b0a1412d015fb683291a42143f962ea62f11a8a741f50d"
+    },
+    {
+      "path": "docs/contribute/style/style-guide.md",
+      "bytes": 29452,
+      "sha256": "708482c1107da921e4dfccc65a9979fb5c962d26b40b5bed3faf541f0adb9d10"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/admission-controllers.md",
+      "bytes": 38717,
+      "sha256": "16c14ce8a58b2b5e5dd7757acd86a981002f0b5220e42e70234c827fb6285835"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/authentication.md",
+      "bytes": 80093,
+      "sha256": "cd88528fab64199f68ebc984fd3a30e80708884884d4027b2ab8666179fff197"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/authorization.md",
+      "bytes": 23436,
+      "sha256": "35ca9107a2b64dfac631f78903135974e843f90c240e32410f59a84fb9bee04b"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/certificate-signing-requests.md",
+      "bytes": 25904,
+      "sha256": "f742b0b1cdabcf774bd3d7f3a152f66ae369a357482993961b4c2cca6bf628cd"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/extensible-admission-controllers.md",
+      "bytes": 47986,
+      "sha256": "3ccbd3024378f26c01bccc00ba51f9d32aed812263a0d0cdb41ec7eb46bf4016"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/kubelet-tls-bootstrapping.md",
+      "bytes": 22932,
+      "sha256": "ba6107bd6ce2fd258e847a20d419d787528cb38e085d3c07e3433230525cb77d"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/mutating-admission-policy.md",
+      "bytes": 11022,
+      "sha256": "756bbeca89b5325b7062ef9f774954682d6b183893294ee59961d2bc1490279e"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/psp-to-pod-security-standards.md",
+      "bytes": 9296,
+      "sha256": "5fecfb837d907a0da437b531dd1b424a2aedae1ef4394f6566e27ad25b3905a8"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/rbac.md",
+      "bytes": 47614,
+      "sha256": "11c52ac2c252028c29bfcff8b069fc8b106dafa17aff0a5d450ad01317b4e9ee"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/service-accounts-admin.md",
+      "bytes": 27854,
+      "sha256": "764657de68aa731e46a37e3f67aed0ff6d0b76baf8d268d14c7be58eec9269fc"
+    },
+    {
+      "path": "docs/reference/access-authn-authz/validating-admission-policy.md",
+      "bytes": 27427,
+      "sha256": "7e3466e6f4085b24bc68402e4549eadcdc66bd2394805921eab39ff696fc11fe"
+    },
+    {
+      "path": "docs/reference/command-line-tools-reference/kube-apiserver.md",
+      "bytes": 68498,
+      "sha256": "5cb3d8b3d31dc44bce404517fc8191df5b2afd717cc2ac7d205b492bb30e8b8d"
+    },
+    {
+      "path": "docs/reference/command-line-tools-reference/kube-controller-manager.md",
+      "bytes": 60135,
+      "sha256": "cc6bf7fa3f4d89abd97ba90f93fcb2c9c2d657fee55c21b819429935b399d31f"
+    },
+    {
+      "path": "docs/reference/command-line-tools-reference/kube-proxy.md",
+      "bytes": 28344,
+      "sha256": "dbbd7277834ddbeb461277c4b1c8f7e505b81eb5f9d7d5b05220b0fb672c600a"
+    },
+    {
+      "path": "docs/reference/command-line-tools-reference/kube-scheduler.md",
+      "bytes": 31053,
+      "sha256": "4afaab312c3ef15ff4d705c8c0b6a1fc9a1cdaa60881e7fa475ff529092eee2b"
+    },
+    {
+      "path": "docs/reference/command-line-tools-reference/kubelet.md",
+      "bytes": 83368,
+      "sha256": "ea08618cdc4b52d03f28dcc8fe08ea62778b0a214017ffc473bff84f307cfeea"
+    },
+    {
+      "path": "docs/reference/config-api/apiserver-admission.v1.md",
+      "bytes": 11197,
+      "sha256": "c8e47a93e098fb1cdbccf4ea3532c38f4ff921f1c917995e792dd73ff7cc03c9"
+    },
+    {
+      "path": "docs/reference/config-api/apiserver-audit.v1.md",
+      "bytes": 16334,
+      "sha256": "e40e9af7a4c376ff07043a25c2da1ae118d870cd226f1a11522f17418acf5582"
+    },
+    {
+      "path": "docs/reference/config-api/apiserver-config.v1.md",
+      "bytes": 19600,
+      "sha256": "b7acd3de53de8e4db7a1210a0e67cda403b48e80221e290bf9b7e4b675ae9454"
+    },
+    {
+      "path": "docs/reference/config-api/apiserver-config.v1alpha1.md",
+      "bytes": 40776,
+      "sha256": "1e8cc863cb53e9b9d4db49ec5d88789ac1516c35a749c36c5457222a4e7fc480"
+    },
+    {
+      "path": "docs/reference/config-api/apiserver-config.v1beta1.md",
+      "bytes": 38783,
+      "sha256": "62452ec999f00accdef0a7e41b4f5815f4fa411f4ec1650d6d6b733bb902c9a5"
+    },
+    {
+      "path": "docs/reference/config-api/kube-controller-manager-config.v1alpha1.md",
+      "bytes": 68263,
+      "sha256": "9921c9c0e1f14b901b39fb1b6cf9969b1111e339f7e40d7dbd22d76103b61607"
+    },
+    {
+      "path": "docs/reference/config-api/kube-proxy-config.v1alpha1.md",
+      "bytes": 33305,
+      "sha256": "b358e9198ef0289a32aa84315c3bfe48ab9164ed8c1bc3fc0981eb76d645910c"
+    },
+    {
+      "path": "docs/reference/config-api/kube-scheduler-config.v1.md",
+      "bytes": 41538,
+      "sha256": "08d5418d6746eafe292a1e6234b7a801e73988b08d707f307a535a2a777f0715"
+    },
+    {
+      "path": "docs/reference/config-api/kubeadm-config.v1beta3.md",
+      "bytes": 62735,
+      "sha256": "9012a608cca37e27cc26b6d77483d24799294d40fbd0956bf90e0fbaab2a9e0e"
+    },
+    {
+      "path": "docs/reference/config-api/kubeadm-config.v1beta4.md",
+      "bytes": 95467,
+      "sha256": "2734f15451f712f2a8d5a4a59373956477c3c8a0b40a6760df04316d875140c1"
+    },
+    {
+      "path": "docs/reference/config-api/kubeconfig.v1.md",
+      "bytes": 16443,
+      "sha256": "c20414a1d8cddf6c18834ce5209899129c5d767212253f5388a5aa7902ba51c6"
+    },
+    {
+      "path": "docs/reference/config-api/kubelet-config.v1beta1.md",
+      "bytes": 67299,
+      "sha256": "c3f77d8cc56272bdb654f2879efee6ea4f66bd3e54ac03e9a8b27cc7e207a56c"
+    },
+    {
+      "path": "docs/reference/debug-cluster/flow-control.md",
+      "bytes": 10495,
+      "sha256": "f8df971076e0f3a3fd2224c6572bcaa7f9601a165e74f1ff19c690e95a395a03"
+    },
+    {
+      "path": "docs/reference/instrumentation/metrics.md",
+      "bytes": 292216,
+      "sha256": "97e5dc198404aae5b0dba754339f83c8ec02252df8c8cfa92faeb9a81fb87191"
+    },
+    {
+      "path": "docs/reference/kubectl/_index.md",
+      "bytes": 28093,
+      "sha256": "04ebd6ff8b49bfe89103e8b1fdfb91a8d4fad6076936dca87072775e92c2b689"
+    },
+    {
+      "path": "docs/reference/kubectl/docker-cli-to-kubectl.md",
+      "bytes": 10919,
+      "sha256": "e92bf4eac1e0943c7576934db20a03fa15c7019131ad8784314b1b15fe3df129"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl.md",
+      "bytes": 12703,
+      "sha256": "675b901dd78137e53f3b03e45a58f1464f3e7674e4cef88a24a9980e84f1e7b2"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_annotate/_index.md",
+      "bytes": 15361,
+      "sha256": "9239cde4941a27d7e57715fd12dc7150add6a7f09eb83eb5e7f5db2af3db6838"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_api-resources/_index.md",
+      "bytes": 11435,
+      "sha256": "b2d875717da1f25bd303dde81c55787a7849ab0603bb7df4d708021703b14c8a"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_api-versions/_index.md",
+      "bytes": 9271,
+      "sha256": "e3cfeac4167041a78d2278ee70447040b219739a4d9336375047784d96286dfb"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_apply/_index.md",
+      "bytes": 18196,
+      "sha256": "8757e1e4e8ff12dc90d02751c00cdfe0c9fd99541617d6d619590eb59128a0d9"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_apply/kubectl_apply_edit-last-applied.md",
+      "bytes": 13794,
+      "sha256": "46dd0aee93ec92a59f2e8e7d589f4a5ec12078007b1cd0f6d37b53069326ae0f"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_apply/kubectl_apply_set-last-applied.md",
+      "bytes": 11939,
+      "sha256": "ed584db3e5740325851f85d1d2eb197e7528d48329535f42437fb54f218ba31e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_apply/kubectl_apply_view-last-applied.md",
+      "bytes": 11126,
+      "sha256": "1ba2dab1b55b6587c64f12ae76252ad4a7b19fd9db4fe1e8fbbecfe3c6cb5d03"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_attach/_index.md",
+      "bytes": 10910,
+      "sha256": "6010dbfbda50ad78c1e0bb0269666b12d98fff298df5eb66c87edf404982aafd"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_auth/_index.md",
+      "bytes": 9421,
+      "sha256": "cd37e2efd9b1a55213b9e897a00aab5466a0e6648487692f273707d1a574c23c"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_can-i.md",
+      "bytes": 11472,
+      "sha256": "ad953f412bc4912f1ee60a8eafc3894b1b86b2641eac02a26a1bd56ebcd34f69"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_reconcile.md",
+      "bytes": 12501,
+      "sha256": "3ccec6789de9dea9838e4a3895cbd76c01aa02e7b4c0e8d5fc08b89eb58288ca"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_whoami.md",
+      "bytes": 10670,
+      "sha256": "13ac693da1211502a189ed4792f73734da784316934c90f3d3d3033253295edd"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_autoscale/_index.md",
+      "bytes": 14035,
+      "sha256": "63b9564392eaafa4394a9bd171e29bcf7c7caf71538261653c7cba92af9bf989"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_certificate/_index.md",
+      "bytes": 9326,
+      "sha256": "7dab3454392ac216e4b92d76d45631ceb7fc59040d9a770ad0cac092b5a7ded3"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_certificate/kubectl_certificate_approve.md",
+      "bytes": 11791,
+      "sha256": "3c19b14ef273ce45c2b5007f0f639d505aac2bfd91edceef49eaa91df40ac2a1"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_certificate/kubectl_certificate_deny.md",
+      "bytes": 11462,
+      "sha256": "33c537f9a1aa3ff45ae70a69c54d082dcd2be335d9aa95b1aa2aeaf625c12368"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_cluster-info/_index.md",
+      "bytes": 9521,
+      "sha256": "a78a1aba7cfa53bbb41a453aa095fe3775dabeb6384c8bb374e800690efffbad"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_cluster-info/kubectl_cluster-info_dump.md",
+      "bytes": 12332,
+      "sha256": "b63f70fae550961e76eba0ac62562452e36d63f99601b7354b349dfd397be62e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_completion/_index.md",
+      "bytes": 12056,
+      "sha256": "214fd0d5b3e807bee266f354a7f04504300218ac1fd87c132169951d8df18aa4"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/_index.md",
+      "bytes": 11350,
+      "sha256": "a500e5ad68a725b0d79dc760e3ba439d79c6f738d8e6bdc8a6d07f03e6964ef9"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_current-context.md",
+      "bytes": 9197,
+      "sha256": "bc6fcd84845c7e87323a7d69375ae8797450c1ac321ced1baf33a00f624efb1a"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_delete-cluster.md",
+      "bytes": 9220,
+      "sha256": "a3ce03701cf946d78e5f5706ebc463becc011be4cb3dfee48f675927ed134af5"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_delete-context.md",
+      "bytes": 9236,
+      "sha256": "f0a40bd635e217f336a6be38ac87f3323fde3f7ba93d767fcb6f1186f1870392"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_delete-user.md",
+      "bytes": 9202,
+      "sha256": "b3f9156f888d94ee8b82a1f3334df84bd0b1527d7071782c648acf1d51c4bc04"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_get-clusters.md",
+      "bytes": 9215,
+      "sha256": "a2a8b63ff91e9587edde550f947cde19c24f6c8bcf9bf60866812b730d52aca4"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_get-contexts.md",
+      "bytes": 9738,
+      "sha256": "7fdac2ce879e5f283166dab725aaa61adab32c50202c7e474388d9bd81247b22"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_get-users.md",
+      "bytes": 9197,
+      "sha256": "c6c3f2af3c57cb559b96a60971fdaae698963517e3d3176057714bf05739e0d0"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_rename-context.md",
+      "bytes": 9480,
+      "sha256": "8812f648847e94261098c01a704ebb7eced2e52b30561a39af85ebb43519228b"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_set-cluster.md",
+      "bytes": 10344,
+      "sha256": "395c4c433d2ac10846501b2b582a09142870d371da9ac1a486f51294287f539e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_set-context.md",
+      "bytes": 9600,
+      "sha256": "4d81b4aa617d4b473be6071f051e85f38bf226520bc4bfaf5a5dedcca6cf42a9"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_set-credentials.md",
+      "bytes": 13847,
+      "sha256": "24e0fa0e5343f20d8f0c871fb89370f543a7465bcbfdda3043f642efeff929cc"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_set.md",
+      "bytes": 10422,
+      "sha256": "6747991bc8c1c44f97b7fc23687c28d0e2648f6c6929d5592fca7d6ff7428769"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_unset.md",
+      "bytes": 9419,
+      "sha256": "8c160e47320b4b5ce56f0d72a168b8bc467317c95cef3058751e35b1bf8d568c"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_use-context.md",
+      "bytes": 9225,
+      "sha256": "0900ca0a81aa49ece5b2f8dde8a4b65424675e1a83007c1ca5f1603c5223d421"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_config/kubectl_config_view.md",
+      "bytes": 11553,
+      "sha256": "b6ff1edc4a4b6d5957dd321771bf479907779984beb581cbd0eab8c4ff84b5d2"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_cordon/_index.md",
+      "bytes": 9942,
+      "sha256": "bcea040d8797e119b9057cf75bcfb825524c2b3cc62d43c15e19ab6e9292eade"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_cp/_index.md",
+      "bytes": 11207,
+      "sha256": "6cdc205a3ddeb4b71900f78ac2e66f907047e2ad31b36e5db694590d66789590"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/_index.md",
+      "bytes": 15957,
+      "sha256": "60e80bbdb1f30b6257b16b695aba3e8b4109cb80af076bd491555b42ec77f742"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_clusterrole.md",
+      "bytes": 14311,
+      "sha256": "c05d680c19c174a0d3b689d76521e3b98768974f3b6917970e57bb7cb14c003a"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_clusterrolebinding.md",
+      "bytes": 13351,
+      "sha256": "65de5152903c2f6a95091e49627efe964be76c238b22d05650d3044473fed094"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_configmap.md",
+      "bytes": 14737,
+      "sha256": "242e84e20aef9cba66d5c04ad8a974dbe7f4912225eac652b38b4e76d869a31d"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_cronjob.md",
+      "bytes": 13018,
+      "sha256": "f688bf139e6f21ea3a371db14df7de843400554e120ab0cf4dfe85efd9947481"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_deployment.md",
+      "bytes": 13583,
+      "sha256": "9afa5aa84b355e590c79c815baa972c92b453ea6516f4c8e508673dba38fc53a"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_ingress.md",
+      "bytes": 14743,
+      "sha256": "2ba8d2d326a56a28ecd4182d749261a04941364a1d7430aea4a531a82fa3dbc1"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_job.md",
+      "bytes": 12851,
+      "sha256": "1fe1910e24d52a6a7a61d05bccd3d386e131223dff6a1dfa251e4712dc52f85d"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_namespace.md",
+      "bytes": 12315,
+      "sha256": "9122d28046f3b32070a231e658a7db4cf34176baee4483e0bf4438c86e73c258"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_poddisruptionbudget.md",
+      "bytes": 13539,
+      "sha256": "5cd8e10568b9c2fdffbde04810728fca1a131d0854e7b23ab92d3612b3e80083"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_priorityclass.md",
+      "bytes": 13821,
+      "sha256": "ca925862626e01262cba36a417ec146642ae9ce4d849977a21a064c90a4b591e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_quota.md",
+      "bytes": 13071,
+      "sha256": "49848ed9a51cbb134b17981f8f4277b1e555d0592d7776d9c0cfffc3c15fbb32"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_role.md",
+      "bytes": 13506,
+      "sha256": "f947f899e3f170e862a0f7dae72744737490fdd2f7a811c65ab994c9b098f8c1"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_rolebinding.md",
+      "bytes": 13626,
+      "sha256": "465e794118f56c776a33ed9f59535944d3d6cf29b269a4aaaa14d33ce1278e01"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_secret.md",
+      "bytes": 9686,
+      "sha256": "f4c20387e91d0b425dd0d8d1878e55867aa7d4b4c8411f50af0508b0f6fca31c"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_secret_docker-registry.md",
+      "bytes": 15106,
+      "sha256": "13e8d4476e93700c3104a156aa53ff726015311c951d0d4445972c564ce3298f"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_secret_generic.md",
+      "bytes": 15007,
+      "sha256": "dc9f039e0e9f3fcfd422e55afad27e34dd0a905967e9f2ef2742c8b582821d75"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_secret_tls.md",
+      "bytes": 13122,
+      "sha256": "aa568d302a32da919d12895e053632bbb87945fa2baa26e21f19104f744499c8"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_service.md",
+      "bytes": 9562,
+      "sha256": "8e34e2011d69ebcb6b0193757e4a52883ed1e092073d1d7e621157d149a9b488"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_clusterip.md",
+      "bytes": 12949,
+      "sha256": "d4071870d5ab2c9818219563e0529d7159e67e9590a117e10d0cee188219c48c"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_externalname.md",
+      "bytes": 12988,
+      "sha256": "36467416a1be0d810dea56be63bb2598cec22e1a61f90327ca838fee87793b3d"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_loadbalancer.md",
+      "bytes": 12610,
+      "sha256": "a47e9615d5b757a99960c27f03156480602e53cffda594f6427dea1d6653d8c2"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_nodeport.md",
+      "bytes": 12778,
+      "sha256": "2de093e2eed0298b1856643e32a31862879519867f408fb5abdba208016421cb"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_serviceaccount.md",
+      "bytes": 12359,
+      "sha256": "1436ab8ae8c9aaf1c759eb33c9216a90921251c2a208b2c281c1c768c9a58312"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_create/kubectl_create_token.md",
+      "bytes": 12614,
+      "sha256": "a8b67ea4f6d32048500e2c9f8be4b040509b41fd24377d6d6d64e7aae47d7fdd"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_debug/_index.md",
+      "bytes": 16479,
+      "sha256": "8522cd957ffc0d2d2372cd5e6dc27f254efedb1c83b9ddc76d57f4caae9b0b5e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_delete/_index.md",
+      "bytes": 17194,
+      "sha256": "c9f41d88db2b902166b0b2443699f53aa6aa875e6622601e2d1adefd9f2711b9"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_describe/_index.md",
+      "bytes": 12167,
+      "sha256": "34bb04f91fe3159d0b32ec8a8eef52e9b87e4b0d94ad68f4bdb5b225aec8b23e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_diff/_index.md",
+      "bytes": 12641,
+      "sha256": "14f7bdf57f3111880130a157501a176a8041839f8ce07adaaa1e7007d0fd47e8"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_drain/_index.md",
+      "bytes": 13765,
+      "sha256": "fd0ab334c1fd04135eeab2542c6c03606d73c8e7fc4338128c742cb5b04d1455"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_edit/_index.md",
+      "bytes": 15143,
+      "sha256": "219c74fb0dd8e8cf542d5cfb40e2020e7e1741201a0837a5d846715ff2de97b8"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_events/_index.md",
+      "bytes": 12435,
+      "sha256": "2da0e677eba35149345de2e7a695e0966a57c959a1a6e3a050c23bc69f13f089"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_exec/_index.md",
+      "bytes": 11748,
+      "sha256": "c7555a95c581c805f14b5ab3a8a114a684a04e960419e2d8140cfa21911b5cc5"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_explain/_index.md",
+      "bytes": 10856,
+      "sha256": "7244a8734360700afaebd516016bda78690f144d9bb174b165a1ba0a4da117bf"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_expose/_index.md",
+      "bytes": 17608,
+      "sha256": "d92eba8d5b528026231c894f00396120e7a2bd0438b8f6b0ec3db30d4523c376"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_get/_index.md",
+      "bytes": 17810,
+      "sha256": "028f1ae369e8a44cd7ac6264fcec5ccb55af9a1cba157e22db6b675262f209a7"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_kustomize/_index.md",
+      "bytes": 12428,
+      "sha256": "f99381ca6255e663f806b0ae3c0aeb497cebaa605ce1c4e8cdd70d83005ae5f6"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_label/_index.md",
+      "bytes": 15004,
+      "sha256": "f4eaf8a6c00733cbb6c00035af481d5a35588268ef2f8d97d5f5c859c2f04e9e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_logs/_index.md",
+      "bytes": 15243,
+      "sha256": "db0a01673951dc69da18d5d06de33f20698337e158612edadd47a39621b8ea13"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_options/_index.md",
+      "bytes": 9234,
+      "sha256": "67888fa90de49c1c3ea7be65cb4363d80a6983e4185816be1944c1143bff3367"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_patch/_index.md",
+      "bytes": 14136,
+      "sha256": "b17730772bad0b5baa71d00e3bd005a0ef44f44d989f93891bbb9c66435ebaed"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_plugin/_index.md",
+      "bytes": 9812,
+      "sha256": "4fd370734557ddbf49b829449b77cde58240b3652cda2b43a84aa1b9b5780aa9"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_plugin/kubectl_plugin_list.md",
+      "bytes": 9711,
+      "sha256": "5b76eac8d01e24fe70ddb9a0e83231bf492930a50319bffb2f522ba7f3d27e15"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_port-forward/_index.md",
+      "bytes": 11326,
+      "sha256": "82b4a7442ef19fd9362020442a7cb4e903e7111fdeff89e71938c4eafa4a1dcc"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_proxy/_index.md",
+      "bytes": 13785,
+      "sha256": "0a38eea50e132bb8d8be4adf88283fb6e631e1c2eb3d6f706f59bc681b1215ca"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_replace/_index.md",
+      "bytes": 15563,
+      "sha256": "17b423e6679f31e694101b3847f4da5a35982cf2f0b0b572dc5f3b1374738de8"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/_index.md",
+      "bytes": 10094,
+      "sha256": "c5d81c12de55f981e1f6caff9dd17af728f5327ffcc4a4eb08dca7553ce9bee4"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_history.md",
+      "bytes": 11772,
+      "sha256": "caee95ac1b7adbaa42ba732e9bea455aa0c2edb4cced5660612a50d2816398e0"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_pause.md",
+      "bytes": 12001,
+      "sha256": "837e82160800e62da38f76407b59a651f0a276cbba30883755997636081f387e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_restart.md",
+      "bytes": 11989,
+      "sha256": "4e5d2ac647663422a3c8007c17588392a2c8e9e196fe1a891226c1a681a711d5"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_resume.md",
+      "bytes": 11834,
+      "sha256": "7a0f1c8162f1dcd43ff2574646d588640165b161838b71e37b88af0653e4ff63"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_status.md",
+      "bytes": 11460,
+      "sha256": "0750c79cd25018ca0ec2aeea37a6f2c73ba824a227893065b2c5e3e93fce8482"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_undo.md",
+      "bytes": 12265,
+      "sha256": "c14e4947ae13184da34b999c2c1cd6ab23a51f43b7171b4945dd7dec1aa8754f"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_run/_index.md",
+      "bytes": 19554,
+      "sha256": "e24f889b6df6c6d250e41ba152cca7b2ff7f6c72674c1d39df26b4f633b38b5d"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_scale/_index.md",
+      "bytes": 14007,
+      "sha256": "a35d5d237b02dd02f6b72fc7ba9847bff859ff52812cdd70c680ef22bbf984f3"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/_index.md",
+      "bytes": 9785,
+      "sha256": "5ec4a17ac955848cdda5f99505d31353e2f8def8c843d8c354ae8173f862ded8"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_env.md",
+      "bytes": 16326,
+      "sha256": "63e877486f9aa3087e4fa0bc536ec470e78be3f6e499ab2d5e2b8ac228fb90cb"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_image.md",
+      "bytes": 13302,
+      "sha256": "af1bb80eba6be7fcfde068cb78feb748ca81e72b9f8cda48106f654a54285a79"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_resources.md",
+      "bytes": 14602,
+      "sha256": "67ce2e0333ed2a100c372ddd272402011581eb0b14f7042c2d1b26701a7d4567"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_selector.md",
+      "bytes": 13032,
+      "sha256": "945e5935ca6f315b047140331f20e4f880774118bd858887bf99e02cb8511dbf"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_serviceaccount.md",
+      "bytes": 12690,
+      "sha256": "3a6666bf7d260fe1deb21d55d4a524484886a03fdd0f27b6f9ecb011202f4d42"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_set/kubectl_set_subject.md",
+      "bytes": 13441,
+      "sha256": "018adb3a1496f1117c2912de61f9171f476726e0d2eb8a43cd8f3b1293427afd"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_taint/_index.md",
+      "bytes": 13983,
+      "sha256": "2995566ffde3f24360fc978316d45711d66c1dc5d80f1d60f77a92fb05edb07e"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_top/_index.md",
+      "bytes": 9455,
+      "sha256": "8ea257fe253aadc0ad0d6220e2aaeef2c0fda9eec94b1db429d93344d7148b2c"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_top/kubectl_top_node.md",
+      "bytes": 10517,
+      "sha256": "09659898800f4a89d2198022ca70e680175d4edff9e6d231c885ab2ee13d84bf"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_top/kubectl_top_pod.md",
+      "bytes": 11589,
+      "sha256": "bb2eaa22b7900c7c2f302946ba59e811f90654b34f67a17db6e544ad944c8ef3"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_uncordon/_index.md",
+      "bytes": 9946,
+      "sha256": "76631d8e4885896686921998a633f5ef90d36eaeb5fd413786b00dafaad67f96"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_version/_index.md",
+      "bytes": 9629,
+      "sha256": "d43b2f6afae8f1bd91693a42af2fe0fad6241ef11b3cf80ec48a365097c065a6"
+    },
+    {
+      "path": "docs/reference/kubectl/generated/kubectl_wait/_index.md",
+      "bytes": 14601,
+      "sha256": "b9080d07652f2726ac133dd7453bb5858f5e0bdfba31a2d444128121ea6bd983"
+    },
+    {
+      "path": "docs/reference/kubectl/kubectl.md",
+      "bytes": 16784,
+      "sha256": "6e256c1156a26ee8a46e1b0f3694d93bd716876e6355d5a15de3312071f84b88"
+    },
+    {
+      "path": "docs/reference/kubectl/quick-reference.md",
+      "bytes": 25169,
+      "sha256": "2606d2dcca4548eaea3e270c2c996424f6a07acc8a2dfc727ddf9dd9fefce7e9"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authentication-resources/certificate-signing-request-v1.md",
+      "bytes": 28865,
+      "sha256": "76e00ebcc138cee39417e7128eb8021106e93a0d9240880e55be5a8fc2ab5d10"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authentication-resources/cluster-trust-bundle-v1alpha1.md",
+      "bytes": 14418,
+      "sha256": "c921b343cb395ee2d04d3bffc2de6913b6308c27516a9b536e795062dcbeab44"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authentication-resources/service-account-v1.md",
+      "bytes": 16358,
+      "sha256": "d6f26c93d377db61e577300247a44d88d30a6d278d244bf163831d5aff324508"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/cluster-role-binding-v1.md",
+      "bytes": 13427,
+      "sha256": "117422c468b15321907c258f61b42cd651bb08c21b4a1db53898c7be5156b81f"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/cluster-role-v1.md",
+      "bytes": 13870,
+      "sha256": "95fc4563a812b876e56638d2c79a8e4416fae6277c59ef531ac0c4b9a7d09c6a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/role-binding-v1.md",
+      "bytes": 16087,
+      "sha256": "2cc556a88048877374914c73bdccc798be9f46efab8586e259a062639e98916d"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/role-v1.md",
+      "bytes": 15468,
+      "sha256": "635c4066227b797b14b9368e0e81c20b420c6bf56a81c4f90b490493de254490"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/self-subject-access-review-v1.md",
+      "bytes": 11734,
+      "sha256": "ab384e7d1f6ba6d8a9d5ec7efc909109dc65cc728b316bca6534c9cde92816cf"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/authorization-resources/subject-access-review-v1.md",
+      "bytes": 12885,
+      "sha256": "e175b34ddf0b63c09c2098148e8ca37efeaf42710cdce24c5431bfc740418ed3"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/api-service-v1.md",
+      "bytes": 18870,
+      "sha256": "fd85e30be6c6dda7ea066b770b7d0863e75bc2d19e0860a3e56312fc04147e60"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/event-v1.md",
+      "bytes": 18142,
+      "sha256": "59478d754bb0b45db8ca4519cf5dd1d74d64fe6a9f7dd997f0c41a4112cdb0cb"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/ip-address-v1beta1.md",
+      "bytes": 12783,
+      "sha256": "b4b46628663760e8e3c8a6ce2e06abac5694a64fa28cfb2370c6e610b26cabac"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/lease-candidate-v1alpha1.md",
+      "bytes": 16914,
+      "sha256": "9b821c608b250469e74549f0cd17c0ca18f7ca961120c8e8ed109955b11b48e6"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/lease-candidate-v1alpha2.md",
+      "bytes": 16992,
+      "sha256": "b2311475605fd061c6fc32c130980bf0672e7760fff1b65a95336e81a264735c"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/lease-v1.md",
+      "bytes": 15411,
+      "sha256": "cf62ce9d4d36bcabdcc2e165240ed53848efcd3c51d9f2bdc4f377fa87922ce4"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/namespace-v1.md",
+      "bytes": 14654,
+      "sha256": "1e6b96fffd7d8c581c412faf9b9641cf56d2752bc337e804f4b7e4bee313d63a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/node-v1.md",
+      "bytes": 32999,
+      "sha256": "bfab5b5f27b1460536c9b6ada1bf52160f25f64201b37dffdba75b4cf9f09529"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/runtime-class-v1.md",
+      "bytes": 15257,
+      "sha256": "7bb04bddb7a37cc1571a5057996b83dde63ee45651216aab814170d5d83c9a4c"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/cluster-resources/service-cidr-v1beta1.md",
+      "bytes": 17370,
+      "sha256": "bda0c4e63db6770180d41e1d9c17f2fc89c2de84c39f628a1e8a405c19818b72"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/common-definitions/object-meta.md",
+      "bytes": 13421,
+      "sha256": "a177c654ced483d1ecb20041a309a4b1ce3ef4cbb22e2ee8b3c44e8cf591566a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/common-parameters/common-parameters.md",
+      "bytes": 10275,
+      "sha256": "71899081877f644ce90b72c3be4e6a5778b6c721ef2ef6f5c5ed5d0aff432dcb"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/config-map-v1.md",
+      "bytes": 14871,
+      "sha256": "15a5e4f00ae597e441f56956c277aa0286e2d1c2a9b700cc53a01a42ce5031db"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/csi-driver-v1.md",
+      "bytes": 19183,
+      "sha256": "09c7f46c6da08f826236f27e7715bebe89242d3842338f30a82d358ced1ba762"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/csi-node-v1.md",
+      "bytes": 14565,
+      "sha256": "be0e3c4d5e694d52d0d41fa124867ffa3572c979d0e458ac596558298a5306d0"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/csi-storage-capacity-v1.md",
+      "bytes": 18105,
+      "sha256": "5f890ccd25473b70b70cb51e3af46b7ef3530630de0faff3d288b1c6d8012117"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-claim-v1.md",
+      "bytes": 34201,
+      "sha256": "a5eea611105f9777d8d633b5089b31615c4de90be0cd314591551989beb13334"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1.md",
+      "bytes": 56287,
+      "sha256": "59cb2f06a189002ef78fceab2c4ddd334b6afdd28ed2494efbece9899b68a0b6"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/secret-v1.md",
+      "bytes": 14862,
+      "sha256": "0861f749c767559938329a06e3e3ed903efcc5563f193d79c7dc40683b932da3"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/storage-class-v1.md",
+      "bytes": 14194,
+      "sha256": "6556f19ccc2d3ad1b5a46f15286670e7b67c4daa9d4d44e4a8a4bcecbcd89f5d"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/storage-version-migration-v1alpha1.md",
+      "bytes": 18389,
+      "sha256": "eb68e1d75d0a91a45f38f6e5a0bf72a717345d5054224e29d880c81082f2c18e"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1.md",
+      "bytes": 19132,
+      "sha256": "6df560f0c3adc44ab9be7bb883b7c5cfa40854c795e903632a4bf9e788fd8d82"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/volume-attributes-class-v1beta1.md",
+      "bytes": 13416,
+      "sha256": "a44ca8ae40f36a1017c0bad4f83a8ae07fd41d573c951b09446d62054859187f"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/config-and-storage-resources/volume.md",
+      "bytes": 55527,
+      "sha256": "522855976a0e6708735b332837c281b8d98a0453d9f145545fa6d25e9a8bb00a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/extend-resources/custom-resource-definition-v1.md",
+      "bytes": 53739,
+      "sha256": "221db46c0cd9582627546a1f39d92bb60b8441191e1f7d4c963ae5a750640a34"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/extend-resources/device-class-v1alpha3.md",
+      "bytes": 19380,
+      "sha256": "a82984050090be009f8509bd1ec07ba63ff257b6df28f3ef847b410ae8a635ad"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/extend-resources/device-class-v1beta1.md",
+      "bytes": 18275,
+      "sha256": "811539fe414d34fecb5ba3e6d0a130f208c2ed11e3e66162d99dcda61190027e"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/extend-resources/mutating-webhook-configuration-v1.md",
+      "bytes": 27177,
+      "sha256": "cb0d1dfda9016421dc65df965a55a1a5a8c0915fb2175a8e2efa4b41ba612c1c"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/extend-resources/validating-webhook-configuration-v1.md",
+      "bytes": 26781,
+      "sha256": "3d1f04348c3a42564d3ca80ee91f3d18bbd942c4494e34053ab8a694f0c9d4b9"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/flow-schema-v1.md",
+      "bytes": 24760,
+      "sha256": "29bd19eee4ba7ed3c22ecf34746ffe0efffcce7007452395fa43f7456bad90de"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/limit-range-v1.md",
+      "bytes": 15870,
+      "sha256": "7b603325864f492d2146734ac5c7ffdbc09728633d5a3bcd100fd15c1f157b58"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/mutating-admission-policy-binding-v1alpha1.md",
+      "bytes": 52357,
+      "sha256": "ae4c95d8c5d5b70e4052164d2c7a090cabcca50e88a08ba121b3402f1269d782"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/mutating-admission-policy-v1alpha1.md",
+      "bytes": 52064,
+      "sha256": "b43f8c56c6ea6ed84108713a0286c46e32773ea8fcde1c15b46cbff1a417c781"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/network-policy-v1.md",
+      "bytes": 26356,
+      "sha256": "28f56f5736f524fd98d19fb8cc7542437a41adff46409b469bf89d3a2cd23ba7"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/pod-disruption-budget-v1.md",
+      "bytes": 26109,
+      "sha256": "9cfd497bb967f5565dcdd316fef872d66f4ea8bd6fbecdcef515cf41b233723a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/priority-level-configuration-v1.md",
+      "bytes": 25233,
+      "sha256": "47958e31b30e57223c3a89d0db6fe232abffc123a778f9b46bfc0dddf87e2696"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/resource-quota-v1.md",
+      "bytes": 20642,
+      "sha256": "f9fe61ac77c95037bc861adf6b386a108897d6d2d00c0478b3b673436c05891d"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/validating-admission-policy-binding-v1.md",
+      "bytes": 57926,
+      "sha256": "5bdd47f6737670968fccd019b11300e01e090e6d186fa54b560bcdc41ec5a16b"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/policy-resources/validating-admission-policy-v1.md",
+      "bytes": 60897,
+      "sha256": "23ba168399f4a98a907122da540f3dcaca2aecf5031ee116aaaed3b01cec2c29"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/service-resources/endpoint-slice-v1.md",
+      "bytes": 20961,
+      "sha256": "ad5b4a6b86fbf57d1248c77a17ec9212f8571456e89b5f81829bfec9a6cc244a"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/service-resources/endpoints-v1.md",
+      "bytes": 18861,
+      "sha256": "b2889e586705f921f51414f6767cf4f06f60bb4d8d0e60e9de70c995878dc222"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/service-resources/ingress-class-v1.md",
+      "bytes": 13545,
+      "sha256": "97059b3b3949c3971ca2b925c52deafb49c36fcd2af3407b5b5a5f3b7cd01d84"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/service-resources/ingress-v1.md",
+      "bytes": 28403,
+      "sha256": "923a542d4f3a9d1628ed54b350ca590e2abe8b199646daf59343e65907f7f064"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/service-resources/service-v1.md",
+      "bytes": 39145,
+      "sha256": "09668bc3240920bf15019e1c8107e60782f758fb7bd2dd54dd30683bf6b8b43b"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/controller-revision-v1.md",
+      "bytes": 16777,
+      "sha256": "1affa99e1ed66f67d09487c014c00d1085f218b53d9a57c4ed741cfe891bbebb"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/cron-job-v1.md",
+      "bytes": 21209,
+      "sha256": "1d8a0dcda52f45faf27338e569776d774788729c93030b52bf440e243b45a3b7"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/daemon-set-v1.md",
+      "bytes": 25341,
+      "sha256": "362b856902bb3df40f837a8d5ac16cb7ec5c791f9ae558916664542273ee278b"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/deployment-v1.md",
+      "bytes": 24309,
+      "sha256": "8f9fc5cfcb2cba48af377a600e66f66e2435a1dbdf8c5e62a7c291de06e6e870"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v1.md",
+      "bytes": 21801,
+      "sha256": "5289095c481c3e8da3c2b3b189a0d87ae96c6935318820560dccd0c3b3c3fc28"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2.md",
+      "bytes": 53759,
+      "sha256": "015ed9acc883c188993ff3f8aebaba4a7e0257f740ee3e10beb1edaf00ed3c22"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/job-v1.md",
+      "bytes": 39702,
+      "sha256": "93085df4703eaaee4f87c8e6a67d9585a7b83774e2543c659d6990df39071d4b"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/pod-scheduling-context-v1alpha3.md",
+      "bytes": 20431,
+      "sha256": "d67a2d31359f48ebe21d503b97ad9cdab9bf6d4fff87d52ea46cecfa0063cb7c"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/pod-template-v1.md",
+      "bytes": 14885,
+      "sha256": "e24c652ebfa073a54012657a79cc76c9f83eb7999c9bc93f40b8343a022c1b53"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/pod-v1.md",
+      "bytes": 213712,
+      "sha256": "5fe799affb6ce8b6a3060824f0857f598f26c43685699d2c16e86e13c1c2c547"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/priority-class-v1.md",
+      "bytes": 12401,
+      "sha256": "17d2f1f710663e54e4d4a279da8314e21006a73067c81f2bb20a9a63e0370dbe"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/replica-set-v1.md",
+      "bytes": 21366,
+      "sha256": "6c2ce9cf1a1c48422589b1736d700bfd103de8cf5f278ae5cab193ea964a56d6"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/replication-controller-v1.md",
+      "bytes": 22724,
+      "sha256": "bf2654209ec593504ac4d21e30957d8f38e225acc14ee66aa3adc9ce9ba975b1"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-claim-template-v1alpha3.md",
+      "bytes": 15615,
+      "sha256": "63d91a7c224ab5a3b551fd6962eb88ed6a64d01f68747c3913117ac4b19966c2"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-claim-template-v1beta1.md",
+      "bytes": 16087,
+      "sha256": "feb922df9c07b10e4f756266a3eb50ca5cfdcf63d81c303bdb9b84463caec431"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-claim-v1alpha3.md",
+      "bytes": 39703,
+      "sha256": "fbaf400fd9ae5ac2610abce5d7051e92cd5c20abc63cb52197d43d1440b64dc1"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-claim-v1beta1.md",
+      "bytes": 46098,
+      "sha256": "a2df79778082bfabe6896eccd056ccbfb3e953915fb96e323cb395f01d80f4fb"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-slice-v1alpha3.md",
+      "bytes": 18498,
+      "sha256": "59000795856e54fa5940caba4e2f33dc4ae7730ac8afbb757c789381b7b2014b"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/resource-slice-v1beta1.md",
+      "bytes": 19214,
+      "sha256": "6103b529f5591bfd255b6ebe65e6f781b26bb9d15074e0ad714c3c795b05de8e"
+    },
+    {
+      "path": "docs/reference/kubernetes-api/workload-resources/stateful-set-v1.md",
+      "bytes": 28500,
+      "sha256": "c6a861780a689c62db382aa438c17ca79161a24f469ccd0e85dbf02226c88fcb"
+    },
+    {
+      "path": "docs/reference/labels-annotations-taints/_index.md",
+      "bytes": 112070,
+      "sha256": "7bd5d6463ad2c577c3316e74d4b2b85f2b05c9d372eb82a6e05c4b3919d15e89"
+    },
+    {
+      "path": "docs/reference/networking/virtual-ips.md",
+      "bytes": 36806,
+      "sha256": "5bf8f747d54937a75fa34f982b03bff33216db99888eca6c3b48a2bd8aea195b"
+    },
+    {
+      "path": "docs/reference/scheduling/config.md",
+      "bytes": 18172,
+      "sha256": "30e7d78f01ea3b7e036f2a3bd4be4ddd488db19af6025e88bea0e011f0c556b8"
+    },
+    {
+      "path": "docs/reference/setup-tools/kubeadm/generated/kubeadm_init/_index.md",
+      "bytes": 11907,
+      "sha256": "1693ae6dc1d337ce2451e25a9a896d8313ab00518397654f83eb8ab11fa66ea1"
+    },
+    {
+      "path": "docs/reference/setup-tools/kubeadm/generated/kubeadm_join/_index.md",
+      "bytes": 9669,
+      "sha256": "590752be72cb43ae8683f7d292cc306b23a3db4688bd06dc05503de5b9e8905e"
+    },
+    {
+      "path": "docs/reference/setup-tools/kubeadm/implementation-details.md",
+      "bytes": 37915,
+      "sha256": "5da5240b20bb023a340d653f09327af9850587eabfe3f2610d525d6012c571ea"
+    },
+    {
+      "path": "docs/reference/setup-tools/kubeadm/kubeadm-init.md",
+      "bytes": 20945,
+      "sha256": "d12eaaec87edfd31ca4c2d34e8263acd9bc8af2aca2ab945db21d5a400ee993a"
+    },
+    {
+      "path": "docs/reference/setup-tools/kubeadm/kubeadm-join.md",
+      "bytes": 12989,
+      "sha256": "8054f526b7b09517c03b464a27db447ff4b2f84ea4c375e109e366246ccad435"
+    },
+    {
+      "path": "docs/reference/using-api/api-concepts.md",
+      "bytes": 63505,
+      "sha256": "0e7534ee94b349ca9695bc88844c240f4b9100cdb142822a4bd5dc2036c32204"
+    },
+    {
+      "path": "docs/reference/using-api/cel.md",
+      "bytes": 27325,
+      "sha256": "3326995e442486d02e44c821c54e718154112f5eedc19cd1ff06b3118bca74a7"
+    },
+    {
+      "path": "docs/reference/using-api/deprecation-guide.md",
+      "bytes": 21490,
+      "sha256": "e8713b66cc6e8778589ad721d4aa36e390d1095ad2ad9e86db2d6e0e42bbec4b"
+    },
+    {
+      "path": "docs/reference/using-api/deprecation-policy.md",
+      "bytes": 20490,
+      "sha256": "830eb371ae65ae92dbc4d53ac5dcc83d708c8a1ca57fb04d4066d428149d1348"
+    },
+    {
+      "path": "docs/reference/using-api/server-side-apply.md",
+      "bytes": 30120,
+      "sha256": "4ab3be50086ee61180d700e983df5b3686254f9a3c7fa387af1b7269e3bb293a"
+    },
+    {
+      "path": "docs/setup/best-practices/certificates.md",
+      "bytes": 15555,
+      "sha256": "693ed2f36a5f0844a5c5500421cb6954cedc4b39e9e26374793fe264a66bb3a8"
+    },
+    {
+      "path": "docs/setup/production-environment/_index.md",
+      "bytes": 18897,
+      "sha256": "f321190011bdbf83aabe4f110c2dc6593177990d963f2427852755fb50b54a8b"
+    },
+    {
+      "path": "docs/setup/production-environment/container-runtimes.md",
+      "bytes": 13733,
+      "sha256": "4cd958e01966d42c98cf02f42974cf2f6e5f37c5255c94238cc8a32da9689303"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm.md",
+      "bytes": 27854,
+      "sha256": "02edb076d70fcee5d4c054d2edc1d31dd3188fdf3fd0a85abf17b46962ad4358"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/high-availability.md",
+      "bytes": 19036,
+      "sha256": "7e22faddbce56c4d6c88403f26eab44c2dbb72f2e18c9fb2fa1211d10b96e122"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/install-kubeadm.md",
+      "bytes": 17960,
+      "sha256": "66a6dad83f2dd0f8d67506514b2ece4a2a32a9ba49b77866ed42b88926f0d0a0"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/kubelet-integration.md",
+      "bytes": 11424,
+      "sha256": "8107b6649694703892523764129369cd58193a2d378f3f4f5c3d5e3812903cc5"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm.md",
+      "bytes": 10905,
+      "sha256": "0af4073d13cc1ea23b70c4d55843ed78a783caeabf8e37d55ac75e6098b3e48c"
+    },
+    {
+      "path": "docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm.md",
+      "bytes": 24276,
+      "sha256": "b1259b10b521c9ed7d6b9b3546d1ba35b1dc9dc7cb865c5f388a968073511f2e"
+    },
+    {
+      "path": "docs/tasks/access-application-cluster/access-cluster.md",
+      "bytes": 9278,
+      "sha256": "c0f9bf95e3f56b1a3636edaceb672668e1c9a392d365464d3929a27ad09c060a"
+    },
+    {
+      "path": "docs/tasks/access-application-cluster/configure-access-multiple-clusters.md",
+      "bytes": 12417,
+      "sha256": "fefbb1cf660e8129dd8103f99e833b187f78ee105c541ecd6bae8d2d563b2b88"
+    },
+    {
+      "path": "docs/tasks/access-application-cluster/ingress-minikube.md",
+      "bytes": 11163,
+      "sha256": "b6010390763d5e2ff4dcabcce3337d8a23c8d8541b1874c2a47ea0a402430b9e"
+    },
+    {
+      "path": "docs/tasks/access-application-cluster/web-ui-dashboard.md",
+      "bytes": 12313,
+      "sha256": "b0fed7bf11adcc74573f10451bdcd160cec2be88ecfffb7e7a2f3837b0ea3b1a"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/access-cluster-api.md",
+      "bytes": 13514,
+      "sha256": "e3314aa304a3b9aef583f95f6c0fa6b38b72a464a868cb88b6ed1f9330e6694c"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/certificates.md",
+      "bytes": 8647,
+      "sha256": "d460b73217dff7958ea384b6080b55d5de05f5a828ca92bce8ca9b6538681e26"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/configure-upgrade-etcd.md",
+      "bytes": 19964,
+      "sha256": "2dfb67431aa6ab5a30b71310238495a3e425176905a047c0f38bc4230e246f38"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/controller-manager-leader-migration.md",
+      "bytes": 11727,
+      "sha256": "1a82a9a87f49a918a2501eb9838aa57a96fdaaabf7d32d74c5f2c60288cb2438"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/cpu-management-policies.md",
+      "bytes": 9136,
+      "sha256": "18c268b7d0f93364bee565475a98a68d45caae959f08626538660859b1f88b49"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/dns-debugging-resolution.md",
+      "bytes": 10643,
+      "sha256": "30b3208749008eeb2b69c35af604ebacf5a61a8595f931fec9e0ce43044883ca"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/encrypt-data.md",
+      "bytes": 30343,
+      "sha256": "a408014f09a6689d0f8f411ab3801e3398ec9c144750325f8b95809bf9c6a824"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kms-provider.md",
+      "bytes": 20669,
+      "sha256": "1d048f8a0bca5e1902c638c7512a44443f33952177bd6fe5240462bd4ad895fb"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubeadm/kubeadm-certs.md",
+      "bytes": 31417,
+      "sha256": "15dfcbda354e14c272fe68d4340c19fe392224cda37882545b296d37bdbb3ce9"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubeadm/kubeadm-reconfigure.md",
+      "bytes": 10376,
+      "sha256": "0121ee17444b0a8fd4b2139adcc5f974892c4181cc1732a6f81d765f0200c257"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade.md",
+      "bytes": 14979,
+      "sha256": "c4135e1494f0aeb199162286a6bc3c8fd2c85451a53ce9c6a6f7f633cebd70c8"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubelet-config-file.md",
+      "bytes": 11212,
+      "sha256": "de4e26c28976688e3d4782bcf4ca3581666380e795b9146856edb678438c81e5"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubelet-credential-provider.md",
+      "bytes": 8306,
+      "sha256": "6fe7b49a3b0c803460bf057a6e834767813e7665e4f46cc18298f98aef479b6b"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/kubelet-in-userns.md",
+      "bytes": 11713,
+      "sha256": "650b500da22d0caf52655a18b527f4f49abd0598543b0e425bafd339f1a787e4"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace.md",
+      "bytes": 9597,
+      "sha256": "dada36d24269a7b1682c7a221e043e960b4d501110da066a531487578ec3508f"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace.md",
+      "bytes": 9344,
+      "sha256": "b855dbcd312f4f9dee7444c2329de52e9c83ffe1a00b168697838d2f89e6473b"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/memory-manager.md",
+      "bytes": 20030,
+      "sha256": "51d37c098ec6d46ca2daff3d978fe4dddda783731d0a8bda78e8d19815129406"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/namespaces.md",
+      "bytes": 11757,
+      "sha256": "a1c73725c4b2453d7fb582377eaa932667faa6f291717bb4b49b869e4dcb157d"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/nodelocaldns.md",
+      "bytes": 8441,
+      "sha256": "ad4e9132a1a139cf7fd279c74fba6feda7c27a43c28921e5872ee40c5d5ad6ac"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/reserve-compute-resources.md",
+      "bytes": 11719,
+      "sha256": "9865b07a30554d0813d3da239559bb07035bf9ffd81756d267e7d04e1ebe0fd7"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/securing-a-cluster.md",
+      "bytes": 15372,
+      "sha256": "6e6f9924cf1e62fc433cb962f82efbbf093b0afd0aa07007ea479bf7da0e0364"
+    },
+    {
+      "path": "docs/tasks/administer-cluster/topology-manager.md",
+      "bytes": 17695,
+      "sha256": "97e142096c0deba78f1ac028c13ae0c539a19e4c4d5584b79c3fcde156f7f5b4"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/assign-cpu-resource.md",
+      "bytes": 9452,
+      "sha256": "0fe9eb57cb186f25a2a691feb5a4d613a1649226cbeb0f31beed8cfdbfa974c4"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/assign-memory-resource.md",
+      "bytes": 11634,
+      "sha256": "f54d14e6016612dcc27a4bc0c7326324de5578a063d4510d64f1fb4fc86225ba"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/assign-pod-level-resources.md",
+      "bytes": 9071,
+      "sha256": "5ed8a06fec54c391aee3e83385d0237f7263153718150c8b61d211384df126ca"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/configure-gmsa.md",
+      "bytes": 13687,
+      "sha256": "f1b65095530229f57bbcb99839b3a7992daf91d69359e9f3d3093e0d23cd7ca7"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+      "bytes": 23950,
+      "sha256": "15480f0f372aee176477e74c8729596a11babd3fc580522dfb50b511a29affc5"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/configure-persistent-volume-storage.md",
+      "bytes": 13686,
+      "sha256": "bc28d4542f20ff1a75b9b1c907185e5cd4afbfa1963e0b2c4bafb7860610de00"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/configure-pod-configmap.md",
+      "bytes": 28879,
+      "sha256": "97da7ff958503e573e3e88d4a2bdaf7f45f8f38772613e3f33d85a236ae79298"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/configure-service-account.md",
+      "bytes": 20609,
+      "sha256": "bed151229b4f94e8d393e95528a391284dc5d172c0f65e41d1338243f3b1e2f5"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/create-hostprocess-pod.md",
+      "bytes": 12705,
+      "sha256": "a90f6085f2b9d8de3b55c59909dce4a939abf62aac4851e1c78220c1c566afaa"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/migrate-from-psp.md",
+      "bytes": 18833,
+      "sha256": "d06685dd957ec5bf4df5a7432e0f23f773c666259c32f8b604c6612e144b9691"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/pull-image-private-registry.md",
+      "bytes": 9046,
+      "sha256": "9fa1c1c9bedf2f9d60ddcbf6721058b6cc7a3d2300ba32ea607b630fcb02d039"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/resize-container-resources.md",
+      "bytes": 10138,
+      "sha256": "491216535d8e5e83e5029b54db6f6e63f4c09d01dec4e9e899f20d4f39fd17d4"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/security-context.md",
+      "bytes": 30889,
+      "sha256": "68853add44907cc5f18ab6c6c2afc825056a1ae260c93b0b595925a74cd3983f"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/static-pod.md",
+      "bytes": 10314,
+      "sha256": "6b09cbbb69f0123bc21f16a8ed78f1a1b788276e23dade5c4ab9ce42787feb50"
+    },
+    {
+      "path": "docs/tasks/configure-pod-container/translate-compose-kubernetes.md",
+      "bytes": 16399,
+      "sha256": "da8038aea4bbac0948bbf30f5d2ed044a7a4fce6fe4601926f169c7aace4cec5"
+    },
+    {
+      "path": "docs/tasks/debug/debug-application/debug-running-pod.md",
+      "bytes": 27181,
+      "sha256": "e4c80f10af3deca25fad03192e2cf60f5dda70fa324a22a25992e08512c762d0"
+    },
+    {
+      "path": "docs/tasks/debug/debug-application/debug-service.md",
+      "bytes": 23249,
+      "sha256": "bd5f77dc4de052cef18f3569458473368f5423912dfe28cb00e62c77d0a34769"
+    },
+    {
+      "path": "docs/tasks/debug/debug-cluster/_index.md",
+      "bytes": 13756,
+      "sha256": "11029570172d503f168ee8cf4f81a03df745f34a3fe2d8a82c317ed06b4aae2b"
+    },
+    {
+      "path": "docs/tasks/debug/debug-cluster/audit.md",
+      "bytes": 11002,
+      "sha256": "7acfee5ea2e8602b68da5f81051a3c5d2af505b6664b0c6877960b0578e57429"
+    },
+    {
+      "path": "docs/tasks/debug/debug-cluster/resource-metrics-pipeline.md",
+      "bytes": 9991,
+      "sha256": "bcc6713846d01699cf504094399ffcad235dea3b1d83fc450fff60c3f14a33af"
+    },
+    {
+      "path": "docs/tasks/extend-kubectl/kubectl-plugins.md",
+      "bytes": 14207,
+      "sha256": "d80c1e70388ac9de40107029a06743152432f2a56366467806a433d14420b2dd"
+    },
+    {
+      "path": "docs/tasks/extend-kubernetes/configure-aggregation-layer.md",
+      "bytes": 17043,
+      "sha256": "a86622de6f00c386320b670422daca8c0165eb758a9a870b89d26079a0fb653f"
+    },
+    {
+      "path": "docs/tasks/extend-kubernetes/configure-multiple-schedulers.md",
+      "bytes": 8740,
+      "sha256": "a3380bf3f9198e606fe4b6b1a1e5945379bd18f719479d9c671c458b43a5c25e"
+    },
+    {
+      "path": "docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning.md",
+      "bytes": 42671,
+      "sha256": "50562cdee40eca790384cfef5d37e17be2f1c460c7566fae434e8569712caeaa"
+    },
+    {
+      "path": "docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions.md",
+      "bytes": 72654,
+      "sha256": "2a71afd4c51e1ffc0d48137553aa54b7a7a8a3fa247331739269013b0a817d14"
+    },
+    {
+      "path": "docs/tasks/inject-data-application/distribute-credentials-secure.md",
+      "bytes": 12868,
+      "sha256": "1b3df89759a8ad7b8f930f2cf8c9cf180a4fc9e8568d229844c9eea47c6fc96c"
+    },
+    {
+      "path": "docs/tasks/job/coarse-parallel-processing-work-queue.md",
+      "bytes": 12029,
+      "sha256": "8ed50476150d4d61e0afa88c4abd9fa315f064d7df3eb00ca739e5288c45d75f"
+    },
+    {
+      "path": "docs/tasks/job/fine-parallel-processing-work-queue.md",
+      "bytes": 8571,
+      "sha256": "83c500c2203d377e48a0e4ea2d809edca737bd096de8a1fbee9128b3702585a4"
+    },
+    {
+      "path": "docs/tasks/job/parallel-processing-expansion.md",
+      "bytes": 9526,
+      "sha256": "86a92968c694975079047f3e9380568e1dff4b819c223c890487a66cdb3ca46d"
+    },
+    {
+      "path": "docs/tasks/manage-kubernetes-objects/declarative-config.md",
+      "bytes": 38527,
+      "sha256": "560ecbd3d80a2d11f8d290bb6b18a1f5c2c1a2ceebc39a6c0c8284ff2686341e"
+    },
+    {
+      "path": "docs/tasks/manage-kubernetes-objects/kustomization.md",
+      "bytes": 24478,
+      "sha256": "8dd3029bf2bb24b832eacaccf7ae4aa44d0934f2854e3f08630703fcb900a7a6"
+    },
+    {
+      "path": "docs/tasks/manage-kubernetes-objects/storage-version-migration.md",
+      "bytes": 10165,
+      "sha256": "473a0b1884264e817ff3339773430c9df35f27b774fb1cf17bf81f0975a07198"
+    },
+    {
+      "path": "docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch.md",
+      "bytes": 15961,
+      "sha256": "ba028347607cef9fd0f44316c9bd625712b8dc3a3d418cfaadc1c0a647f008eb"
+    },
+    {
+      "path": "docs/tasks/run-application/configure-pdb.md",
+      "bytes": 13511,
+      "sha256": "9ace545dc6b085f07fe8fc25b226fcb19753a0ee124632d64e2ef186b6090f50"
+    },
+    {
+      "path": "docs/tasks/run-application/horizontal-pod-autoscale-walkthrough.md",
+      "bytes": 19419,
+      "sha256": "3ab47e6e1d0f13e7718249605bc141619c211316caa74287cf5b105c11523e5e"
+    },
+    {
+      "path": "docs/tasks/run-application/horizontal-pod-autoscale.md",
+      "bytes": 29233,
+      "sha256": "6cc4083d4d409a90f96e7b8bf03e825d652acc9eec390a8825e11abbf0a73aad"
+    },
+    {
+      "path": "docs/tasks/run-application/run-replicated-stateful-application.md",
+      "bytes": 19150,
+      "sha256": "86b75361521632a7696ee181770d8ff8a7cc9442c79e674406d46a798097539d"
+    },
+    {
+      "path": "docs/tasks/tls/managing-tls-in-a-cluster.md",
+      "bytes": 12698,
+      "sha256": "f11a4001c4023c274ac797232273b23d08feff0252cf7ef4ea9b56385fde2bd3"
+    },
+    {
+      "path": "docs/tasks/tls/manual-rotation-of-ca-certificates.md",
+      "bytes": 8532,
+      "sha256": "cdfb4a36ba3f69c4dc33d17a3eee691aaa156b929b257d9bc5ac7772857db838"
+    },
+    {
+      "path": "docs/tasks/tools/install-kubectl-linux.md",
+      "bytes": 12907,
+      "sha256": "31173842ff39ef181b5b5f3bc3b31f9011ef93bfd487c47f682ff72fe1ff2d4d"
+    },
+    {
+      "path": "docs/tasks/tools/install-kubectl-macos.md",
+      "bytes": 8385,
+      "sha256": "bd1d82cd89d0fbe7e8398c985ed04e4db371ee9c5e98f71a53734ef97dfb8b3b"
+    },
+    {
+      "path": "docs/test.md",
+      "bytes": 12164,
+      "sha256": "074293c00daee89d8487b3fb24795c72133c55e1730b6d55e125821f03ca349b"
+    },
+    {
+      "path": "docs/tutorials/cluster-management/kubelet-standalone.md",
+      "bytes": 13364,
+      "sha256": "4f346c17c81dde7f63851b3e63cab19a26ca3d89d9a8ae8236c456a98cb65d6b"
+    },
+    {
+      "path": "docs/tutorials/cluster-management/namespaces-walkthrough.md",
+      "bytes": 8786,
+      "sha256": "46898f4772b6d739f0e8e433b586822c25bf19eaa549e7b57c37b5b490501759"
+    },
+    {
+      "path": "docs/tutorials/configuration/pod-sidecar-containers.md",
+      "bytes": 10133,
+      "sha256": "7d47a9ba4f7a99eb9254cb42ebfbee529934ac705fb72339b5cc54aefedecb6a"
+    },
+    {
+      "path": "docs/tutorials/configuration/updating-configuration-via-a-configmap.md",
+      "bytes": 26203,
+      "sha256": "9e22386fd61bc1751b45fc448b281e9b810f3208de0752c913967835a6d00251"
+    },
+    {
+      "path": "docs/tutorials/hello-minikube.md",
+      "bytes": 10856,
+      "sha256": "2661e68fdace82f0aa8a1ec9dd116a429aab5c3d1f97aa62900aa8b7d7624a24"
+    },
+    {
+      "path": "docs/tutorials/kubernetes-basics/expose/expose-intro.md",
+      "bytes": 8937,
+      "sha256": "9a4ffb07543ca460c459178f51fa18275b690a77d03fb0783ff6bd8f1ac7b49d"
+    },
+    {
+      "path": "docs/tutorials/security/apparmor.md",
+      "bytes": 10737,
+      "sha256": "fa5223a6cec31b0e6c4758694495a1e626289461bb739d21674d6469458025b6"
+    },
+    {
+      "path": "docs/tutorials/security/cluster-level-pss.md",
+      "bytes": 12890,
+      "sha256": "fa19cf3ed1884e577d2feaaf4258bee4ef334e06b2fc73ebee2e3146c5122f18"
+    },
+    {
+      "path": "docs/tutorials/security/seccomp.md",
+      "bytes": 20678,
+      "sha256": "14809ceae2fd0b8957a6650501b26822acdcbc9dfabf628976f5946942f53569"
+    },
+    {
+      "path": "docs/tutorials/services/connect-applications-service.md",
+      "bytes": 21486,
+      "sha256": "e7a1f698fdf77fd0ec4366cbcd743be9e1fe7e6f0d9d0c2129220768faf980c6"
+    },
+    {
+      "path": "docs/tutorials/services/source-ip.md",
+      "bytes": 13609,
+      "sha256": "0f646da938fc220cd8ea515a9649d74659a1b442f2f81823e9578082a66d3bae"
+    },
+    {
+      "path": "docs/tutorials/stateful-application/basic-stateful-set.md",
+      "bytes": 45657,
+      "sha256": "d9f3420af158c2a5a6676e26346ba1cf03b9513735ddd4e6a93aa8d6e64ac55c"
+    },
+    {
+      "path": "docs/tutorials/stateful-application/cassandra.md",
+      "bytes": 10169,
+      "sha256": "bc1c458e4200c931feabc23098fce4e447feb4046999c00519c882d8851dfdba"
+    },
+    {
+      "path": "docs/tutorials/stateful-application/mysql-wordpress-persistent-volume.md",
+      "bytes": 9047,
+      "sha256": "481a9af588a806df648f093101419e1df4df3e0d950735cba71ca09c0021a5cb"
+    },
+    {
+      "path": "docs/tutorials/stateful-application/zookeeper.md",
+      "bytes": 45744,
+      "sha256": "d26c1172c7077b264398401a214d9f3311a5b8ab3ddca288d2093ad943f3b680"
+    },
+    {
+      "path": "docs/tutorials/stateless-application/guestbook.md",
+      "bytes": 13917,
+      "sha256": "7eab87e7bd2f3e5b7fed8838488923cef005036159b24e0afa3613ca017a3798"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "installed": [],
+  "available": [
+    {
+      "pluginId": "doktimoi@doktimoi",
+      "name": "doktimoi",
+      "marketplaceName": "doktimoi",
+      "version": "0.12.0",
+      "installed": false,
+      "enabled": false,
+      "source": {
+        "source": "local",
+        "path": "/Users/miikam/Projects/doktimoi"
+      },
+      "marketplaceSource": {
+        "sourceType": "local",
+        "source": "/Users/miikam/Projects/doktimoi"
+      },
+      "installPolicy": "AVAILABLE",
+      "authPolicy": "ON_INSTALL"
+    }
+  ]
+}
