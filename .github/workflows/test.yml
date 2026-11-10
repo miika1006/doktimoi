@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
-      DOKTIMOI_TEST_OCR: ${{ runner.os == 'macOS' && '0' || '1' }}
+      DOKTIMOI_TEST_OCR: ${{ matrix.os == 'macos-latest' && '0' || '1' }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
