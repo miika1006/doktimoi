@@ -1172,6 +1172,17 @@ const capNote = values => Number(values.budget) > MAX_BUDGET ? BUDGET_CAPPED : u
  * `scope` names the folder asked about when it lies inside the indexed `root`.
  * @example await status('C:\\docs') // 'Index: 12 sources, 340 chunks, 0 extraction warnings, updated 2026-11-09T10:12:03+02:00\n…'
  */
+/**
+ * Separates the routine OCR accuracy notes, one per OCR'd image or page, from other extraction
+ * caveats, so a large warning total is not mistaken for failed indexing. '' when there are none.
+ * @example warningBreakdown(['Image: OCR may misread text; …', 'YAML: aliases …']) // 'Extraction warnings: 1 routine OCR notes …; 1 other …'
+ */
+export function warningBreakdown(warnings) {
+  if (!warnings.length) return '';
+  const ocr = warnings.filter(warning => /OCR may misread/.test(warning)).length;
+  return `Extraction warnings: ${ocr} routine OCR notes (text read from images or scanned pages may contain recognition errors; not indexing failures); ${warnings.length - ocr} other format caveats (build lists them)`;
+}
+
 async function status(root, scope) {
   const cache = path.join(root, '.doktimoi');
   const manifestFile = path.join(cache, 'manifest.json');
@@ -1181,6 +1192,8 @@ async function status(root, scope) {
   const count = key => files.reduce((sum, file) => sum + (file[key]?.length ?? 0), 0);
   const lines = scope ? [`Indexed folder: ${root} (${scope} is inside it)`] : [];
   lines.push(`Index: ${files.length} sources, ${count('chunks')} chunks, ${count('warnings')} extraction warnings, updated ${localTime(manifestStat.mtime)}`);
+  const breakdown = warningBreakdown(files.flatMap(file => file.warnings ?? []));
+  if (breakdown) lines.push(breakdown);
   lines.push(semanticLine(root));
   if (await ifMissing(fs.stat(path.join(cache, 'dirty')), false)) lines.push('Interrupted update: the next search or sync redoes it');
   lines.push(await lockLine(path.join(cache, 'write.lock')));

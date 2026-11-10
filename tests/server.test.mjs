@@ -269,7 +269,7 @@ test('search prints no unsupported-file or extraction-total notices; status keep
   const result = run(['search', root, '--query', 'SERVER_TOKEN']);
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, 'guide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n');
-  assert.match(run(['status', root]).stdout, /^Index: 2 sources, 3 chunks, 1 extraction warnings/m);
+  assert.match(run(['status', root]).stdout, /^Index: 2 sources, 3 chunks, 1 extraction warnings[^\n]*\nExtraction warnings: 0 routine OCR notes [^\n]*; 1 other format caveats/m);
   assert.match(run(['search', root, '--query', 'Other text']).stdout, /^notes\.rst:1-4\n[\s\S]*\[Extraction: RST\/AsciiDoc/m);
 });
 

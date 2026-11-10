@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "doktimoi",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "Search local documentation with source citations and a token budget.",
   "author": { "name": "miika1006" },
   "repository": "https://github.com/miika1006/doktimoi",

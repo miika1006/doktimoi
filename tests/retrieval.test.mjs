@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkRuntime, execute, openProject, tokens, render, reference } from '../skills/doktimoi/scripts/doktimoi.mjs';
+import { checkRuntime, execute, openProject, tokens, render, reference, warningBreakdown } from '../skills/doktimoi/scripts/doktimoi.mjs';
 import { chunkMarkdown, safePath } from '../skills/doktimoi/scripts/sources.mjs';
 
 const require = createRequire(new URL('../skills/doktimoi/package.json', import.meta.url));
@@ -783,4 +783,16 @@ test('exact mode lists matching lines of every format, readable by reference, sc
   assert.ok(capped.endsWith(`\n[${400 - shown} more matching lines not shown; narrow with --path, --exclude or a longer phrase.]`), capped.slice(-200));
   const long = await exact(['many_term'], { budget: 6000 });
   assert.ok(Buffer.byteLength(long) <= 20000 && tokens(long) <= 6000);
+});
+
+test('status separates routine OCR notes from other extraction caveats', () => {
+  assert.equal(warningBreakdown([]), '');
+  const line = warningBreakdown([
+    'Image: OCR may misread text; diagrams require visual inspection.',
+    'Image OCR may misread text: slide:2; inspect visuals for critical facts.',
+    'PDF page 3: OCR may misread text; check the page for critical facts.',
+    'Image OCR is disabled.',
+    'YAML: aliases, merge keys and custom tags are not evaluated.',
+  ]);
+  assert.match(line, /^Extraction warnings: 3 routine OCR notes .*not indexing failures\); 2 other format caveats/);
 });

@@ -195,7 +195,9 @@ without it (the background server rescans only after a file change, or once a
 minute). `build` rehashes every source, and the first search after a plugin update
 that changes chunking reconverts every source once (unchanged passages keep their
 embeddings). `build` output lists extraction warnings; `status` counts them and
-search shows only those of returned sources.
+search shows only those of returned sources. Most are routine OCR notes, one per OCR'd
+image or scanned page, saying recognized text may contain errors. `status` reports them
+separately; tell the user they are not indexing failures.
 The cache is disposable: if it is incompatible or incomplete, rebuild it while
 preserving unrelated user files. A folder with semantic search may have a
 background search server holding `index.sqlite` open; run
