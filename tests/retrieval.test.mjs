@@ -191,6 +191,21 @@ test('Git subfolder inventory includes tracked files and excludes ignored direct
   } finally { await subproject.close(); }
 });
 
+test('.doktimoiignore excludes tracked paths and a change removes them from the index', async t => {
+  const { root, project } = await fixture(t);
+  execFileSync('git', ['init', '-q', root], { windowsHide: true });
+  await fs.mkdir(path.join(root, 'code'));
+  await fs.writeFile(path.join(root, 'code/readme.md'), '# Code\n\nCODE_MARKER');
+  await fs.writeFile(path.join(root, 'kept.md'), '# Kept\n\nKEPT_MARKER');
+  execFileSync('git', ['add', '.'], { cwd: root, windowsHide: true });
+  assert.equal((await project.search(['CODE_MARKER'])).payload.results.length, 1);
+  await fs.writeFile(path.join(root, '.doktimoiignore'), '\uFEFFcode/\r\n');
+  assert.equal((await project.search(['CODE_MARKER'])).payload.results.length, 0);
+  assert.equal((await project.search(['KEPT_MARKER'])).payload.results.length, 1);
+  await fs.rm(path.join(root, '.doktimoiignore'));
+  assert.equal((await project.search(['CODE_MARKER'])).payload.results.length, 1);
+});
+
 test('Excel retains sheet, cell address, number format and cached formula result', async t => {
   const { root, project } = await fixture(t);
   const workbook = XLSX.utils.book_new();

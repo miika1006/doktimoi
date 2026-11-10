@@ -46,7 +46,10 @@ Indexed: `.md`, `.markdown`, `.txt`, `.text`, `.rst`, `.adoc`, `.asciidoc`, `.do
 `.doc`, `.xlsx`, `.xls`, `.pptx`, `.pdf`, `.html`/`.htm`, `.png`, `.jpg`, `.jpeg`,
 `.webp`, `.drawio`/`.drawio.xml`, `.mmd`, `.svg`, `.csv`, `.tsv`, `.yaml`/`.yml` and
 `.json`. Symlinks, hidden paths, dependency/build directories and ignored files are
-skipped; in Git repositories only tracked or non-ignored files are used. Unsupported
+skipped; in Git repositories only tracked or non-ignored files are used. A
+`.doktimoiignore` file in the indexed folder (gitignore syntax, paths relative to that
+folder) also excludes paths, even tracked ones, without touching `.gitignore`; edits
+take effect at the next index update. Unsupported
 formats and conversion warnings are reported; a failed conversion aborts the
 query. Source files are never changed. For a tiny folder, reading sources directly
 may be cheaper; decide by content volume and question, not file count.

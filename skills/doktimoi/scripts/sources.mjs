@@ -22,7 +22,14 @@ export async function safePath(root, relative) {
   return current;
 }
 
+/** Reads `.doktimoiignore` (gitignore syntax) from the indexed root; a missing or empty file excludes nothing, a symlink is refused. */
+async function readUserIgnore(root) {
+  const text = await ifMissing(fs.readFile(await safePath(root, '.doktimoiignore'), 'utf8'), '');
+  return ignore().add(text.replace(/^\uFEFF/, ''));
+}
+
 export async function inventory(root) {
+  const userIgnore = await readUserIgnore(root);
   let gitFiles = null;
   try {
     gitFiles = new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '.'],
@@ -45,6 +52,7 @@ export async function inventory(root) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || entry.name.startsWith('~$') || excluded.has(entry.name) || entry.isSymbolicLink()) continue;
       const relative = [relativeDir, entry.name].filter(Boolean).join('/');
+      if (userIgnore.ignores(relative + (entry.isDirectory() ? '/' : ''))) continue;
       if (!gitFiles) {
         let ignored = false;
         for (const { base, matcher } of localRules) {
