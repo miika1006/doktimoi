@@ -1,0 +1,57 @@
+{
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "model": {
+    "repository": "ggml-org/embeddinggemma-300M-GGUF",
+    "revision": "0f741b5a6585bd53aeb15cd1372c56f2a0f65e12",
+    "file": "embeddinggemma-300M-Q8_0.gguf",
+    "bytes": 333590944,
+    "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63",
+    "downloadTiming": "real 12.56\nuser 2.97\nsys 0.96"
+  },
+  "embedModelEnv": "<scratch>/models/embeddinggemma-300M-Q8_0.gguf (sha256 verified)",
+  "forceCpu": null,
+  "build": {
+    "files": 409,
+    "chunks": 8338,
+    "changed": 409,
+    "removed": 0,
+    "hashedBytes": 8513875,
+    "index": "full",
+    "ocrCalls": 0,
+    "ocrCacheHits": 0,
+    "unsupported": [],
+    "warnings": [],
+    "ms": 36299.15
+  },
+  "buildMs": 36529,
+  "embedding": {
+    "update": {
+      "files": 409,
+      "chunks": 8338,
+      "changed": 0,
+      "removed": 0,
+      "hashedBytes": 0,
+      "ocrCalls": 0,
+      "ocrCacheHits": 0,
+      "unsupported": [],
+      "warnings": [],
+      "ms": 118.08
+    },
+    "embeddings": {
+      "docsProcessed": 7384,
+      "chunksEmbedded": 7860,
+      "errors": 0,
+      "failures": [],
+      "durationMs": 417584
+    }
+  },
+  "embedMs": 418903,
+  "backend": "node-llama-cpp 3.20.0 Vulkan, AMD Radeon 780M, 25/25 layers on GPU",
+  "downloadMs": 229697
+}

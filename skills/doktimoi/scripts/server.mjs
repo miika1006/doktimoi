@@ -74,10 +74,16 @@ export async function stopServer(root, info) {
   info ??= await readInfo(root);
   if (!info) return null;
   await send(info, { command: 'stop' }).catch(() => null);
-  for (const deadline = Date.now() + START_WAIT_MS; Date.now() < deadline && await readInfo(root);) {
+  // server.json goes before the index and model are closed; only process exit releases the files.
+  for (const deadline = Date.now() + START_WAIT_MS; Date.now() < deadline && isRunning(info.pid);) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   return null;
+}
+
+/** Tells whether a process with this id still runs; EPERM means it runs under another user. */
+function isRunning(pid) {
+  try { process.kill(pid, 0); return true; } catch (error) { return error.code === 'EPERM'; }
 }
 
 /**
@@ -229,8 +235,7 @@ async function waitForInfo(root, child) {
 async function readInfo(root) {
   const info = await fs.readFile(path.join(root, CACHE_DIR, 'server.json'), 'utf8').then(JSON.parse).catch(() => null);
   if (typeof info?.pipe !== 'string' || typeof info.token !== 'string' || !Number.isInteger(info.pid)) return null;
-  try { process.kill(info.pid, 0); return info; }
-  catch (error) { return error.code === 'EPERM' ? info : null; }
+  return isRunning(info.pid) ? info : null;
 }
 
 /** Sends one request line with the server's token and resolves with its parsed reply line; `timeoutMs` limits the wait. */

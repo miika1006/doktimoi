@@ -16,6 +16,10 @@ reported cost. Cold indexing (58.9 s mean) is excluded from agent time. The Clau
 baseline made about 42 tool calls per run; Codex's shell baseline made about 9. The saving
 comes from fewer model rounds, so it depends on the agent and is not a general result.
 
+Three [hybrid runs](claude/hybrid-2026-11-10-windows/README.md) against the same baseline
+used a mean 545,563 tokens (−66.4%) in 100.2 s. Embeddings ran on the GPU (Vulkan,
+integrated Radeon 780M); one-time embedding took 418.9 s and is excluded.
+
 ## Codex, macOS: completed measurements
 
 | Arm, 3 fresh contexts each | Total tokens across runs | Mean tokens | Mean agent seconds | Commands across runs |
@@ -102,10 +106,8 @@ on its score. Corpus, task, model, reasoning effort, Node and Codex versions are
 unchanged. Semantic instructions and CPU execution differ; OS/model caches and
 cloud conditions can differ too. This is an exploratory comparison.
 
-The first [semantic attempt](codex/semantic-2026-11-10/README.md) failed inside the
-macOS sandbox: the packaged Metal backend could not initialize, and its CPU
-fallback still tried Metal. That interrupted attempt remains archived and is
-excluded from completed-run aggregates. Building node-llama-cpp 3.20.0's bundled
+An earlier semantic attempt failed inside the macOS sandbox: the packaged Metal
+backend could not initialize, and its CPU fallback still tried Metal. Building node-llama-cpp 3.20.0's bundled
 llama.cpp b10361 with `--gpu false` resolved this environment issue; see the
 [build log](semantic-cpu-build.log) and [sandbox preflight](codex/semantic-cpu-preflight.log).
 The measured semantic agents run with `QMD_FORCE_CPU=1`; sandbox restrictions
@@ -134,10 +136,8 @@ larger candidate reads located them. Semantic fusion can demote precise lexical
 evidence, so use lexical/exact mode for distinctive terms. This relevance
 limitation remains; passing text-integrity tests does not resolve it.
 
-[The earlier check](retrieval-before-optimization.json) scored 19/20 before a
-recorded query refinement recovered the Secret/Pod-creation passage. That miss
-has not been removed from the dataset. After the retrieval changes the same
-original query succeeds; no refinement is needed. This small, curated set is
+An earlier check scored 19/20 before the retrieval changes; the same original
+query now succeeds without refinement. This small, curated set is
 a regression check, not a general recall or accuracy estimate.
 
 Generated memos require a separate review against the original documents.
@@ -197,19 +197,9 @@ turns. This is a demanding Markdown baseline already using selective reads;
 it does not measure Office/PDF conversion or OCR. The semantic comparison uses
 one small local model and CPU inference; it does not establish GPU performance.
 
-Earlier experiments are retained rather than hidden:
-
-1. [Pilot](codex/pilot-2026-11-10/README.md): more tokens, an unsupported Node selected
-   by a login shell, and one intentionally interrupted run.
-2. [First three pairs](codex/results-2026-11-10/README.md): 58.1% more total tokens,
-   unnecessary setup reading, missing-path retries and one recovered connection
-   failure whose precise elapsed time was lost.
-3. [Intermediate optimization](codex/optimized-2026-11-10/README.md): no retrieval
-   errors, but more tokens; host sleep invalidated the baseline duration. A
-   checker falsely rejected the skill-file read, and its corrected audit is saved.
-4. [Candidate comparison](codex/final-2026-11-10/README.md): filename ranking fixed,
-   but 5.8% more tokens and two batches aborting on an absent linked page. Those
-   batches motivated the final per-question error isolation.
+Only the latest run per agent and retrieval mode is kept; earlier Codex pilots and
+candidates (more tokens, unsupported Node from a login shell, setup reading,
+missing-path retries, whole-batch aborts) are in git history.
 
 ## Why a bounded response did not guarantee token savings
 

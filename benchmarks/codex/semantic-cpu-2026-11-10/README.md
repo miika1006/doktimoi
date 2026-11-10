@@ -31,7 +31,5 @@ the index in about 4.3 seconds and passed a sandbox inference check in about
 reloaded as needed under the agent sandbox. These costs are excluded from the
 agent-time column and must be added appropriately for first use.
 
-The earlier Metal/CPU-fallback failure remains in
-[`semantic-2026-11-10`](../semantic-2026-11-10/README.md), excluded from completed
-aggregates. The CPU backend follows the dependency's supported source-build
+An earlier Metal/CPU-fallback failure is excluded from completed aggregates. The CPU backend follows the dependency's supported source-build
 procedure; no sandbox restriction was disabled.

@@ -1,9 +1,9 @@
 # Doktimoi
 
-**Measured: 64% fewer model tokens with Claude Code.** On a 409-file Kubernetes
+**Measured: 64–66% fewer model tokens with Claude Code.** On a 409-file Kubernetes
 documentation task, Claude Code (`claude-opus-5-5`) used a mean 583,475 tokens with
-Doktimoi against 1,624,913 with its own Read/Grep tools. That is 42% less agent time and
-37% less cost over three pairs. With Codex (`gpt-6-astra`) the same task saved nothing yet:
+Doktimoi keyword search, and 545,563 with hybrid semantic search, against 1,624,913 with its
+own Read/Grep tools. Keyword search also took 42% less agent time and cost 37% less over three pairs. With Codex (`gpt-6-astra`) the same task saved nothing yet:
 it used 20.6% more tokens than an `rg`/`sed` baseline. The reason and the ongoing work are under
 [Measured results](#measured-results).
 
@@ -38,6 +38,7 @@ For Markdown-only collections, QMD's own skill may be enough.
 | --- | --- | ---: | ---: | ---: |
 | Claude Code, Windows | Read/Grep/Glob baseline | 1,624,913 | — | 159.3 s |
 | Claude Code, Windows | Doktimoi lexical | 583,475 | **−64.1%** | 91.9 s |
+| Claude Code, Windows | Doktimoi hybrid (GPU) | 545,563 | **−66.4%** | 100.2 s |
 | Codex, macOS | `rg`/`sed` baseline | 250,858 | — | 147.8 s |
 | Codex, macOS | Doktimoi lexical | 302,660 | +20.6% | 167.0 s |
 | Codex, macOS | Doktimoi hybrid (CPU) | 274,583 | +9.5% | 197.6 s |
@@ -50,9 +51,11 @@ into one shell command, about 9 per run, and the Doktimoi runs needed as many (9
 no rounds saved, the skill instructions and longer commands, re-sent every round, made the
 total larger. Answering all questions in fewer, larger batches is being worked on.
 Cold lexical indexing took 11.6 s on the Mac and 37 s on Windows with real-time virus
-scanning off (about 147 s with it on). The 20-query evidence check scored 20/20 lexical
+scanning off (about 147 s with it on). One-time embedding took 470.9 s on the Mac CPU and
+418.9 s on the Windows integrated GPU. The Claude hybrid runs reused the lexical baseline
+from an earlier phase. The 20-query evidence check scored 20/20 lexical
 and 18/20 hybrid. One task, corpus and model per agent does not establish results elsewhere.
-Raw events, answers, audits and failed attempts: [benchmarks](benchmarks/README.md).
+Raw events, answers and audits: [benchmarks](benchmarks/README.md).
 
 ## Example uses
 

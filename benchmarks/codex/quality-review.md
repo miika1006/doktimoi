@@ -43,22 +43,12 @@ and cited paths/ranges. Resolve paths relative to the corpus root, including
 the preceding named file. Then read the cited source and check the actual claim;
 range existence alone is insufficient.
 
-## Findings from diagnostic experiments
+## Findings from earlier experiments
 
-All six answers in `results-2026-11-10/` covered the ten requested topics and
-were within the requested length. Their cited ranges resolved to the original
-files. The three baseline memos and the first two Doktimoi memos conveyed the
-same main mechanisms and limitations. The third Doktimoi memo omitted the
-StatefulSet feature prerequisite and recommended DNS egress without citing the
-specific DNS-supporting passage. Those are qualification/citation omissions,
-not evidence that the retriever returned fabricated text.
-
-The subsequent candidate in `final-2026-11-10/` preserved the main findings as
-well. Its first Doktimoi answer again omitted the StatefulSet prerequisite and
-used the general NetworkPolicy passage for its DNS recommendation; the second
-included both supporting qualifications. The traces show relevant source text
-was available, so these omissions must remain visible in answer-quality review
-even when the retrieval checks pass.
+Earlier diagnostic runs (now only in git history) covered the ten topics, but some
+Doktimoi memos omitted the StatefulSet prerequisite or cited a general NetworkPolicy
+passage for DNS although the supporting text had been retrieved. Answer-quality review
+must keep checking such omissions even when the retrieval checks pass.
 
 Intermediate runs are retained for diagnosis rather than scored as independent
 confirmatory trials. No answer or expected source range was fed back into the

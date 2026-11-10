@@ -1,0 +1,29 @@
+{
+  "method": "Whitespace word count; named colon/#L citation ranges; range existence is not claim support.",
+  "answers": [
+    {
+      "file": "benchmarks\\claude\\hybrid-2026-11-10-windows\\1-doktimoi.answer.md",
+      "words": 1659,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 16,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\hybrid-2026-11-10-windows\\2-doktimoi.answer.md",
+      "words": 1664,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 17,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks\\claude\\hybrid-2026-11-10-windows\\3-doktimoi.answer.md",
+      "words": 1474,
+      "tenSections": true,
+      "withinWordTarget": false,
+      "checkedCitationRanges": 16,
+      "allRangesValid": true
+    }
+  ]
+}

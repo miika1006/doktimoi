@@ -141,11 +141,36 @@ test('stop and build shut the folder server down so the cache can be rebuilt or 
   assert.ok(info && alive(info.pid));
   assert.equal(run(['stop', root]).status, 0);
   assert.equal(await readInfo(root), null);
+  // server.json disappears before the server closes its files; stop must wait for the exit.
+  assert.equal(alive(info.pid), false);
   assert.equal(run(['search', root, '--query', 'SERVER_TOKEN']).status, 0);
   info = await readInfo(root);
   assert.ok(info && alive(info.pid));
   assert.equal(run(['build', root]).status, 0);
   assert.equal(await readInfo(root), null);
+  assert.equal(alive(info.pid), false);
+});
+
+test('stopServer waits for the server process to exit, not only for server.json to go', async t => {
+  const { stopServer: stopFolderServer } = await import('../skills/doktimoi/scripts/server.mjs');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-stop-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.mkdir(path.join(root, '.doktimoi'));
+  const pipe = process.platform === 'win32' ? `\\\\.\\pipe\\doktimoi-stop-${process.pid}` : path.join(root, 's.sock');
+  const info = path.join(root, '.doktimoi', 'server.json');
+  // Like the real server: answer stop, remove server.json, then keep running while files close.
+  const fake = spawn(process.execPath, ['-e', `
+    const fs = require('fs'), net = require('net');
+    net.createServer(s => s.on('data', () => { s.end('{"output":"","notices":[]}\\n'); fs.rmSync(${JSON.stringify(info)}); setTimeout(() => process.exit(0), 1000); }))
+      .listen(${JSON.stringify(pipe)}, () => fs.writeFileSync(${JSON.stringify(info)}, JSON.stringify({ pipe: ${JSON.stringify(pipe)}, token: 't', pid: process.pid })));
+  `], { stdio: 'ignore', windowsHide: true });
+  t.after(() => fake.kill());
+  for (const deadline = Date.now() + 10000; !await readInfo(root);) {
+    assert.ok(Date.now() < deadline, 'fake server did not start');
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  await stopFolderServer(root);
+  assert.equal(alive(fake.pid), false);
 });
 
 test('status reports a lexical-only folder without starting or locking anything', async t => {

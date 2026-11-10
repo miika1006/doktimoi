@@ -1,0 +1,147 @@
+{
+  "startedAt": "2026-11-10T14:06:12.359Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.322 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "doktimoi",
+  "retrieval": "hybrid",
+  "embeddingModel": "C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/b803dbe6-1e70-4d22-98e6-58539fea3569/scratchpad/models/embeddinggemma-300M-Q8_0.gguf",
+  "forceCpu": null,
+  "preparedIndex": "C:\\Users\\miikame\\AppData\\Local\\Temp\\claude\\3988ca781ac53f72\\b803dbe6-1e70-4d22-98e6-58539fea3569\\scratchpad\\prepared\\docs",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "44e41f5539b3af4672b435cc237b42b56a429f71226c4c041a5f4060a5fcddbd",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 109531,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 2560,
+      "preflightMs": 0,
+      "threadId": "eb5a9cf1-35a8-4e3f-a7dc-c460d6e1fffe",
+      "usage": {
+        "input_tokens": 588902,
+        "cached_input_tokens": 544552,
+        "cache_write_input_tokens": 41912,
+        "output_tokens": 9098,
+        "cost_usd": 0.6214845
+      },
+      "totalTokens": 598000,
+      "uncachedInputTokens": 44350,
+      "commands": 10,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 17437,
+      "audit": {
+        "doktimoiCommands": 9,
+        "hybridCommands": 8,
+        "successfulHybridCommands": 7,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01ALfbKyQibdjC4VFCvWS66H",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 3,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 104011,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 2613,
+      "preflightMs": 0,
+      "threadId": "eaf30227-aeb6-4fa2-9c0a-624207ed0821",
+      "usage": {
+        "input_tokens": 615886,
+        "cached_input_tokens": 569002,
+        "cache_write_input_tokens": 44446,
+        "output_tokens": 9179,
+        "cost_usd": 0.6528295000000002
+      },
+      "totalTokens": 625065,
+      "uncachedInputTokens": 46884,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 18722,
+      "audit": {
+        "doktimoiCommands": 11,
+        "hybridCommands": 6,
+        "successfulHybridCommands": 6,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 2,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 87181,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 2536,
+      "preflightMs": 0,
+      "threadId": "b593fa4c-f166-4b09-8f12-15b21b0ed4d1",
+      "usage": {
+        "input_tokens": 405117,
+        "cached_input_tokens": 359676,
+        "cache_write_input_tokens": 43011,
+        "output_tokens": 8507,
+        "cost_usd": 0.5860123
+      },
+      "totalTokens": 413624,
+      "uncachedInputTokens": 45441,
+      "commands": 10,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 17817,
+      "audit": {
+        "doktimoiCommands": 9,
+        "hybridCommands": 7,
+        "successfulHybridCommands": 6,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_01NfTwCWPPFk8e8fEe2xVTBz",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "b16b751a84e1f673d0d3de494eccf28cffa271787de5d5c3532c511c1d094c05"
+}

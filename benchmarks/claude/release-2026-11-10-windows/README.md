@@ -40,10 +40,10 @@ own tool-use pattern, not only on retrieval output size.
   Code's `total_cost_usd`, not an invoice.
 - Windows Defender real-time protection was off for every run in the table. The first
   pair-1 baseline ran with it on (2,252,823 tokens, 209.2 s) and was rerun with it off
-  and `--resume`. The original is kept in [superseded-defender-on](superseded-defender-on/).
+  and `--resume`.
   Pair 1's index build (102.7 s) may still have been slowed while protection was switching off.
   With protection on, an earlier build of this corpus took 147 s, against about 11 s on the Codex Mac.
 - One task, one corpus, one model, three pairs. Do not generalize beyond this setup.
 
-The first attempt in [../attempt-2026-11-10-windows-permissions](../attempt-2026-11-10-windows-permissions/README.md)
-failed and is kept as evidence.
+A first attempt stopped when an allow rule did not match the agent's Node path spelling
+and the agent fell back to Grep; it is in git history only.
