@@ -13,12 +13,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { indexedRoot, insideIndexData, isFile, resolvePath, runHook } from './common.mjs';
+import { indexedRoot, insideIndexData, isDirectory, isFile, resolvePath, runHook } from './common.mjs';
 
 export function decide(input, pluginRoot) {
   if (['SessionStart', 'SubagentStart'].includes(input.hook_event_name)) {
     const reminder = input.cwd && remind(indexedRoot(resolvePath(input.cwd)), pluginRoot, 'folder-wide searches');
-    return reminder ? { hookSpecificOutput: { ...reminder.hookSpecificOutput, hookEventName: input.hook_event_name } } : null;
+    if (!reminder) return null;
+    const context = missingDependencies(pluginRoot) + reminder.hookSpecificOutput.additionalContext;
+    return { hookSpecificOutput: { hookEventName: input.hook_event_name, additionalContext: context } };
   }
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') {
     return approveDoktimoiCommand(input, pluginRoot) ?? remindOnShellSearch(input, pluginRoot);
@@ -95,6 +97,16 @@ function remindOnWholeRead(input, pluginRoot) {
   if (!root || insideIndexData(resolved, root)) return null;
   const size = (() => { try { return fs.statSync(resolved).size; } catch { return 0; } })();
   return size > LARGE_FILE_BYTES || DOCUMENT_FILE.test(resolved) ? remind(root, pluginRoot, 'whole-file reads') : null;
+}
+
+/**
+ * Returns a setup notice when this plugin version has no npm dependencies, or ''. A plugin
+ * update installs only the skill files, so searches fail and the sync hook skips silently.
+ */
+function missingDependencies(pluginRoot) {
+  const skill = path.join(pluginRoot, 'skills', 'doktimoi');
+  if (isDirectory(path.join(skill, 'node_modules'))) return '';
+  return `Doktimoi's npm dependencies are not installed for this plugin version, so its searches fail until they are. Before searching, install them as the setup guide (references/index.md) describes: npm ci --prefix "${skill}". `;
 }
 
 function remind(root, pluginRoot, bypass) {

@@ -33,8 +33,20 @@ test('Codex sessions and subagents receive the indexed-folder reminder', async t
     const result = decide({ hook_event_name, cwd: indexed }, pluginRoot).hookSpecificOutput;
     assert.equal(result.hookEventName, hook_event_name);
     assert.match(result.additionalContext, /indexed by doktimoi/);
+    assert.doesNotMatch(result.additionalContext, /npm ci/);
     assert.equal(decide({ hook_event_name, cwd: plain }, pluginRoot), null);
   }
+});
+
+test('a session in an indexed folder is told when this plugin version lacks its npm dependencies', async t => {
+  const { indexed, plain } = await folders(t);
+  const updated = path.join(path.dirname(indexed), 'plugin');
+  await fs.mkdir(path.join(updated, 'skills', 'doktimoi'), { recursive: true });
+  const context = decide({ hook_event_name: 'SessionStart', cwd: indexed }, updated).hookSpecificOutput.additionalContext;
+  assert.ok(context.startsWith("Doktimoi's npm dependencies are not installed"));
+  assert.ok(context.includes(`npm ci --prefix "${path.join(updated, 'skills', 'doktimoi')}"`));
+  assert.match(context, /indexed by doktimoi/);
+  assert.equal(decide({ hook_event_name: 'SessionStart', cwd: plain }, updated), null);
 });
 
 test('Codex patch hooks refresh every affected index, including moves and deletions', async t => {

@@ -108,7 +108,8 @@ Windows and the macOS CPU backend for semantic search.
   Everything else goes through the normal permission flow. In an indexed folder,
   folder-wide Grep, recursive shell searches and whole reads of large or Office/PDF
   files get a reminder to use doktimoi.
-- `SessionStart` and `SubagentStart` add a short retrieval reminder in indexed folders.
+- `SessionStart` and `SubagentStart` add a short retrieval reminder in indexed folders, and
+  say when an updated plugin still needs its npm dependencies (`npm ci`).
 - `SessionStart`, `PostToolUse` (Edit/Write) and Codex `apply_patch` refresh changed
   files of an existing index in the background. Hooks never create an index or enable
   semantic search.
