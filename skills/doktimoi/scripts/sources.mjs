@@ -167,6 +167,7 @@ export async function convert(source, buffer, extraction) {
     if (imageError) throw new Error(`Word image extraction failed: ${imageError.message}`, { cause: imageError });
     const converter = new Turndown({ headingStyle: 'atx' });
     converter.use(gfm.gfm);
+    converter.keep(['sup', 'sub']);
     converter.addRule('image-reference', { filter: 'img', replacement: (_, node) => `[${node.getAttribute('alt')}]` });
     const text = converter.turndown(result.value);
     return { chunks: [...chunkMarkdown(text, source, 'extracted-lines'), ...segmentChunks(source, images.map(image => ({ text: image.text || NO_TEXT,

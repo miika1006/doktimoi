@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { auditRun, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { auditRun, commandWords, commandGroups, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -87,4 +87,149 @@ test('Claude events count every model and cache token once and audit file tools 
   assert.equal(auditRun(bypass, 'doktimoi').passed, false);
   assert.equal(auditRun(bypass, 'baseline').passed, true);
   assert.throws(() => summarizeEvents(claudeToCodexEvents(encode([{ ...events.at(-1), is_error: true }]))), /completed turn/);
+});
+
+
+test('competitor config pins source and requires explicit absolute search commands', () => {
+  const config = { name: 'local-search', repository: 'https://github.com/example/search', commit: 'a'.repeat(40), sourcePath: path.resolve('/tmp/search'), skillPath: path.resolve('/tmp/search/SKILL.md'), instructions: 'Search only the supplied corpus.', setup: [], searchCommands: [{ command: process.execPath, argsPrefix: ['/tmp/search/cli.mjs', 'search'] }] };
+  assert.equal(validateCompetitor(config), config);
+  assert.throws(() => validateCompetitor({ ...config, commit: 'main' }), /pinned commit/);
+  assert.throws(() => validateCompetitor({ ...config, searchCommands: [{ command: 'node', argsPrefix: ['search'] }] }), /Invalid competitor/);
+  assert.throws(() => validateCompetitor({ ...config, searchCommands: [{ command: process.execPath, argsPrefix: [] }] }), /nonempty/);
+});
+
+test('competitor audit requires skill read and successful searches, rejects bypasses and shell expansion', () => {
+  const config = { skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/bin/tool', argsPrefix: ['search'] }], readCommands: [{ command: '/bin/tool', argsPrefix: ['get'] }] };
+  const encode = commands => commands.map(command => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', command, exit_code: 0 } })).join('\n');
+  const skill = 'cat /skill/SKILL.md', search = '/bin/tool search "pod scheduling"';
+  assert.equal(auditRun(encode([skill, search, '/bin/tool get source.md']), 'competitor', config).passed, true);
+  assert.equal(auditRun(encode([search]), 'competitor', config).passed, false);
+  assert.equal(auditRun(encode([skill, '/bin/tool get source.md']), 'competitor', config).passed, false);
+  for (const bypass of ['rg answer docs', `${search}; cat docs/source.md`, `${search} | cat`, '/bin/tool search $(cat docs/source.md)', '/bin/tool search "$HOME"', '/bin/tool search docs/*']) {
+    assert.equal(auditRun(encode([skill, search, bypass]), 'competitor', config).passed, false, bypass);
+  }
+  assert.equal(auditRun(encode([skill, `/bin/zsh -lc '${search}'`]), 'competitor', config).passed, true);
+  assert.equal(auditRun(encode([`${skill}; ${search} && /bin/tool get source.md`]), 'competitor', config).passed, true);
+  assert.equal(auditRun(encode([`/bin/zsh -lc '${skill}; ${search}'`]), 'competitor', config).passed, true);
+  assert.deepEqual(commandGroups('/bin/zsh -lc \"/bin/tool search \\\"pod scheduling\\\"\"'), [['/bin/tool', 'search', 'pod scheduling']]);
+  assert.deepEqual(commandWords('/bin/tool search "a; b"'), ['/bin/tool', 'search', 'a; b']);
+  const failedSkill = encode([skill, search]).split('\n').map(JSON.parse); failedSkill[0].item.exit_code = 1;
+  assert.equal(auditRun(failedSkill.map(JSON.stringify).join('\n'), 'competitor', config).passed, false);
+  const failedEvents = encode([skill, search]).split('\n').map(JSON.parse); failedEvents[1].item.exit_code = 1;
+  assert.equal(auditRun(failedEvents.map(JSON.stringify).join('\n'), 'competitor', config).passed, false);
+});
+
+
+test('competitor targeted source reads record returned paths after successful search', () => {
+  const config = { skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/bin/tool', argsPrefix: ['search'] }] };
+  const items = [
+    { command: 'cat /skill/SKILL.md', exit_code: 0 },
+    { command: '/bin/tool search pods', exit_code: 0, aggregated_output: '{"path":"/docs/pods.md","snippet":"evidence"}' },
+    { command: "sed -n '12,24p' /docs/pods.md", exit_code: 0 },
+  ];
+  const encode = () => items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', ...item } })).join('\n');
+  assert.equal(auditRun(encode(), 'competitor', config, path.parse(process.cwd()).root).passed, true);
+  items[2].command = 'cat /docs/other.md';
+  const linked = auditRun(encode(), 'competitor', config, path.parse(process.cwd()).root);
+  assert.equal(linked.passed, true);
+  assert.equal(linked.targetedReads[0].wasReturned, false);
+  items[2].command = 'cat /docs/pods.md'; items[1].exit_code = 1;
+  assert.equal(auditRun(encode(), 'competitor', config, path.parse(process.cwd()).root).passed, false);
+});
+
+
+test('competitor literal parser preserves quoted Windows drive paths', () => {
+  const executable = String.raw`C:\Program Files\nodejs\node.exe`;
+  const script = String.raw`C:\search\cli.mjs`;
+  assert.deepEqual(commandWords(`"${executable}" "${script}" search pods`), [executable, script, 'search', 'pods']);
+  assert.deepEqual(commandWords(`${JSON.stringify(executable)} ${JSON.stringify(script)} search pods`), [executable, script, 'search', 'pods']);
+  assert.equal(commandGroups(`"${executable}" "${script}" search pods | more`), null);
+});
+
+
+test('competitor section paths allow numbered citation reads and only print-range pipes', () => {
+  const config = { skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/usr/bin/python3', argsPrefix: ['/skill/search.py'] }] };
+  const items = [
+    { command: 'cat /skill/SKILL.md', exit_code: 0 },
+    { command: "/usr/bin/python3 /skill/search.py 'involuntary PDB' --library kubernetes --limit 2 --json", exit_code: 0,
+      aggregated_output: JSON.stringify([{ path: '/docs/pods.md##Pod disruption budgets', snippet: 'Involuntary disruptions cannot be prevented by PDBs.' }]) },
+    { command: "nl -ba /docs/pods.md | sed -n '1,20p;40,50p'", exit_code: 0 },
+  ];
+  const audit = () => auditRun(items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', ...item } })).join('\n'), 'competitor', config, path.parse(process.cwd()).root);
+  assert.equal(audit().passed, true);
+  assert.equal(audit().referenceReads, 2);
+  assert.deepEqual(audit().targetedReads[0].words, ['nl', '-ba', '/docs/pods.md', '|', 'sed', '-n', '1,20p;40,50p']);
+  items[2].command = "sed -n '1,20p;40,50p' /docs/pods.md";
+  assert.equal(audit().passed, true);
+  for (const command of ["nl -ba /outside/other.md | sed -n '1,20p'", "cat /docs/pods.md | sed -n '1,20p'", "nl -ba /docs/pods.md | sed -n '1,20p;e cat /docs/other.md'", "nl -ba /docs/pods.md | sed -n '1,20p' | cat"]) {
+    items[2].command = command;
+    assert.equal(audit().passed, false, command);
+  }
+});
+
+
+test('competitor tool reference reads stay inside its Markdown references directory', () => {
+  const skillPath = path.resolve('/skill/SKILL.md');
+  const reference = path.join(path.dirname(skillPath), 'references', 'cli-reference.md');
+  const config = { skillPath, searchCommands: [{ command: '/bin/tool', argsPrefix: ['search'] }] };
+  const audit = target => auditRun([`cat '${skillPath}'`, '/bin/tool search pods', `cat '${target}'`].map(command => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', command, exit_code: 0 } })).join('\n'), 'competitor', config);
+  assert.equal(audit(reference).passed, true);
+  assert.equal(audit(path.join(path.dirname(reference), 'nested', 'commands.md')).passed, true);
+  for (const target of [path.join(path.dirname(reference), '..', 'source.md'), `${path.dirname(reference)}-other/cli.md`, reference.replace('.md', '.mjs'), 'references/cli-reference.md']) {
+    assert.equal(audit(target).passed, false, target);
+  }
+});
+
+
+test('competitor reads resolve corpus aliases, flag linked files and reject escaping paths', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-audit-paths-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const workspace = path.join(root, 'workspace'), docs = path.join(workspace, 'docs');
+  const outside = path.join(root, 'outside');
+  await fs.mkdir(docs, { recursive: true }); await fs.mkdir(outside);
+  await fs.writeFile(path.join(docs, 'pods.md'), 'Pod evidence.');
+  await fs.writeFile(path.join(outside, 'secret.md'), 'Outside corpus.');
+  const alias = path.join(root, 'alias');
+  await fs.symlink(workspace, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  await fs.symlink(outside, path.join(docs, 'escape'), process.platform === 'win32' ? 'junction' : 'dir');
+  const config = { skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/bin/tool', argsPrefix: ['search'] }] };
+  const items = [
+    { command: 'cat /skill/SKILL.md', exit_code: 0 },
+    { command: '/bin/tool search pods', exit_code: 0, aggregated_output: JSON.stringify({ source: path.join(docs, 'pods.md') }) },
+    { command: "nl -ba docs/pods.md | sed -n '1,20p'", exit_code: 0 },
+  ];
+  const audit = () => auditRun(items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', ...item } })).join('\n'), 'competitor', config, alias);
+  assert.equal(audit().passed, true);
+  assert.equal(audit().targetedReads[0].wasReturned, true);
+  for (const source of ['pods.md', 'docs/pods.md', path.join(alias, 'docs/pods.md')]) {
+    items[1].aggregated_output = JSON.stringify({ source });
+    assert.equal(audit().targetedReads[0].wasReturned, true, source);
+  }
+  items[2].command = 'cat docs/linked.md';
+  assert.equal(audit().passed, true);
+  assert.equal(audit().targetedReads[0].wasReturned, false);
+  for (const file of ['docs/escape/secret.md', '../outside/secret.md', 'docs/../docs/pods.md', 'docs-other/pods.md', path.join(outside, 'secret.md')]) {
+    items[2].command = `cat '${file}'`;
+    assert.equal(audit().passed, false, file);
+  }
+  items[2].command = 'rg pods docs';
+  assert.equal(audit().passed, false);
+  items[2].command = 'cat docs/pods.md'; items[1].exit_code = 1;
+  assert.equal(audit().passed, false);
+  items.splice(1, 1);
+  assert.equal(audit().passed, false);
+});
+
+test('competitor path diagnostics normalize Windows drive case and source-relative paths', () => {
+  const config = { skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/bin/tool', argsPrefix: ['search'] }] };
+  const items = [
+    { command: 'cat /skill/SKILL.md', exit_code: 0 },
+    { command: '/bin/tool search pods', exit_code: 0, aggregated_output: 'concepts/pods.md' },
+    { command: 'cat "c:/BENCH/docs/concepts/pods.md"', exit_code: 0 },
+  ];
+  const audit = () => auditRun(items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', ...item } })).join('\n'), 'competitor', config, String.raw`C:\bench`);
+  assert.equal(audit().passed, true);
+  assert.equal(audit().targetedReads[0].wasReturned, true);
+  items[2].command = 'cat "C:/elsewhere/pods.md"';
+  assert.equal(audit().passed, false);
 });

@@ -14,12 +14,12 @@ for (const directory of directories) {
     const text = await fs.readFile(path.join(directory, file), 'utf8');
     const sections = [...text.matchAll(/^\s*(?:#{1,3}\s*|\*\*)?(\d+)\.\s/gm)].map(match => Number(match[1]));
     const citations = [];
-    for (const match of text.matchAll(/((?:concepts|tasks|reference)\/[^\s`:)]+\.md)(?::|#L)(\d+(?:[-–](?:L)?\d+)?(?:,\s*\d+(?:[-–](?:L)?\d+)?)*)/g)) {
+    for (const match of text.matchAll(/((?:concepts|tasks|reference)\/[^\s`:)]+\.md)(?::|#L|`?,\s+(?:lines?\s+|L))(\d+(?:[-–](?:L)?\d+)?(?:,\s*L?\d+(?:[-–](?:L)?\d+)?)*)/g)) {
       const source = path.resolve(corpus, match[1]);
       assert.ok(source.startsWith(corpus), 'Citation must stay inside corpus');
       const lines = (await fs.readFile(source, 'utf8')).split('\n').length;
       for (const range of match[2].split(/,\s*/)) {
-        const [first, last = first] = range.split(/[-–]L?/).map(Number);
+        const [first, last = first] = range.replace(/^L/, '').split(/[-–]L?/).map(Number);
         assert.ok(first >= 1 && last >= first && last <= lines, `${file}: invalid range ${match[0]}`);
         citations.push({ source: match[1], first, last });
       }
@@ -31,4 +31,4 @@ for (const directory of directories) {
     assert.ok(complete && citations.length >= 10, `${file}: missing numbered sections or source ranges`);
   }
 }
-console.log(JSON.stringify({ method: 'Whitespace word count; named colon/#L citation ranges; range existence is not claim support.', answers: reports }, null, 2));
+console.log(JSON.stringify({ method: 'Whitespace word count; named colon/#L/prose citation ranges; range existence is not claim support.', answers: reports }, null, 2));

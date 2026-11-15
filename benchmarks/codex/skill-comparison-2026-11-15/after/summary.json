@@ -1,0 +1,363 @@
+{
+  "startedAt": "2026-11-15T03:16:49.925Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "both",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "484d706c1fc290d7fd1fe30c0ecdef76a0e36fad2235e53047912e1b9d06c2a4",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "3a5db083f5f9c7413f36f99941fe1787c8d26365e08d68842047d7fe7492848f",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 125126,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd35-25f8-71f2-bc3c-a034192c29da",
+      "usage": {
+        "input_tokens": 296263,
+        "cached_input_tokens": 260224,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3885,
+        "reasoning_output_tokens": 233
+      },
+      "totalTokens": 300148,
+      "uncachedInputTokens": 36039,
+      "commands": 25,
+      "failedCommands": 6,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 28109,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_2",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_15",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_18",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_20",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_21",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_24",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 111113,
+      "buildMs": 11439,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd37-3c3f-7ce1-9154-b0d15a77eb25",
+      "usage": {
+        "input_tokens": 242132,
+        "cached_input_tokens": 199552,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4056,
+        "reasoning_output_tokens": 294
+      },
+      "totalTokens": 246188,
+      "uncachedInputTokens": 42580,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25348,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 10,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/containers/container-lifecycle-hooks.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "item_11",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 1,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 121504,
+      "buildMs": 11222,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd44-32fd-7f73-a802-631b32446464",
+      "usage": {
+        "input_tokens": 236154,
+        "cached_input_tokens": 206976,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3924,
+        "reasoning_output_tokens": 141
+      },
+      "totalTokens": 240078,
+      "uncachedInputTokens": 29178,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 22359,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 10,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "item_10",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/containers/container-lifecycle-hooks.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 110470,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd46-116f-77d2-a1a7-6c1778be741f",
+      "usage": {
+        "input_tokens": 255149,
+        "cached_input_tokens": 193408,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3763,
+        "reasoning_output_tokens": 192
+      },
+      "totalTokens": 258912,
+      "uncachedInputTokens": 61741,
+      "commands": 8,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 32665,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 119124,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd49-5904-7031-b897-62877459ea04",
+      "usage": {
+        "input_tokens": 320682,
+        "cached_input_tokens": 286464,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4341,
+        "reasoning_output_tokens": 192
+      },
+      "totalTokens": 325023,
+      "uncachedInputTokens": 34218,
+      "commands": 16,
+      "failedCommands": 3,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 26580,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_2",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_12",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 117044,
+      "buildMs": 11855,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd4b-5acf-7632-8027-71cd40a669ad",
+      "usage": {
+        "input_tokens": 243449,
+        "cached_input_tokens": 212096,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4172,
+        "reasoning_output_tokens": 208
+      },
+      "totalTokens": 247621,
+      "uncachedInputTokens": 31353,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 24093,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_12",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/security/secrets-good-practices.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "item_13",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/storage/dynamic-provisioning.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "867f31f1fe3b8b4445d46e5bd7b51530ecf674f52da8f3384fe1c374e7e6c98c"
+}

@@ -1,5 +1,9 @@
 # Agent benchmark
 
+The [15 November skill comparison](codex/skill-comparison-2026-11-15/README.md)
+contains fresh `gpt-6.1-sol` runs, competitor source pins and diagnostic failures.
+It is still in progress; do not pool its results with the older models below.
+
 The benchmark measures the entire assistant task, including repeated model
 context, rather than equating a small tool response with a token saving.
 Results are kept per agent: [codex/](codex/) and [claude/](claude/). The Codex

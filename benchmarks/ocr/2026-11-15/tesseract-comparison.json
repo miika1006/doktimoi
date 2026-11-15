@@ -1,0 +1,1922 @@
+[
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "normal",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 362.4694999999999,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "normal",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 315.844375,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "normal",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 313.8170419999999,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "small",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 301.4390000000001,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote tem Maara/Qy — Hinta/Price\nA-001 Palvelu — 12 840050 EUR\n8.002 Hyvitys = 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain yk saa lähettää. Äl muuta summaa.\nHyväksytty [I Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "small",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 298.4050830000001,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote tem Maara/Qy — Hinta/Price\nA-001 Palvelu — 12 840050 EUR\n8.002 Hyvitys = 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain yk saa lähettää. Äl muuta summaa.\nHyväksytty [I Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "small",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 297.7669999999998,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote tem Maara/Qy — Hinta/Price\nA-001 Palvelu — 12 840050 EUR\n8.002 Hyvitys = 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain yk saa lähettää. Äl muuta summaa.\nHyväksytty [I Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "skew",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 313.57000000000016,
+    "confidence": 89,
+    "criticalPassed": 9,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasky\nAsiakas / Customer: Koivy Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää, Älä muuta summaa.\nHyväksytty O] Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "skew",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 313.2126250000001,
+    "confidence": 89,
+    "criticalPassed": 9,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasky\nAsiakas / Customer: Koivy Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää, Älä muuta summaa.\nHyväksytty O] Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "skew",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 312.2338329999998,
+    "confidence": 89,
+    "criticalPassed": 9,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasky\nAsiakas / Customer: Koivy Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää, Älä muuta summaa.\nHyväksytty O] Lähetä heti\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "rotated",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 1424.27275,
+    "confidence": 68,
+    "criticalPassed": 0,
+    "rowsPassed": 0,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": false
+      },
+      {
+        "value": "15.11.2026",
+        "pass": false
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": false
+      },
+      {
+        "value": "Do not send",
+        "pass": false
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": false
+      },
+      {
+        "value": "8 390,50",
+        "pass": false
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": false
+      }
+    ],
+    "text": "S 20 P > J >» m4 >» 5\n5 35 6 & &58 5 = s 5 & 5\nz 5 8 88 2 8% wg 2 a <\n= = o = 5 & 4 3 (e)\n5 5 5 0 I Vv = 5 < £2 8 =.\na 5 2 5 = 2 a gg oy I (2)\n& = o 3 5 5 5 98 — = (0)\n3 s — = 8 = o\n& 5 oO %\nK g 5 © ag ~\n8 3 € a a\n5 o X 5 5 & €\n= % [=] s O°\nzB S e 5 5 ©\n= G» eo < E = ” = » n\nE & N N 5 9 8 € 3 =\n= & s 2 1 8 x €\n= & = 3 @ &\n2 &a 2 a = FI\nO ES < g = <\nc 5 m. ko o 2 8 2\n= ¢ cc 2 8 2 o 8\nK 3 D o o 5 x =\n3 3 o © 5 5\nEI\ng E ges\n= an p\nx 8\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "rotated",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 1448.0124580000002,
+    "confidence": 68,
+    "criticalPassed": 0,
+    "rowsPassed": 0,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": false
+      },
+      {
+        "value": "15.11.2026",
+        "pass": false
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": false
+      },
+      {
+        "value": "Do not send",
+        "pass": false
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": false
+      },
+      {
+        "value": "8 390,50",
+        "pass": false
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": false
+      }
+    ],
+    "text": "S 20 P > J >» m4 >» 5\n5 35 6 & &58 5 = s 5 & 5\nz 5 8 88 2 8% wg 2 a <\n= = o = 5 & 4 3 (e)\n5 5 5 0 I Vv = 5 < £2 8 =.\na 5 2 5 = 2 a gg oy I (2)\n& = o 3 5 5 5 98 — = (0)\n3 s — = 8 = o\n& 5 oO %\nK g 5 © ag ~\n8 3 € a a\n5 o X 5 5 & €\n= % [=] s O°\nzB S e 5 5 ©\n= G» eo < E = ” = » n\nE & N N 5 9 8 € 3 =\n= & s 2 1 8 x €\n= & = 3 @ &\n2 &a 2 a = FI\nO ES < g = <\nc 5 m. ko o 2 8 2\n= ¢ cc 2 8 2 o 8\nK 3 D o o 5 x =\n3 3 o © 5 5\nEI\ng E ges\n= an p\nx 8\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "baseline",
+    "fixture": "rotated",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 1444.837458,
+    "confidence": 68,
+    "criticalPassed": 0,
+    "rowsPassed": 0,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": false
+      },
+      {
+        "value": "Vain luku",
+        "pass": false
+      },
+      {
+        "value": "15.11.2026",
+        "pass": false
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": false
+      },
+      {
+        "value": "Do not send",
+        "pass": false
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": false
+      },
+      {
+        "value": "8 390,50",
+        "pass": false
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": false
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": false
+      }
+    ],
+    "text": "S 20 P > J >» m4 >» 5\n5 35 6 & &58 5 = s 5 & 5\nz 5 8 88 2 8% wg 2 a <\n= = o = 5 & 4 3 (e)\n5 5 5 0 I Vv = 5 < £2 8 =.\na 5 2 5 = 2 a gg oy I (2)\n& = o 3 5 5 5 98 — = (0)\n3 s — = 8 = o\n& 5 oO %\nK g 5 © ag ~\n8 3 € a a\n5 o X 5 5 & €\n= % [=] s O°\nzB S e 5 5 ©\n= G» eo < E = ” = » n\nE & N N 5 9 8 € 3 =\n= & s 2 1 8 x €\n= & = 3 @ &\n2 &a 2 a = FI\nO ES < g = <\nc 5 m. ko o 2 8 2\n= ¢ cc 2 8 2 o 8\nK 3 D o o 5 x =\n3 3 o © 5 5\nEI\ng E ges\n= an p\nx 8\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "normal",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 345.46100000000024,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n<\n\nHyväksytty Lähetä heti\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "normal",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 336.4369999999999,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n<\n\nHyväksytty Lähetä heti\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "normal",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 333.2718330000007,
+    "confidence": 92,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n<\n\nHyväksytty Lähetä heti\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "small",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 294.1885829999992,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä | Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote/Mtem — Määrä/Oly — Hinta/Price\n\nA001 Palvelu 12 840050 EUR\n8.002 Hyvitys 3 2000 EUR\nC-003 Storage — 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty OI Lähetä net\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "small",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 299.06595800000105,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä | Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote/Mtem — Määrä/Oly — Hinta/Price\n\nA001 Palvelu 12 840050 EUR\n8.002 Hyvitys 3 2000 EUR\nC-003 Storage — 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty OI Lähetä net\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "small",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 298.71404099999927,
+    "confidence": 79,
+    "criticalPassed": 8,
+    "rowsPassed": 1,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": false
+      },
+      {
+        "value": "-20,00",
+        "pass": false
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": false
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä | Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote/Mtem — Määrä/Oly — Hinta/Price\n\nA001 Palvelu 12 840050 EUR\n8.002 Hyvitys 3 2000 EUR\nC-003 Storage — 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty OI Lähetä net\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "skew",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 426.6641670000008,
+    "confidence": 90,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty (D Lähetä heti\n\nS\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "skew",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 428.4429170000003,
+    "confidence": 90,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty (D Lähetä heti\n\nS\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "skew",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 426.223750000001,
+    "confidence": 90,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty — Hinta/ Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\nHyväksytty (D Lähetä heti\n\nS\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "rotated",
+    "run": 0,
+    "setupMs": 148.80275,
+    "ms": 336.6613749999997,
+    "confidence": 91,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Tot\n\n8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n(V] Hyväksytty Lähetä heti\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "rotated",
+    "run": 1,
+    "setupMs": 148.80275,
+    "ms": 334.61866700000064,
+    "confidence": 91,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Tot\n\n8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n(V] Hyväksytty Lähetä heti\n\n"
+  },
+  {
+    "engine": "tesseract.js7",
+    "mode": "auto-deskew",
+    "fixture": "rotated",
+    "run": 2,
+    "setupMs": 148.80275,
+    "ms": 336.3986669999995,
+    "confidence": 91,
+    "criticalPassed": 10,
+    "rowsPassed": 3,
+    "critical": [
+      {
+        "value": "Koivu Oy",
+        "pass": true
+      },
+      {
+        "value": "Vain luku",
+        "pass": true
+      },
+      {
+        "value": "15.11.2026",
+        "pass": true
+      },
+      {
+        "value": "Älä poista laskua",
+        "pass": true
+      },
+      {
+        "value": "Do not send",
+        "pass": true
+      },
+      {
+        "value": "8 400,50",
+        "pass": true
+      },
+      {
+        "value": "-20,00",
+        "pass": true
+      },
+      {
+        "value": "10.00",
+        "pass": true
+      },
+      {
+        "value": "8 390,50",
+        "pass": true
+      },
+      {
+        "value": "Älä muuta summaa",
+        "pass": true
+      }
+    ],
+    "rows": [
+      {
+        "values": [
+          "A-001",
+          "12",
+          "8 400,50"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "B-002",
+          "3",
+          "-20,00"
+        ],
+        "pass": true
+      },
+      {
+        "values": [
+          "C-003",
+          "7",
+          "10.00"
+        ],
+        "pass": true
+      }
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\n\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\n\nYhteensä / Tot\n\n8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\n\n(V] Hyväksytty Lähetä heti\n\n"
+  }
+]

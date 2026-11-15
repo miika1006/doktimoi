@@ -1,0 +1,33 @@
+{
+  "name": "library-docs",
+  "repository": "https://github.com/um1b/library-docs",
+  "commit": "4fade60d18fcfd8dd166cdd4936a6b6005256292",
+  "sourcePath": "/tmp/doktimoi-competitors-20261115/library-docs",
+  "skillPath": "/tmp/doktimoi-competitors-20261115/library-docs/SKILL.md",
+  "instructions": "Use the benchmark workspace copy of library-docs/scripts. Search with QUERY --library kubernetes --limit 5 --json. Read chunks via read.py or original corpus files for exact citations. No network or reindex during questions.",
+  "setup": [
+    {
+      "command": "/bin/sh",
+      "args": [
+        "-c",
+        "cp -R \"{source}\" \"{workspace}/library-docs\" && rm -f \"{workspace}/library-docs/data/library.db\" && /opt/homebrew/bin/rg --files \"{docs}\" -g \"*.md\" | /usr/bin/python3 \"{workspace}/library-docs/scripts/index.py\" kubernetes --batch"
+      ]
+    }
+  ],
+  "searchCommands": [
+    {
+      "command": "/usr/bin/python3",
+      "argsPrefix": [
+        "{workspace}/library-docs/scripts/search.py"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/usr/bin/python3",
+      "argsPrefix": [
+        "{workspace}/library-docs/scripts/read.py"
+      ]
+    }
+  ]
+}

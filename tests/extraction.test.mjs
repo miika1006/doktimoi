@@ -4,15 +4,63 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { convert, safePath } from '../skills/doktimoi/scripts/sources.mjs';
-import { officeCandidates, additionalOcrLines } from '../skills/doktimoi/scripts/extraction.mjs';
+import { officeCandidates, additionalOcrLines, createExtraction } from '../skills/doktimoi/scripts/extraction.mjs';
 import { openProject } from '../skills/doktimoi/scripts/doktimoi.mjs';
 
 const fixtures = new URL('../examples/formats/', import.meta.url);
+
+test('Word superscripts and subscripts retain numerical and chemical meaning', async () => {
+  const { default: JSZip } = await import('../skills/doktimoi/node_modules/jszip/lib/index.js');
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  zip.file('_rels/.rels', '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  zip.file('word/document.xml', '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Do not exceed 10</w:t></w:r><w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:t>3</w:t></w:r><w:r><w:t> requests. Formula H</w:t></w:r><w:r><w:rPr><w:vertAlign w:val="subscript"/></w:rPr><w:t>2</w:t></w:r><w:r><w:t>O.</w:t></w:r></w:p></w:body></w:document>');
+  const result = await convert('limits.docx', await zip.generateAsync({ type: 'nodebuffer' }));
+  assert.match(result.chunks[0].text, /Do not exceed 10<sup>3<\/sup> requests/);
+  assert.match(result.chunks[0].text, /H<sub>2<\/sub>O/);
+  assert.match(result.chunks[0].location, /^extracted-lines:/);
+});
 
 test('PDF OCR deduplication preserves decimal amounts, signs and partial-line qualifications', () => {
   const native = 'Approval limit: 1000 EUR.\nBalance: 20 EUR.\nDo not approve.';
   const ocr = 'Approval limit: 10.00 EUR.\nBalance: -20 EUR.\napprove.\n  DO NOT   APPROVE.  ';
   assert.equal(additionalOcrLines(ocr, native), 'Approval limit: 10.00 EUR.\nBalance: -20 EUR.\napprove.');
+});
+
+test('OCR reads rotated UI labels and refreshes results from before automatic layout detection', {
+  skip: process.env.DOKTIMOI_TEST_OCR !== '1' && 'Set DOKTIMOI_TEST_OCR=1 with OCR models',
+  timeout: 60000,
+}, async t => {
+  const { createCanvas } = await import('../skills/doktimoi/node_modules/@napi-rs/canvas/index.js');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-rotated-ocr-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const canvas = createCanvas(400, 800), ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 400, 800);
+  ctx.translate(400, 0); ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = 'black'; ctx.font = '30px sans-serif';
+  ctx.fillText('Status: Read only', 40, 80);
+  ctx.fillText('Do not send. Limit: 8400 EUR.', 40, 145);
+  const buffer = canvas.toBuffer('image/png');
+  const assets = path.join(root, 'visuals');
+  const recognize = async () => {
+    const extraction = createExtraction(assets);
+    try { return { result: await extraction.ocr(buffer), stats: extraction.stats }; }
+    finally { await extraction.close(); }
+  };
+  const first = await recognize();
+  assert.match(first.result.text, /Do not send/);
+  assert.match(first.result.text, /8400 EUR/);
+  const cache = path.join(root, 'ocr', (await fs.readdir(path.join(root, 'ocr')))[0]);
+  const stored = JSON.parse(await fs.readFile(cache, 'utf8'));
+  assert.equal(stored.version, 2);
+  await fs.writeFile(cache, JSON.stringify({ ...stored, version: 1, text: 'obsolete OCR' }));
+  const refreshed = await recognize();
+  assert.equal(refreshed.stats.ocrCalls, 1);
+  assert.match(refreshed.result.text, /Do not send/);
+  assert.match(refreshed.result.text, /8400 EUR/);
+  const cached = await recognize();
+  assert.equal(cached.stats.ocrCalls, 0);
+  assert.equal(cached.stats.ocrCacheHits, 1);
 });
 
 test('Word image evidence has its own citation and does not replace native text', async () => {

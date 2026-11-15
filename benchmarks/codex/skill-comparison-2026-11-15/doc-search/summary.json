@@ -1,0 +1,216 @@
+{
+  "startedAt": "2026-11-15T03:23:34.683Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "doc-search",
+    "repository": "https://github.com/r04943083/doc-search-skill",
+    "commit": "92c601ac408923b0a3a47720df616ded9ac0946f",
+    "sourcePath": "/tmp/doktimoi-competitors-20261115/doc-search-skill",
+    "skillPath": "/tmp/doktimoi-competitors-20261115/doc-search-skill/skills/doc-search/SKILL.md",
+    "instructions": "Use the CLI instead of unavailable MCP: doc-search query QUERY --category kubernetes --results 5 --json. Returned source/content locate passages; read original files for line citations. No indexing/clear/model/network during questions.",
+    "env": {
+      "DOC_SEARCH_INDEX_DIR": "{workspace}/doc-search-index"
+    },
+    "setup": [
+      {
+        "command": "/tmp/doktimoi-competitors-20261115/doc-search-venv/bin/doc-search",
+        "args": [
+          "index",
+          "{docs}",
+          "--recursive",
+          "--category",
+          "kubernetes"
+        ]
+      }
+    ],
+    "searchCommands": [
+      {
+        "command": "/tmp/doktimoi-competitors-20261115/doc-search-venv/bin/doc-search",
+        "argsPrefix": [
+          "query"
+        ]
+      }
+    ],
+    "configSha256": "d350d8a8587bf63e9ac2df95a7830510bac7d24ee90274625fdedc13da9c25b3",
+    "sourceSha256": "e4a50442692929f1b051cf64bc4f1c79532da019666bd35ccdc17a9202ae12fb",
+    "skillSha256": "7957a0f6931420f947e24f0f5705f44a77df5b8dae2551748c570e38ab3fd90b"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "484d706c1fc290d7fd1fe30c0ecdef76a0e36fad2235e53047912e1b9d06c2a4",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "3a5db083f5f9c7413f36f99941fe1787c8d26365e08d68842047d7fe7492848f",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 247564,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 61315,
+      "threadId": "01a1dd3c-41ef-7f92-b968-3b4ff644555b",
+      "usage": {
+        "input_tokens": 1135647,
+        "cached_input_tokens": 1037312,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6138,
+        "reasoning_output_tokens": 495
+      },
+      "totalTokens": 1141785,
+      "uncachedInputTokens": 98335,
+      "commands": 31,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 138974,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 1,
+        "competitorCommands": 22,
+        "successfulCompetitorCommands": 22,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [
+          {
+            "id": "item_8",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/workloads/pods/disruptions.md | sed -n '80,155p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '65,205p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '570,670p'\""
+          },
+          {
+            "id": "item_8",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/workloads/pods/disruptions.md | sed -n '80,155p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '65,205p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '570,670p'\""
+          },
+          {
+            "id": "item_8",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/workloads/pods/disruptions.md | sed -n '80,155p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '65,205p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '570,670p'\""
+          },
+          {
+            "id": "item_16",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '65,180p'; nl -ba docs/concepts/services-networking/network-policies.md | sed -n '48,95p'; nl -ba docs/concepts/workloads/controllers/deployment.md | sed -n '1180,1265p'\""
+          },
+          {
+            "id": "item_16",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '65,180p'; nl -ba docs/concepts/services-networking/network-policies.md | sed -n '48,95p'; nl -ba docs/concepts/workloads/controllers/deployment.md | sed -n '1180,1265p'\""
+          },
+          {
+            "id": "item_16",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '65,180p'; nl -ba docs/concepts/services-networking/network-policies.md | sed -n '48,95p'; nl -ba docs/concepts/workloads/controllers/deployment.md | sed -n '1180,1265p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_21",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/configuration/secret.md | sed -n '20,75p'; nl -ba docs/concepts/configuration/secret.md | sed -n '600,660p'; nl -ba docs/concepts/configuration/manage-resources-containers.md | sed -n '15,85p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '400,490p'; nl -ba docs/concepts/storage/persistent-volumes.md | sed -n '180,225p'; nl -ba docs/concepts/workloads/controllers/statefulset.md | sed -n '385,445p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '195,225p'\""
+          },
+          {
+            "id": "item_24",
+            "command": "/bin/zsh -lc \"nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '310,365p'; nl -ba docs/concepts/configuration/secret.md | sed -n '300,340p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '145,180p'; nl -ba docs/concepts/containers/container-lifecycle-hooks.md | sed -n '1,105p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '210,225p'\""
+          },
+          {
+            "id": "item_24",
+            "command": "/bin/zsh -lc \"nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '310,365p'; nl -ba docs/concepts/configuration/secret.md | sed -n '300,340p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '145,180p'; nl -ba docs/concepts/containers/container-lifecycle-hooks.md | sed -n '1,105p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '210,225p'\""
+          },
+          {
+            "id": "item_24",
+            "command": "/bin/zsh -lc \"nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '310,365p'; nl -ba docs/concepts/configuration/secret.md | sed -n '300,340p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '145,180p'; nl -ba docs/concepts/containers/container-lifecycle-hooks.md | sed -n '1,105p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '210,225p'\""
+          },
+          {
+            "id": "item_24",
+            "command": "/bin/zsh -lc \"nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '310,365p'; nl -ba docs/concepts/configuration/secret.md | sed -n '300,340p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '145,180p'; nl -ba docs/concepts/containers/container-lifecycle-hooks.md | sed -n '1,105p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '210,225p'\""
+          },
+          {
+            "id": "item_24",
+            "command": "/bin/zsh -lc \"nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '310,365p'; nl -ba docs/concepts/configuration/secret.md | sed -n '300,340p'; nl -ba docs/tasks/administer-cluster/dns-debugging-resolution.md | sed -n '145,180p'; nl -ba docs/concepts/containers/container-lifecycle-hooks.md | sed -n '1,105p'; nl -ba docs/tasks/run-application/horizontal-pod-autoscale.md | sed -n '210,225p'\""
+          },
+          {
+            "id": "item_29",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '615,655p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '145,165p'; nl -ba docs/concepts/configuration/secret.md | sed -n '440,485p'; nl -ba docs/tasks/administer-cluster/encrypt-data.md | sed -n '55,80p'\""
+          },
+          {
+            "id": "item_29",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '615,655p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '145,165p'; nl -ba docs/concepts/configuration/secret.md | sed -n '440,485p'; nl -ba docs/tasks/administer-cluster/encrypt-data.md | sed -n '55,80p'\""
+          },
+          {
+            "id": "item_29",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '615,655p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '145,165p'; nl -ba docs/concepts/configuration/secret.md | sed -n '440,485p'; nl -ba docs/tasks/administer-cluster/encrypt-data.md | sed -n '55,80p'\""
+          },
+          {
+            "id": "item_29",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '615,655p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '145,165p'; nl -ba docs/concepts/configuration/secret.md | sed -n '440,485p'; nl -ba docs/tasks/administer-cluster/encrypt-data.md | sed -n '55,80p'\""
+          },
+          {
+            "id": "item_31",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '600,620p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '440,485p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '120,137p'\""
+          },
+          {
+            "id": "item_31",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '600,620p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '440,485p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '120,137p'\""
+          },
+          {
+            "id": "item_31",
+            "command": "/bin/zsh -lc \"nl -ba docs/concepts/scheduling-eviction/topology-spread-constraints.md | sed -n '600,620p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '440,485p'; nl -ba docs/concepts/storage/storage-classes.md | sed -n '120,137p'\""
+          },
+          {
+            "id": "item_32",
+            "command": "/bin/zsh -lc \"nl -ba docs/reference/kubernetes-api/workload-resources/pod-v1.md | sed -n '1,65p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '485,505p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '393,402p'\""
+          },
+          {
+            "id": "item_32",
+            "command": "/bin/zsh -lc \"nl -ba docs/reference/kubernetes-api/workload-resources/pod-v1.md | sed -n '1,65p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '485,505p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '393,402p'\""
+          },
+          {
+            "id": "item_32",
+            "command": "/bin/zsh -lc \"nl -ba docs/reference/kubernetes-api/workload-resources/pod-v1.md | sed -n '1,65p'; nl -ba docs/concepts/workloads/pods/pod-lifecycle.md | sed -n '485,505p'; nl -ba docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md | sed -n '393,402p'\""
+          },
+          {
+            "id": "item_33",
+            "command": "/bin/zsh -lc \"nl -ba docs/reference/kubernetes-api/workload-resources/pod-v1.md | sed -n '330,405p'\""
+          }
+        ],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": false
+      }
+    }
+  ],
+  "implementationSha256": "867f31f1fe3b8b4445d46e5bd7b51530ecf674f52da8f3384fe1c374e7e6c98c"
+}

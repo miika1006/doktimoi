@@ -1,0 +1,11 @@
+{
+  "issue": "macOS login shell preserves qmd binary but selects Node 20.18.0 despite inherited PATH",
+  "observed": {
+    "qmd": "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+    "node": "v20.18.0"
+  },
+  "fix": "Explicit env PATH prefix for Bash wrapper; native QMD and Doktimoi already use absolute Node 26",
+  "originalConfig": "configs/qmd-search-preflight.json",
+  "effectiveConfig": "configs/qmd-search.json",
+  "timing": "Changed before the first wrapper benchmark; no measured result edited"
+}

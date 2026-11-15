@@ -1,0 +1,44 @@
+{
+  "name": "library-docs",
+  "repository": "https://github.com/um1b/library-docs",
+  "commit": "4fade60d18fcfd8dd166cdd4936a6b6005256292",
+  "sourcePath": "/tmp/doktimoi-competitors-20261115/library-docs",
+  "skillPath": "/tmp/doktimoi-competitors-20261115/library-docs/SKILL.md",
+  "instructions": "Use the benchmark workspace copy of library-docs/scripts. Search with QUERY --library kubernetes --limit 5 --json. Read chunks via read.py or original corpus files for exact citations. No network or reindex during questions.",
+  "setup": [
+    {
+      "command": "/bin/bash",
+      "args": [
+        "-o",
+        "pipefail",
+        "-c",
+        "cp -R \"{source}\" \"{workspace}/library-docs\" && rm -f \"{workspace}/library-docs/data/library.db\" && \"/Users/miikam/.vscode/extensions/openai.chatgpt-26.1111.21308-darwin-arm64/bin/macos-aarch64/rg\" --files \"{docs}\" -g \"*.md\" | /usr/bin/python3 \"{workspace}/library-docs/scripts/index.py\" kubernetes --batch"
+      ]
+    },
+    {
+      "command": "/usr/bin/python3",
+      "args": [
+        "-c",
+        "import sqlite3,sys,pathlib; db=sqlite3.connect(sys.argv[1]); actual={row[0].split(\"##\",1)[0] for row in db.execute(\"SELECT path FROM documents\")}; expected={str(p) for p in pathlib.Path(sys.argv[2]).rglob(\"*.md\")}; assert len(expected)==409 and actual==expected, (len(actual),len(expected),expected-actual); print(\"Verified all 409 source paths in index\")",
+        "{workspace}/library-docs/data/library.db",
+        "{docs}"
+      ]
+    }
+  ],
+  "searchCommands": [
+    {
+      "command": "/usr/bin/python3",
+      "argsPrefix": [
+        "{workspace}/library-docs/scripts/search.py"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/usr/bin/python3",
+      "argsPrefix": [
+        "{workspace}/library-docs/scripts/read.py"
+      ]
+    }
+  ]
+}

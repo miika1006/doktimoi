@@ -1,0 +1,295 @@
+{
+  "recordedAt": "2026-11-15T03:09:47.256398+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "node": {
+    "executable": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+    "version": "v26.13.0",
+    "sha256": "533bd644c5ae0e0ea3a80e433aad16b817447ccba1e1eea701875eac80cb75d4"
+  },
+  "python": {
+    "system": {
+      "executable": "/usr/bin/python3",
+      "version": "Python 3.9.6"
+    },
+    "venv": {
+      "executable": "/tmp/doktimoi-competitors-20261115/doc-search-venv/bin/python",
+      "version": "Python 3.13.16",
+      "baseExecutable": "/opt/homebrew/Cellar/python@3.13/3.13.16/Frameworks/Python.framework/Versions/3.13/bin/python3.13"
+    }
+  },
+  "pip": {
+    "version": "pip 26.2.1 from /private/tmp/doktimoi-competitors-20261115/doc-search-venv/lib/python3.13/site-packages/pip (python 3.13)",
+    "freeze": [
+      "annotated-types==0.8.0",
+      "anyio==4.16.0",
+      "attrs==26.1.0",
+      "certifi==2026.10.23",
+      "cffi==2.1.1",
+      "charset-normalizer==3.5.2",
+      "click==8.5.1",
+      "cryptography==50.0.2",
+      "distro==1.9.0",
+      "-e git+https://github.com/r04943083/doc-search-skill.git@92c601ac408923b0a3a47720df616ded9ac0946f#egg=doc_search",
+      "et_xmlfile==2.0.0",
+      "flatbuffers==25.12.19",
+      "h11==0.16.0",
+      "httpcore==1.0.9",
+      "httpcore2==2.16.0",
+      "httpx==0.28.1",
+      "httpx2==2.16.0",
+      "idna==3.20",
+      "jieba==0.42.1",
+      "jsonpatch==1.47",
+      "jsonpointer==3.12",
+      "jsonschema==4.26.0",
+      "jsonschema-specifications==2025.9.1",
+      "langchain-core==1.8.0",
+      "langchain-protocol==0.0.21",
+      "langchain-text-splitters==1.1.3",
+      "langsmith==0.14.17",
+      "lxml==6.1.3",
+      "markdown-it-py==4.3.0",
+      "mcp==2.3.0",
+      "mcp-types==2.3.0",
+      "mdurl==0.1.2",
+      "networkx==3.7",
+      "numpy==2.5.4",
+      "onnxruntime==1.32.0",
+      "openpyxl==3.1.5",
+      "opentelemetry-api==1.45.2",
+      "orjson==3.13.0",
+      "packaging==26.3",
+      "pillow==13.0.0",
+      "pip==26.2.1",
+      "protobuf==7.36.2",
+      "psutil==7.2.2",
+      "pycparser==3.12",
+      "pydantic==2.14.3",
+      "pydantic_core==2.50.4",
+      "Pygments==2.21.0",
+      "PyJWT==2.15.1",
+      "pymupdf==2.1",
+      "pymupdf4llm==2.1",
+      "pymupdf_layout==2.1",
+      "python-docx==1.2.0",
+      "python-multipart==0.0.33",
+      "python-pptx==1.0.2",
+      "PyYAML==6.0.3",
+      "rank-bm25==0.2.2",
+      "referencing==0.37.0",
+      "requests==2.34.2",
+      "requests-toolbelt==1.0.0",
+      "rich==15.0.0",
+      "rpds-py==2026.9.1",
+      "sniffio==1.3.1",
+      "sse-starlette==3.7.0",
+      "starlette==1.10.0",
+      "tabulate==0.10.0",
+      "tenacity==9.2.1",
+      "truststore==0.10.5",
+      "typing-inspection==0.4.5",
+      "typing_extensions==4.16.0",
+      "urllib3==2.8.0",
+      "uuid_utils==0.19.0",
+      "uvicorn==0.54.0",
+      "websockets==17.4",
+      "xlsxwriter==3.3.1",
+      "xxhash==4.1.0",
+      "zstandard==0.25.0"
+    ]
+  },
+  "qmd": {
+    "package": {
+      "name": "@tobilu/qmd",
+      "version": "2.8.3",
+      "description": "Query Markup Documents - On-device hybrid search for markdown files with BM25, vector search, and LLM reranking",
+      "type": "module",
+      "main": "dist/index.js",
+      "types": "dist/index.d.ts",
+      "exports": {
+        ".": {
+          "import": "./dist/index.js",
+          "types": "./dist/index.d.ts"
+        }
+      },
+      "bin": {
+        "qmd": "bin/qmd"
+      },
+      "files": [
+        "bin/",
+        "dist/",
+        "skills/",
+        "scripts/build.mjs",
+        "scripts/check-package-grammars.mjs",
+        "scripts/package-smoke.mjs",
+        "scripts/test-all.mjs",
+        "LICENSE",
+        "CHANGELOG.md"
+      ],
+      "scripts": {
+        "prepare": "node scripts/install-hooks.mjs && node scripts/build.mjs",
+        "build": "node scripts/build.mjs",
+        "test": "node scripts/test-all.mjs",
+        "test:types": "node ./node_modules/typescript/bin/tsc -p tsconfig.build.json --noEmit",
+        "test:node": "node ./node_modules/vitest/vitest.mjs run --reporter=verbose --testTimeout 60000",
+        "test:bun": "bun test --timeout 60000 --preload ./src/test-preload.ts",
+        "test:unit": "CI=true node ./node_modules/vitest/vitest.mjs run --reporter=verbose --testTimeout 60000 test/ && CI=true bun test --timeout 60000 --preload ./src/test-preload.ts test/",
+        "test:package": "node scripts/package-smoke.mjs",
+        "qmd": "tsx src/cli/qmd.ts",
+        "index": "tsx src/cli/qmd.ts index",
+        "vector": "tsx src/cli/qmd.ts vector",
+        "search": "tsx src/cli/qmd.ts search",
+        "vsearch": "tsx src/cli/qmd.ts vsearch",
+        "rerank": "tsx src/cli/qmd.ts rerank",
+        "inspector": "npx @modelcontextprotocol/inspector tsx src/cli/qmd.ts mcp",
+        "release": "./scripts/release.sh",
+        "smoke:package-grammars": "node scripts/check-package-grammars.mjs"
+      },
+      "publishConfig": {
+        "access": "public"
+      },
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tobi/qmd.git"
+      },
+      "homepage": "https://github.com/tobi/qmd#readme",
+      "bugs": {
+        "url": "https://github.com/tobi/qmd/issues"
+      },
+      "dependencies": {
+        "@modelcontextprotocol/server": "2.0.0",
+        "better-sqlite3": "^13.0.3",
+        "fast-glob": "3.3.3",
+        "node-llama-cpp": "3.20.0",
+        "picomatch": "4.0.5",
+        "sqlite-vec": "0.1.9",
+        "tree-sitter-go": "0.25.0",
+        "tree-sitter-python": "0.25.0",
+        "tree-sitter-rust": "0.24.0",
+        "tree-sitter-typescript": "0.23.2",
+        "web-tree-sitter": "0.26.12",
+        "yaml": "2.9.0",
+        "zod": "4.2.1"
+      },
+      "optionalDependencies": {
+        "sqlite-vec-darwin-arm64": "0.1.9",
+        "sqlite-vec-darwin-x64": "0.1.9",
+        "sqlite-vec-linux-arm64": "0.1.9",
+        "sqlite-vec-linux-x64": "0.1.9",
+        "sqlite-vec-windows-x64": "0.1.9"
+      },
+      "devDependencies": {
+        "@types/better-sqlite3": "7.6.13",
+        "tsx": "4.23.12",
+        "vitest": "3.2.7"
+      },
+      "pnpm": {
+        "onlyBuiltDependencies": [
+          "better-sqlite3",
+          "esbuild",
+          "node-llama-cpp",
+          "tree-sitter-go",
+          "tree-sitter-python",
+          "tree-sitter-rust",
+          "tree-sitter-typescript"
+        ]
+      },
+      "peerDependencies": {
+        "typescript": "^5.9.3"
+      },
+      "engines": {
+        "node": ">=22.0.0"
+      },
+      "keywords": [
+        "markdown",
+        "search",
+        "fts",
+        "full-text-search",
+        "vector",
+        "semantic-search",
+        "sqlite",
+        "bm25",
+        "embeddings",
+        "rag",
+        "mcp",
+        "reranking",
+        "knowledge-base",
+        "local-ai",
+        "llm"
+      ],
+      "author": "Tobi Lutke <tobi@lutke.com>",
+      "license": "MIT"
+    },
+    "versionOutput": "qmd 2.8.3 (facd35e)",
+    "buildInfo": {
+      "commit": "facd35e",
+      "builtAt": "2026-08-16T22:30:27.699Z"
+    },
+    "sourceCommit": "facd35e01359e59d938bc9418e93fb9318addee3",
+    "correspondence": "Clone checked out at exact published runtime release commit; runtime reuses installed Doktimoi dependency.",
+    "fileHashes": {
+      "package.json": "14462e2764e9d140afbeb3c924e6dd81c0448177e97785822e763d901d70f20b",
+      "bin/qmd": "b7162aa4da31d602c687f2c3dd2d7fcae753def25066d4b07dc262d790f4ea23",
+      "dist/cli/qmd.js": "0dd4fd702adb83f27a69e59725478524ee48d00580ab6e9848dcde933000d99a",
+      "dist/store.js": "affbc9cc67f9bbfeee0bedccd8658195ce89fa8f6bdc9abc6c9c61c50b0a590b",
+      "dist/cli/build-info.json": "96966902731a6be7918015fbe76f6f84fa8fd43a88cf1cd6b1a705a8510a2a13"
+    }
+  },
+  "competitors": {
+    "qmd": {
+      "repository": "https://github.com/tobi/qmd",
+      "commit": "facd35e01359e59d938bc9418e93fb9318addee3",
+      "sourcePath": "/tmp/doktimoi-competitors-20261115/qmd",
+      "trackedSourceSha256": "99840630bc438e91fcdb4e7d40568aa523e56e4c777894b490181188aec1d40c",
+      "skillPath": "/tmp/doktimoi-competitors-20261115/qmd/skills/qmd/SKILL.md",
+      "skillSha256": "a0a7b0c86b0c4f3af9759a9885749620e2aa2237896ea90081f72e4a87b3f75f",
+      "configSha256": "d29130c63f5f6a10c1863c37cbc19c6e3630792294237afbbb6d72cbb64e8345",
+      "license": "MIT"
+    },
+    "qmd-search": {
+      "repository": "https://github.com/glebis/claude-skills",
+      "commit": "4d37d3b0af1f98cb4ac820d9abbce95e38e909fb",
+      "sourcePath": "/tmp/doktimoi-competitors-20261115/claude-skills",
+      "trackedSourceSha256": "ba0a5facf33ee463146def8b1ee24506995638ac2fadeb38761623ad1433d632",
+      "skillPath": "/tmp/doktimoi-competitors-20261115/claude-skills/qmd-search/SKILL.md",
+      "skillSha256": "4f3324200c20ba1d58e5cd5d998d1c8da823946b33ca05781edba364686bb550",
+      "configSha256": "cbb7e98f843fdab88fdb191de5a855b980548239e9d1322619faab4ddc157a6e",
+      "license": "MIT"
+    },
+    "library-docs": {
+      "repository": "https://github.com/um1b/library-docs",
+      "commit": "4fade60d18fcfd8dd166cdd4936a6b6005256292",
+      "sourcePath": "/tmp/doktimoi-competitors-20261115/library-docs",
+      "trackedSourceSha256": "4cecbda58f9c944af5df559777f8f3b8feaf00f1011d9a723ff17638a1f1b9da",
+      "skillPath": "/tmp/doktimoi-competitors-20261115/library-docs/SKILL.md",
+      "skillSha256": "bc45458ad9d0d6293fdb534290a284f968a636fc88db278e78711616f88861fa",
+      "configSha256": "6bcca8f4bb8a079668f678e7b7f30241ac30afc54b70785364765d2236b03236",
+      "license": "MIT"
+    },
+    "doc-search": {
+      "repository": "https://github.com/r04943083/doc-search-skill",
+      "commit": "92c601ac408923b0a3a47720df616ded9ac0946f",
+      "sourcePath": "/tmp/doktimoi-competitors-20261115/doc-search-skill",
+      "trackedSourceSha256": "e4a50442692929f1b051cf64bc4f1c79532da019666bd35ccdc17a9202ae12fb",
+      "skillPath": "/tmp/doktimoi-competitors-20261115/doc-search-skill/skills/doc-search/SKILL.md",
+      "skillSha256": "7957a0f6931420f947e24f0f5705f44a77df5b8dae2551748c570e38ab3fd90b",
+      "configSha256": "d350d8a8587bf63e9ac2df95a7830510bac7d24ee90274625fdedc13da9c25b3",
+      "license": "MIT"
+    }
+  },
+  "setupDurations": {
+    "libraryDocsFirstSmoke": {
+      "wallSeconds": 2.623473542,
+      "scope": "Original409tracked Markdown paths indexed via rg pipe; tool-reported duration, excludes clone and dependency install."
+    },
+    "qmdFirstSmoke": null,
+    "docSearchDependencyInstall": null,
+    "docSearchCleanIndex": null,
+    "note": "No invented or inferred timings. Multi-call background command completion times do not measure complete setup; benchmark records its own setup separately."
+  },
+  "models": {
+    "downloaded": false,
+    "enabled": false,
+    "note": "jieba lexical dictionary cache generated by package; no embedding, reranker or expansion models requested."
+  }
+}

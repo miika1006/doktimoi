@@ -71,7 +71,7 @@ export function createExtraction(assetDir) {
       cacheFile = path.join(cacheDir, `${imageHash}-${languages}.json`);
       if (await unlinked(cacheFile, 'OCR') && mode !== 'off') {
         const cached = JSON.parse(await fs.readFile(cacheFile, 'utf8'));
-        if (cached.version === 1 && typeof cached.text === 'string' && Number.isFinite(cached.confidence)) {
+        if (cached.version === 2 && typeof cached.text === 'string' && Number.isFinite(cached.confidence)) {
           const result = { text: cached.text, confidence: cached.confidence, visual };
           stats.ocrCacheHits++; seen.set(digest, result); return result;
         }
@@ -83,11 +83,12 @@ export function createExtraction(assetDir) {
       const cachePath = process.env.DOKTIMOI_OCR_CACHE ?? path.join(process.env.XDG_CACHE_HOME ?? path.join(os.homedir(), '.cache'), 'doktimoi', 'ocr');
       await fs.mkdir(cachePath, { recursive: true });
       worker = await createWorker(languages, 1, { cachePath, logger: () => {}, errorHandler: () => {} });
+      await worker.setParameters({ tessedit_pageseg_mode: '3' });
     }
     stats.ocrCalls++;
-    const { data } = await worker.recognize(buffer, {}, { text: true });
+    const { data } = await worker.recognize(buffer, { rotateAuto: true }, { text: true });
     const result = { text: data.text.trim(), confidence: data.confidence, visual };
-    if (cacheFile) await atomicWrite(cacheFile, JSON.stringify({ version: 1, text: result.text, confidence: result.confidence }));
+    if (cacheFile) await atomicWrite(cacheFile, JSON.stringify({ version: 2, text: result.text, confidence: result.confidence }));
     seen.set(digest, result);
     return result;
   }

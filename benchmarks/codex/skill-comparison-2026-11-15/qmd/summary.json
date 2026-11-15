@@ -1,0 +1,201 @@
+{
+  "startedAt": "2026-11-15T03:20:58.860Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "env": {
+      "QMD_CONFIG_DIR": "{workspace}/qmd-config",
+      "XDG_CACHE_HOME": "{workspace}/qmd-cache",
+      "PATH": "/Users/miikam/.nvm/versions/node/v26.13.0/bin:/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin:/opt/homebrew/bin:/usr/bin:/bin"
+    },
+    "setup": [
+      {
+        "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+        "args": [
+          "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+          "collection",
+          "add",
+          "{docs}",
+          "--name",
+          "kubernetes"
+        ]
+      }
+    ],
+    "instructions": "Use lexical BM25 search only with collection kubernetes. Never run embed, query, vsearch, pull, model or downloads.",
+    "name": "qmd",
+    "repository": "https://github.com/tobi/qmd",
+    "commit": "facd35e01359e59d938bc9418e93fb9318addee3",
+    "sourcePath": "/tmp/doktimoi-competitors-20261115/qmd",
+    "skillPath": "/tmp/doktimoi-competitors-20261115/qmd/skills/qmd/SKILL.md",
+    "searchCommands": [
+      {
+        "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+        "argsPrefix": [
+          "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+          "search"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+        "argsPrefix": [
+          "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+          "get"
+        ]
+      },
+      {
+        "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+        "argsPrefix": [
+          "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+          "multi-get"
+        ]
+      }
+    ],
+    "configSha256": "d29130c63f5f6a10c1863c37cbc19c6e3630792294237afbbb6d72cbb64e8345",
+    "sourceSha256": "99840630bc438e91fcdb4e7d40568aa523e56e4c777894b490181188aec1d40c",
+    "skillSha256": "a0a7b0c86b0c4f3af9759a9885749620e2aa2237896ea90081f72e4a87b3f75f"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "484d706c1fc290d7fd1fe30c0ecdef76a0e36fad2235e53047912e1b9d06c2a4",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "3a5db083f5f9c7413f36f99941fe1787c8d26365e08d68842047d7fe7492848f",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 123581,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 1076,
+      "threadId": "01a1dd38-f5b1-7d81-ba8a-b7b9b6266cad",
+      "usage": {
+        "input_tokens": 390551,
+        "cached_input_tokens": 306816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4134,
+        "reasoning_output_tokens": 162
+      },
+      "totalTokens": 394685,
+      "uncachedInputTokens": 83735,
+      "commands": 13,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 33566,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 1,
+        "competitorCommands": 26,
+        "successfulCompetitorCommands": 26,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 25,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "competitor",
+      "elapsedMs": 117641,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 964,
+      "threadId": "01a1dd42-39fc-7ac2-bf52-e4aac954199b",
+      "usage": {
+        "input_tokens": 379364,
+        "cached_input_tokens": 332416,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4262,
+        "reasoning_output_tokens": 225
+      },
+      "totalTokens": 383626,
+      "uncachedInputTokens": 46948,
+      "commands": 42,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 40297,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 1,
+        "competitorCommands": 20,
+        "successfulCompetitorCommands": 20,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 22,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "competitor",
+      "elapsedMs": 102205,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 1006,
+      "threadId": "01a1dd47-c73b-7342-a3fa-68dfa47379ce",
+      "usage": {
+        "input_tokens": 322010,
+        "cached_input_tokens": 276736,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4366,
+        "reasoning_output_tokens": 194
+      },
+      "totalTokens": 326376,
+      "uncachedInputTokens": 45274,
+      "commands": 53,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 35869,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 1,
+        "competitorCommands": 24,
+        "successfulCompetitorCommands": 24,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 29,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "867f31f1fe3b8b4445d46e5bd7b51530ecf674f52da8f3384fe1c374e7e6c98c"
+}

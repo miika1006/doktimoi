@@ -212,7 +212,7 @@ function breadcrumb(item) {
   const body = lines.findIndex(line => line.trim() && !/^#{1,6}\s/.test(line));
   const own = new Set(lines.slice(0, body < 0 ? lines.length : body).filter(Boolean).map(line => line.replace(/^#+\s*/, '')));
   const parts = item.heading.split(' > ');
-  while (parts.length && own.has(parts.at(-1))) parts.pop();
+  while (parts.length && (own.has(parts.at(-1)) || item.text === parts.at(-1) || item.text.startsWith(`${parts.at(-1)}\n`))) parts.pop();
   return parts.join(' > ');
 }
 
@@ -232,7 +232,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
   extractSnippet = qmd.extractSnippet;
   const root = await fs.realpath(directory);
   const qmdStore = await qmdInternals();
-  const converterVersion = JSON.stringify({ version: 18, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 19, ...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
@@ -1142,8 +1142,11 @@ export async function execute(project, { command, refs: given = [], id, values, 
  */
 async function searchEach(project, requests, values, notices) {
   const outputs = [];
-  const share = { budget: Math.max(256, Math.floor(MAX_BUDGET / requests.length)), maxBytes: Math.floor(MAX_OUTPUT_BYTES / requests.length) };
+  let tokensLeft = MAX_BUDGET, bytesLeft = MAX_OUTPUT_BYTES;
   for (const [index, request] of requests.entries()) {
+    // Short answers leave room for later full passages instead of forcing another read round.
+    const remaining = requests.length - index;
+    const share = { budget: Math.max(256, Math.floor(tokensLeft / remaining)), maxBytes: Math.floor(bytesLeft / remaining) };
     try {
       const found = await project.search(request.queries, { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
       outputs.push(`Q${index + 1}\n${render(found.payload)}`);
@@ -1153,6 +1156,9 @@ async function searchEach(project, requests, values, notices) {
       // One absent path must not discard other questions' evidence or silently widen its scope.
       outputs.push(`Q${index + 1}\n[Error: ${error.message}; locate the source without a path filter.]`);
     }
+    const piece = (index ? '\n\n' : '') + outputs.at(-1);
+    tokensLeft -= tokens(piece);
+    bytesLeft -= Buffer.byteLength(piece);
   }
   return outputs.join('\n\n');
 }

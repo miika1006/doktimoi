@@ -1,5 +1,11 @@
 # Doktimoi
 
+An [ongoing comparison of other local-search skills](benchmarks/codex/skill-comparison-2026-11-15/README.md)
+includes fresh Codex runs and their raw evidence. Initial workflow changes reduced
+total tokens by 17.0% in three pairs, with only 1.4% less agent time, but all three
+answers omitted one required prerequisite. This is not an equal-quality saving;
+retrieval corrections and the expanded CPU/GPU comparison are still in progress.
+
 **Measured: 64–66% fewer model tokens with Claude Code.** On a 409-file Kubernetes
 documentation task, Claude Code (`claude-opus-5-5`) used a mean 583,475 tokens with
 Doktimoi keyword search, and 545,563 with hybrid semantic search, against 1,624,913 with its

@@ -1,0 +1,66 @@
+[
+  {
+    "ext": "docx",
+    "ms": 823.01275,
+    "criticalPassed": 10,
+    "locations": [
+      {
+        "location": "image:1:ocr-lines:1-18",
+        "visual": ".doktimoi/visuals/38155dd76cb1c7af492682fcbe62137da2c3805d0e8e76154ab1b6a039750aee.png"
+      }
+    ],
+    "warnings": [
+      "Word: layout and tracked changes are not fully represented.",
+      "Word images: OCR may misread text; inspect images for critical facts and diagram meaning."
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti"
+  },
+  {
+    "ext": "pptx",
+    "ms": 22.83795900000007,
+    "criticalPassed": 10,
+    "locations": [
+      {
+        "location": "slide:1:image:1:ocr-lines:1-18",
+        "visual": ".doktimoi/visuals/38155dd76cb1c7af492682fcbe62137da2c3805d0e8e76154ab1b6a039750aee.png"
+      }
+    ],
+    "warnings": [
+      "Image OCR may misread text: slide:1; inspect visuals for critical facts.",
+      "PowerPoint: text order is XML order; layout/master content, charts, SmartArt, animations and media may need inspection."
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti"
+  },
+  {
+    "ext": "xlsx",
+    "ms": 23.137875000000008,
+    "criticalPassed": 10,
+    "locations": [
+      {
+        "location": "sheet:Approval Policy:drawing:1!D5:image:1:ocr-lines:1-18",
+        "visual": ".doktimoi/visuals/38155dd76cb1c7af492682fcbe62137da2c3805d0e8e76154ab1b6a039750aee.png"
+      }
+    ],
+    "warnings": [
+      "Excel: formulas are not recalculated; cached results may be stale. Charts, in-cell rich-data images and embedded objects may need inspection.",
+      "Image OCR may misread text: sheet:Approval Policy:drawing:1; inspect visuals for critical facts."
+    ],
+    "text": "Invoice / Lasku\n\nAsiakas / Customer: Koivu Oy\n\nTila / Status: Vain luku\n\nEräpäivä / Due date: 15.11.2026\n\nÄlä poista laskua. Do not send.\n\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\n\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti"
+  },
+  {
+    "ext": "pdf",
+    "ms": 847.8651670000002,
+    "criticalPassed": 10,
+    "locations": [
+      {
+        "location": "page:1:ocr-lines:1-12",
+        "visual": ".doktimoi/visuals/b47c71df69ea5ed18f00b19a0953d30ef0d851267c934cad177d4fbae2f8d6c2.png"
+      }
+    ],
+    "warnings": [
+      "PDF page 1: OCR may misread text; check the page for critical facts.",
+      "PDF: reading order, tables and diagrams may need visual verification."
+    ],
+    "text": "Invoice / Lasku\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\nTuote / Item Määrä / Oty Hinta / Price\nA-001 Palvelu 12 8 400,50 EUR\nB-002 Hyvitys 3 -20,00 EUR\nC-003 Storage 7 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\nVain hyväksyjä saa lähettää. Älä muuta summaa.\nHyväksytty [J Lähetä heti"
+  }
+]

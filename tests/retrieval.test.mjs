@@ -127,6 +127,31 @@ test('inline batches keep question-specific scopes and work without stdin', asyn
   assert.match(partial, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\n\[Error: No indexed source under --path missing\.md; locate the source without a path filter\.\]\n\nQ3\nb\.md:[\s\S]*BETA/);
 });
 
+test('batches reuse unused output space for later complete passages', async t => {
+  const { root, project } = await fixture(t);
+  const requests = [];
+  for (let i = 0; i < 4; i++) {
+    await fs.writeFile(path.join(root, `${i}.md`), `# Short\n\nSMALL_${i} needs approval.`);
+    requests.push({ queries: [`SMALL_${i}`] });
+  }
+  const paragraph = 'BALANCED ' + 'A complete condition applies only after authorization. '.repeat(35);
+  await fs.writeFile(path.join(root, 'long.md'), `# Long\n\n${paragraph}\n\n${paragraph}`);
+  requests.push({ queries: ['BALANCED'], limit: 2 });
+  const { output } = await execute(project, { command: 'batch', values: {}, input: JSON.stringify(requests) });
+  assert.equal((output.match(/A complete condition applies only after authorization\./g) ?? []).length, 70);
+  assert.doesNotMatch(output, /Excerpt/);
+  assert.ok(tokens(output) <= 6000);
+  assert.ok(Buffer.byteLength(output) <= 20000);
+});
+
+test('headings already present in a passage are not printed twice', () => {
+  const heading = 'Section title\n-------------';
+  const text = `${heading}\n\nA complete condition.`;
+  const output = render({ results: [{ source: 'a.md', location: 'lines:1-4', heading, text }] });
+  assert.equal(output.split('Section title').length - 1, 1);
+  assert.match(output, /A complete condition/);
+});
+
 test('read caps long lines and marks omitted lines and parent context', async t => {
   const { root, project } = await fixture(t);
   await fs.writeFile(path.join(root, 'large.md'), '# Production\n\n## Access\n\n' + 'Never log the production secret. '.repeat(1500));

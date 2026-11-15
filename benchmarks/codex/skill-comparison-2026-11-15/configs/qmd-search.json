@@ -1,0 +1,54 @@
+{
+  "env": {
+    "QMD_CONFIG_DIR": "{workspace}/qmd-config",
+    "XDG_CACHE_HOME": "{workspace}/qmd-cache",
+    "PATH": "/Users/miikam/.nvm/versions/node/v26.13.0/bin:/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin:/opt/homebrew/bin:/usr/bin:/bin"
+  },
+  "setup": [
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "args": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    }
+  ],
+  "instructions": "Use lexical BM25 search only with collection kubernetes. Never run embed, query, vsearch, pull, model or downloads. Use the wrapper with -m search -c kubernetes --snippet, followed by query.",
+  "name": "qmd-search",
+  "repository": "https://github.com/glebis/claude-skills",
+  "commit": "4d37d3b0af1f98cb4ac820d9abbce95e38e909fb",
+  "sourcePath": "/tmp/doktimoi-competitors-20261115/claude-skills",
+  "skillPath": "/tmp/doktimoi-competitors-20261115/claude-skills/qmd-search/SKILL.md",
+  "searchCommands": [
+    {
+      "command": "/usr/bin/env",
+      "argsPrefix": [
+        "PATH=/Users/miikam/.nvm/versions/node/v26.13.0/bin:/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin:/opt/homebrew/bin:/usr/bin:/bin",
+        "/bin/bash",
+        "/tmp/doktimoi-competitors-20261115/claude-skills/qmd-search/scripts/qmd-search.sh",
+        "-m",
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "argsPrefix": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "get"
+      ]
+    },
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "argsPrefix": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "multi-get"
+      ]
+    }
+  ]
+}

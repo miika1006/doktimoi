@@ -1,0 +1,36 @@
+{
+  "critical": [
+    "Koivu Oy",
+    "Vain luku",
+    "15.11.2026",
+    "Älä poista laskua",
+    "Do not send",
+    "8 400,50",
+    "-20,00",
+    "10.00",
+    "8 390,50",
+    "Älä muuta summaa"
+  ],
+  "rows": [
+    [
+      "A-001",
+      "12",
+      "8 400,50"
+    ],
+    [
+      "B-002",
+      "3",
+      "-20,00"
+    ],
+    [
+      "C-003",
+      "7",
+      "10.00"
+    ]
+  ],
+  "checkboxes": {
+    "Hyväksytty": true,
+    "Lähetä heti": false
+  },
+  "text": "Invoice / Lasku\nAsiakas / Customer: Koivu Oy\nTila / Status: Vain luku\nEräpäivä / Due date: 15.11.2026\nÄlä poista laskua. Do not send.\nTuote / Item          Määrä / Qty       Hinta / Price\nA-001 Palvelu         12                8 400,50 EUR\nB-002 Hyvitys         3                 -20,00 EUR\nC-003 Storage         7                 10.00 EUR\nYhteensä / Total: 8 390,50 EUR\nVain hyväksyjä saa lähettää. Älä muuta summaa."
+}

@@ -1,0 +1,29 @@
+{
+  "method": "Whitespace word count; named colon/#L/prose citation ranges; range existence is not claim support.",
+  "answers": [
+    {
+      "file": "benchmarks/codex/skill-comparison-2026-11-15/qmd/1-competitor.answer.md",
+      "words": 1114,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/skill-comparison-2026-11-15/qmd/2-competitor.answer.md",
+      "words": 1236,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 29,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/skill-comparison-2026-11-15/qmd/3-competitor.answer.md",
+      "words": 1172,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 27,
+      "allRangesValid": true
+    }
+  ]
+}

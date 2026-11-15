@@ -1,0 +1,51 @@
+{
+  "env": {
+    "QMD_CONFIG_DIR": "{workspace}/qmd-config",
+    "XDG_CACHE_HOME": "{workspace}/qmd-cache",
+    "PATH": "/Users/miikam/.nvm/versions/node/v26.13.0/bin:/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin:/opt/homebrew/bin:/usr/bin:/bin"
+  },
+  "setup": [
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "args": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    }
+  ],
+  "instructions": "Use lexical BM25 search only with collection kubernetes. Never run embed, query, vsearch, pull, model or downloads.",
+  "name": "qmd",
+  "repository": "https://github.com/tobi/qmd",
+  "commit": "facd35e01359e59d938bc9418e93fb9318addee3",
+  "sourcePath": "/tmp/doktimoi-competitors-20261115/qmd",
+  "skillPath": "/tmp/doktimoi-competitors-20261115/qmd/skills/qmd/SKILL.md",
+  "searchCommands": [
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "argsPrefix": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "argsPrefix": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "get"
+      ]
+    },
+    {
+      "command": "/Users/miikam/.nvm/versions/node/v26.13.0/bin/node",
+      "argsPrefix": [
+        "/Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "multi-get"
+      ]
+    }
+  ]
+}

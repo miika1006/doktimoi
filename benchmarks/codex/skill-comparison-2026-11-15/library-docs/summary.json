@@ -1,0 +1,110 @@
+{
+  "startedAt": "2026-11-15T03:23:04.026Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "library-docs",
+    "repository": "https://github.com/um1b/library-docs",
+    "commit": "4fade60d18fcfd8dd166cdd4936a6b6005256292",
+    "sourcePath": "/tmp/doktimoi-competitors-20261115/library-docs",
+    "skillPath": "/tmp/doktimoi-competitors-20261115/library-docs/SKILL.md",
+    "instructions": "Use the benchmark workspace copy of library-docs/scripts. Search with QUERY --library kubernetes --limit 5 --json. Read chunks via read.py or original corpus files for exact citations. No network or reindex during questions.",
+    "setup": [
+      {
+        "command": "/bin/sh",
+        "args": [
+          "-c",
+          "cp -R \"{source}\" \"{workspace}/library-docs\" && rm -f \"{workspace}/library-docs/data/library.db\" && /opt/homebrew/bin/rg --files \"{docs}\" -g \"*.md\" | /usr/bin/python3 \"{workspace}/library-docs/scripts/index.py\" kubernetes --batch"
+        ]
+      }
+    ],
+    "searchCommands": [
+      {
+        "command": "/usr/bin/python3",
+        "argsPrefix": [
+          "{workspace}/library-docs/scripts/search.py"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "/usr/bin/python3",
+        "argsPrefix": [
+          "{workspace}/library-docs/scripts/read.py"
+        ]
+      }
+    ],
+    "configSha256": "6bcca8f4bb8a079668f678e7b7f30241ac30afc54b70785364765d2236b03236",
+    "sourceSha256": "4cecbda58f9c944af5df559777f8f3b8feaf00f1011d9a723ff17638a1f1b9da",
+    "skillSha256": "bc45458ad9d0d6293fdb534290a284f968a636fc88db278e78711616f88861fa"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "484d706c1fc290d7fd1fe30c0ecdef76a0e36fad2235e53047912e1b9d06c2a4",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "3a5db083f5f9c7413f36f99941fe1787c8d26365e08d68842047d7fe7492848f",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 29947,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 131,
+      "threadId": "01a1dd3a-db54-7520-bb2a-d531cc571cdd",
+      "usage": {
+        "input_tokens": 82110,
+        "cached_input_tokens": 72192,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 609,
+        "reasoning_output_tokens": 86
+      },
+      "totalTokens": 82719,
+      "uncachedInputTokens": 9918,
+      "commands": 8,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 4150,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 1,
+        "competitorCommands": 5,
+        "successfulCompetitorCommands": 5,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [
+          {
+            "id": "item_7",
+            "command": "/bin/zsh -lc 'cat /var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-bench-1-competitor-I999tY/library-docs/scripts/search.py'"
+          },
+          {
+            "id": "item_8",
+            "command": "/bin/zsh -lc 'cat /var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-bench-1-competitor-I999tY/library-docs/scripts/db.py'"
+          }
+        ],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": false
+      }
+    }
+  ],
+  "implementationSha256": "867f31f1fe3b8b4445d46e5bd7b51530ecf674f52da8f3384fe1c374e7e6c98c"
+}
