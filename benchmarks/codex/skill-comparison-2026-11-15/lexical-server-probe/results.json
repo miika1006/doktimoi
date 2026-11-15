@@ -1,0 +1,99 @@
+{
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "runs": [
+    {
+      "repetition": 1,
+      "query": "disruptions rolling updates",
+      "directMs": 364.90058399999907,
+      "serverMs": 50.45979200000147,
+      "bytes": 3254,
+      "sha256": "e5638d86e0158b4150395a8c2620c4cb67dc545a2dfc651b07f36773972c7bef"
+    },
+    {
+      "repetition": 1,
+      "query": "Secrets base64",
+      "directMs": 364.83391699999993,
+      "serverMs": 54.35412499999984,
+      "bytes": 4733,
+      "sha256": "350a0ba0fecf6bf44508142bcb94d67518b00276b93831f69450bf224a8714dd"
+    },
+    {
+      "repetition": 1,
+      "query": "StatefulSet PVC deletion",
+      "directMs": 364.1282080000001,
+      "serverMs": 53.750082999998995,
+      "bytes": 5898,
+      "sha256": "87948a4306d139e5a3ec0cb610b26d3df25c81d38b91dccc8caa162c669364f6"
+    },
+    {
+      "repetition": 2,
+      "query": "disruptions rolling updates",
+      "directMs": 362.13833299999897,
+      "serverMs": 50.987708999999086,
+      "bytes": 3254,
+      "sha256": "e5638d86e0158b4150395a8c2620c4cb67dc545a2dfc651b07f36773972c7bef"
+    },
+    {
+      "repetition": 2,
+      "query": "Secrets base64",
+      "directMs": 368.8061660000003,
+      "serverMs": 53.55737500000032,
+      "bytes": 4733,
+      "sha256": "350a0ba0fecf6bf44508142bcb94d67518b00276b93831f69450bf224a8714dd"
+    },
+    {
+      "repetition": 2,
+      "query": "StatefulSet PVC deletion",
+      "directMs": 369.1545839999999,
+      "serverMs": 56.62829200000124,
+      "bytes": 5898,
+      "sha256": "87948a4306d139e5a3ec0cb610b26d3df25c81d38b91dccc8caa162c669364f6"
+    },
+    {
+      "repetition": 3,
+      "query": "disruptions rolling updates",
+      "directMs": 362.477832999999,
+      "serverMs": 50.06970899999942,
+      "bytes": 3254,
+      "sha256": "e5638d86e0158b4150395a8c2620c4cb67dc545a2dfc651b07f36773972c7bef"
+    },
+    {
+      "repetition": 3,
+      "query": "Secrets base64",
+      "directMs": 369.237000000001,
+      "serverMs": 52.25383300000067,
+      "bytes": 4733,
+      "sha256": "350a0ba0fecf6bf44508142bcb94d67518b00276b93831f69450bf224a8714dd"
+    },
+    {
+      "repetition": 3,
+      "query": "StatefulSet PVC deletion",
+      "directMs": 360.9621669999997,
+      "serverMs": 53.32562500000131,
+      "bytes": 5898,
+      "sha256": "87948a4306d139e5a3ec0cb610b26d3df25c81d38b91dccc8caa162c669364f6"
+    }
+  ],
+  "build": {
+    "ms": 11078.459917,
+    "stdout": "{\"files\":409,\"chunks\":8338,\"changed\":409,\"removed\":0,\"hashedBytes\":8513875,\"index\":\"full\",\"ocrCalls\":0,\"ocrCacheHits\":0,\"unsupported\":[],\"warnings\":[],\"ms\":10844.09}\n",
+    "stderr": ""
+  },
+  "serverStartMs": 65.01983300000029,
+  "firstServerQuery": {
+    "ms": 360.8385420000013,
+    "stdout": "concepts/workloads/pods/disruptions.md:133-145\nPod disruption budgets\nPods which are deleted or unavailable due to a rolling upgrade to an application do count\nagainst the disruption budget, but workload resources (such as Deployment and StatefulSet)\nare not limited by PDBs when doing rolling upgrades. Instead, the handling of failures\nduring application updates is configured in the spec for the specific workload resource.\n\nIt is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api/{{< param \"version\" >}}/#podspec-v1-core).\n\nconcepts/workloads/pods/disruptions.md:67-89\n## Dealing with disruptions\n\nHere are some ways to mitigate involuntary disruptions:\n\n- Ensure your pod [requests the resources](/docs/tasks/configure-pod-container/assign-memory-resource) it needs.\n- Replicate your application if you need higher availability.  (Learn about running replicated\n  [stateless](/docs/tasks/run-application/run-stateless-application-deployment/)\n  and [stateful](/docs/tasks/run-application/run-replicated-stateful-application/) applications.)\n- For even higher availability when running replicated applications,\n  spread applications across racks (using\n  [anti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity))\n  or across zones (if using a\n  [multi-zone cluster](/docs/setup/multiple-zones).)\n\nThe frequency of voluntary disruptions varies.  On a basic Kubernetes cluster, there are\nno automated voluntary disruptions (only user-triggered ones).  However, your cluster administrator or hosting provider\nmay run some additional services which cause voluntary disruptions. For example,\nrolling out node software updates can cause voluntary disruptions. Also, some implementations\nof cluster (node) autoscaling may cause voluntary disruptions to defragment and compact nodes.\nYour cluster administrator or hosting provider should have documented what level of voluntary\ndisruptions, if any, to expect. Certain configuration options, such as\n[using PriorityClasses](/docs/concepts/scheduling-eviction/pod-priority-preemption/)\nin your pod spec can also cause voluntary (and involuntary) disruptions.\n\nconcepts/workloads/pods/disruptions.md:317-325\n## {{% heading \"whatsnext\" %}}\n\n\n* Follow steps to protect your application by [configuring a Pod Disruption Budget](/docs/tasks/run-application/configure-pdb/).\n\n* Learn more about [draining nodes](/docs/tasks/administer-cluster/safely-drain-node/)\n\n* Learn about [updating a deployment](/docs/concepts/workloads/controllers/deployment/#updating-a-deployment)\n  including steps to maintain its availability during the rollout.\n[More matches available.]\n",
+    "stderr": ""
+  },
+  "status": {
+    "ms": 58.630583999998635,
+    "stdout": "Index: 409 sources, 8338 chunks, 0 extraction warnings, updated 2026-11-15T06:18:19+02:00\nSemantic search: off (keyword only)\nIndex lock: free\nBackground server: running, pid 80739, version 0.14.1, /Users/miikam/Projects/doktimoi/skills/doktimoi/scripts/doktimoi.mjs\n  Embedding model: not loaded; idle, exits when idle at 2026-11-15T06:48:23+02:00\n",
+    "stderr": ""
+  }
+}

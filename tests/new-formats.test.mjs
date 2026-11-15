@@ -252,7 +252,7 @@ test('Office XML BOMs preserve cell, slide and image evidence and allow CLI buil
     await fs.writeFile(path.join(root, name), withBom);
   }
   const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
-  const options = { encoding: 'utf8', env: { ...process.env, DOKTIMOI_OCR: 'off' }, windowsHide: true };
+  const options = { encoding: 'utf8', env: { ...process.env, DOKTIMOI_OCR: 'off', DOKTIMOI_NO_SERVER: '1' }, windowsHide: true };
   const built = JSON.parse(execFileSync(process.execPath, [cli, 'build', root], options));
   assert.equal(built.files, 2);
   assert.match(execFileSync(process.execPath, [cli, 'search', root, '--query', 'NATIVE_XLSX_MARKER'], options), /NATIVE_XLSX_MARKER/);

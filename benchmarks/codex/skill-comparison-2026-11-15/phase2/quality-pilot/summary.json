@@ -1,0 +1,129 @@
+{
+  "startedAt": "2026-11-15T04:19:20.373Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "both",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "9dcd0b3b066234d7f01264e4ba909df575904e2a318eeba62005444ca9a5283a",
+  "taskPath": "/Users/miikam/Projects/doktimoi/benchmarks/task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "3714eb108db6096923b853e20e02b57134ffc8544b819b87493ba332c439cafd",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 122959,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd6e-6044-7283-a312-1d8743e633ed",
+      "usage": {
+        "input_tokens": 304738,
+        "cached_input_tokens": 258816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3748,
+        "reasoning_output_tokens": 77
+      },
+      "totalTokens": 308486,
+      "uncachedInputTokens": 45922,
+      "commands": 9,
+      "failedCommands": 4,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 28975,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_4",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_7",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_8",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 104848,
+      "buildMs": 11250,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a1dd70-6db6-7110-9bd1-7dc1330a1084",
+      "usage": {
+        "input_tokens": 254460,
+        "cached_input_tokens": 218880,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3872,
+        "reasoning_output_tokens": 181
+      },
+      "totalTokens": 258332,
+      "uncachedInputTokens": 35580,
+      "commands": 13,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 28308,
+      "audit": {
+        "targetedReads": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 12,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 1,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "68379ce814371ccd9dbfbf0c0762bdf9a8639e5aa16eb794cf55f830c52443fb"
+}

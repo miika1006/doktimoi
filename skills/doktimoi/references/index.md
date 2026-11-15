@@ -126,7 +126,7 @@ node "<skill>/scripts/doktimoi.mjs" disable-semantic "<folder>"
 ```
 
 It stops the folder's background server, removes the embeddings and keeps the
-keyword index, so no rebuild is needed and no model or server starts again for
+keyword index, so no rebuild is needed and no embedding model starts again for
 the folder. Then set the recorded choice in the doktimoi block to `keyword only`.
 The model files stay in QMD's cache for other folders.
 

@@ -1254,7 +1254,7 @@ const seconds = ms => `${(ms / 1000).toFixed(1)} s`;
 
 /**
  * Turns semantic search off for an indexed folder: stops its server, then drops the embeddings
- * under the index lock so no server or model starts again, keeping the keyword index.
+ * under the index lock so no embedding model starts again, keeping the keyword index.
  */
 async function disableSemantic(root) {
   if (!await ifMissing(fs.stat(path.join(root, '.doktimoi', 'index.sqlite')), false)) throw new Error(`No doktimoi index in ${root}`);

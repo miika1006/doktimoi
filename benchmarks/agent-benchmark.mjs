@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fresh Codex processes on identical corpus copies; retain usage events and answers for review.
 import fs from 'node:fs/promises';
-import { openSync, closeSync, realpathSync } from 'node:fs';
+import { openSync, closeSync, realpathSync, createReadStream } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,6 +65,59 @@ export function commandGroups(command) {
   return !quote && groups.length && groups.every(words => words?.length) ? groups : null;
 }
 
+function nativePayloads(output) {
+  const clean = output.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+  const payloads = [];
+  for (const match of clean.matchAll(/^[\[{]/gm)) {
+    let depth = 0, quoted = false, escaped = false;
+    for (let i = match.index; i < clean.length; i++) {
+      const ch = clean[i];
+      if (quoted) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') quoted = false;
+      } else if (ch === '"') quoted = true;
+      else if (ch === '[' || ch === '{') depth++;
+      else if ((ch === ']' || ch === '}') && --depth === 0) {
+        try { payloads.push(JSON.parse(clean.slice(match.index, i + 1))); } catch { /* Native logs are not JSON payloads. */ }
+        break;
+      }
+    }
+  }
+  return payloads;
+}
+
+export function hybridEvidence(words, output, config) {
+  if (!words || /^(?:Error:|error:|Embedding error:|fatal:)/m.test(output)) return false;
+  if (!config.searchCommands.some(call => words[0] === call.command && call.argsPrefix.every((arg, i) => words[i + 1] === arg))) return false;
+  if (config.hybridEvidence === 'fidx-v2') {
+    const modes = words.flatMap((word, i) => word === '--mode' ? [words[i + 1]] : word.startsWith('--mode=') ? [word.slice(7)] : []);
+    if (modes.length !== 1 || modes[0] !== 'hybrid' || !words.includes('--json') || !words.includes('--guidance')) return false;
+    return nativePayloads(output).some(p => p?.schema === 'fidx.search.v2' && p.status === 'ok' &&
+      p.request?.mode === 'hybrid' && words.includes(p.query) && p.diagnostics?.execution?.complete === true &&
+      !p.diagnostics?.execution?.partial_reason && !p.diagnostics?.execution?.semantic_unavailable &&
+      Array.isArray(p.results) && p.results.some(row => Number.isFinite(row?.sources?.vector)));
+  }
+  if (config.hybridEvidence === 'meme-structured') {
+    const query = words.find(word => /^lex:[ \t]*\S/m.test(word) && /^(?:vec|hyde):[ \t]*\S/m.test(word));
+    if (!query || !words.includes('query') || !words.includes('--explain')) return false;
+    const vectors = [...query.matchAll(/^(vec|hyde):[ \t]*(.+)$/gm)];
+    return nativePayloads(output).some(rows => Array.isArray(rows) && rows.some(row =>
+      Array.isArray(row?.explain?.vectorScores) && row.explain.vectorScores.some(Number.isFinite) &&
+      Array.isArray(row.explain?.rrf?.contributions) && row.explain.rrf.contributions.some(c =>
+        c?.source === 'vec' && vectors.some(([, kind, text]) => c.queryType === kind && c.query === text.trim()) && Number.isFinite(c.backendScore))));
+  }
+  return false;
+}
+
+export async function verifyArtifacts(artifacts = []) {
+  for (const artifact of artifacts) {
+    const hash = createHash('sha256');
+    for await (const chunk of createReadStream(artifact.path)) hash.update(chunk);
+    if (hash.digest('hex') !== artifact.sha256) throw new Error(`Competitor artifact changed: ${artifact.path}`);
+  }
+}
+
 export function validateCompetitor(config) {
   if (!config || !/^[a-z0-9][a-z0-9-]*$/.test(config.name ?? '') ||
       !/^https:\/\/github\.com\/[^/]+\/[^/]+(?:\.git)?$/.test(config.repository ?? '') ||
@@ -78,11 +131,24 @@ export function validateCompetitor(config) {
     Object.keys(env).every(key => /^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) &&
     Object.values(env).every(value => typeof value === 'string');
   if (!validEnv(config.env)) throw new Error('Invalid competitor env');
+  if (!['lexical', 'hybrid'].includes(config.retrieval ?? 'lexical')) throw new Error('Invalid competitor retrieval');
+  if (config.retrieval === 'hybrid') {
+    if (!['fidx-v2', 'meme-structured'].includes(config.hybridEvidence) ||
+        typeof config.backend?.requested !== 'string' || !config.backend.requested.trim() ||
+        !Array.isArray(config.artifacts) || !config.artifacts.length || !config.preflight) {
+      throw new Error('Hybrid competitor requires native evidence, requested backend, artifacts and preflight');
+    }
+  }
+  if (config.artifacts !== undefined && !Array.isArray(config.artifacts)) throw new Error('Invalid competitor artifacts');
+  for (const artifact of config.artifacts ?? []) {
+    if (!path.isAbsolute(artifact?.path ?? '') || !/^[a-f0-9]{64}$/.test(artifact.sha256 ?? '')) throw new Error('Invalid competitor artifact');
+  }
   if (typeof config.instructions !== 'string' || !config.instructions.trim()) throw new Error('Competitor instructions required');
-  for (const [key, argsKey] of [['setup', 'args'], ['searchCommands', 'argsPrefix'], ['readCommands', 'argsPrefix']]) {
-    if (key === 'readCommands' && config[key] === undefined) continue;
-    if (!Array.isArray(config[key]) || (key === 'searchCommands' && !config[key].length)) throw new Error(`Competitor ${key} required`);
-    for (const call of config[key]) {
+  for (const [key, argsKey] of [['setup', 'args'], ['searchCommands', 'argsPrefix'], ['readCommands', 'argsPrefix'], ['preflight', 'args']]) {
+    if (['readCommands', 'preflight'].includes(key) && config[key] === undefined) continue;
+    const calls = key === 'preflight' ? [config.preflight] : config[key];
+    if (!Array.isArray(calls) || (key === 'searchCommands' && !calls.length)) throw new Error(`Competitor ${key} required`);
+    for (const call of calls) {
       if (!call || !path.isAbsolute(call.command ?? '') || !Array.isArray(call[argsKey]) ||
           !call[argsKey].every(arg => typeof arg === 'string') || !validEnv(call.env)) {
         throw new Error(`Invalid competitor ${key} command`);
@@ -99,6 +165,7 @@ function resolveCompetitor(config, workspace) {
   const expandEnv = env => Object.fromEntries(Object.entries(env ?? {}).map(([key, value]) => [key, expand(value)]));
   return {
     ...config, env: expandEnv(config.env), instructions: expand(config.instructions),
+    preflight: config.preflight && { ...config.preflight, args: config.preflight.args.map(expand), env: expandEnv(config.preflight.env) },
     setup: config.setup.map(call => ({ ...call, args: call.args.map(expand), env: expandEnv(call.env) })),
     searchCommands: config.searchCommands.map(call => ({ ...call, argsPrefix: call.argsPrefix.map(expand) })),
     readCommands: (config.readCommands ?? []).map(call => ({ ...call, argsPrefix: call.argsPrefix.map(expand) })),
@@ -141,6 +208,10 @@ export function auditRun(raw, mode, competitor, workspace) {
         const search = words && competitor.searchCommands.some(call => words[0] === call.command && call.argsPrefix.every((arg, i) => words[i + 1] === arg));
         if (search) {
           audit.competitorCommands++;
+          if (competitor.retrieval === 'hybrid' && groups.length === 1 && hybridEvidence(words, output, competitor)) {
+            audit.hybridCommands++;
+            if (item.exit_code === 0) audit.successfulHybridCommands++;
+          }
           if (item.exit_code === 0) {
             audit.successfulCompetitorCommands++;
             for (const match of output.matchAll(/(?:^|[\s"'])([^\s"'<>]+\.md)(?=[#:\s"',}]|$)/gm)) {
@@ -193,7 +264,7 @@ export function auditRun(raw, mode, competitor, workspace) {
     if (seen.has(command)) audit.repeatedCommands++;
     seen.add(command);
   }
-  audit.passed = !audit.violations.length && (mode !== 'doktimoi' || audit.doktimoiCommands > 0) && (mode !== 'competitor' || audit.successfulCompetitorCommands > 0 && audit.skillReads > 0);
+  audit.passed = !audit.violations.length && (mode !== 'doktimoi' || audit.doktimoiCommands > 0) && (mode !== 'competitor' || audit.successfulCompetitorCommands > 0 && audit.skillReads > 0 && (competitor?.retrieval !== 'hybrid' || audit.successfulHybridCommands > 0));
   return audit;
 }
 
@@ -293,10 +364,16 @@ export async function copyCorpus(destination) {
   }
 }
 
+export async function loadBenchmarkTask(taskPath = path.join(repo, 'benchmarks/task.md')) {
+  const resolved = path.resolve(taskPath);
+  const text = await fs.readFile(resolved, 'utf8');
+  return { path: resolved, text, sha256: createHash('sha256').update(text).digest('hex') };
+}
+
 async function main() {
   checkRuntime();
   const { values } = parseArgs({ options: {
-    output: { type: 'string' }, pairs: { type: 'string', default: '3' },
+    output: { type: 'string' }, task: { type: 'string' }, pairs: { type: 'string', default: '3' },
     agent: { type: 'string', default: 'codex' },
     model: { type: 'string' }, effort: { type: 'string', default: 'medium' },
     retrieval: { type: 'string', default: 'lexical' },
@@ -314,6 +391,7 @@ async function main() {
   const competitor = competitorText ? validateCompetitor(JSON.parse(competitorText)) : null;
   let competitorEvidence = null;
   if (competitor) {
+    await verifyArtifacts(competitor.artifacts);
     const head = spawnSync('git', ['-C', competitor.sourcePath, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
     if (head.status !== 0 || head.stdout.trim() !== competitor.commit) throw new Error('Competitor checkout does not match pinned commit');
     const files = spawnSync('git', ['-C', competitor.sourcePath, 'ls-files', '-z'], { encoding: 'utf8' });
@@ -323,7 +401,8 @@ async function main() {
     competitorEvidence = { ...competitor, configSha256: createHash('sha256').update(competitorText).digest('hex'), sourceSha256: hash.digest('hex'), skillSha256: createHash('sha256').update(await fs.readFile(competitor.skillPath)).digest('hex') };
   }
   if (!['lexical', 'hybrid'].includes(values.retrieval)) throw new Error('--retrieval must be lexical or hybrid (enable models only with user consent)');
-  if (competitor && values.retrieval !== 'lexical') throw new Error('Competitor benchmarks support lexical retrieval only');
+  if (competitor && values.retrieval !== (competitor.retrieval ?? 'lexical')) throw new Error('--retrieval must match competitor config retrieval');
+  if (competitor && values.prepared) throw new Error('--prepared is for Doktimoi indexes only');
   if (values.prepared && values.retrieval !== 'hybrid') throw new Error('--prepared is only for a prebuilt semantic index');
   if (!values.output || !Number.isInteger(pairs) || pairs < 1 || pairs > 10) throw new Error('Use --output NEW_DIRECTORY --pairs 1..10');
   const output = path.resolve(values.output);
@@ -335,7 +414,7 @@ async function main() {
     if (Object.keys(prepared.files).length !== corpus.files || expected.files.some(file => prepared.files[file.path.slice('docs/'.length)]?.hash !== file.sha256)) throw new Error('Prepared index does not match the pinned corpus');
     if (!hasSemanticIndex(values.prepared) || unembeddedChunks(values.prepared) !== 0) throw new Error('Prepared semantic index is incomplete');
   }
-  const task = await fs.readFile(path.join(repo, 'benchmarks/task.md'), 'utf8');
+  const task = await loadBenchmarkTask(values.task);
   const skill = path.join(repo, 'skills/doktimoi');
   const cli = path.join(skill, 'scripts/doktimoi.mjs');
   const skillText = await fs.readFile(path.join(skill, 'SKILL.md'), 'utf8');
@@ -354,11 +433,12 @@ async function main() {
     model: values.model, reasoningEffort: values.effort,
     arm: values.arm,
     competitor: competitorEvidence,
-    retrieval: values.retrieval, embeddingModel: values.retrieval === 'hybrid' ? (process.env.QMD_EMBED_MODEL ?? 'QMD default; see embed log') : null,
-    forceCpu: process.env.QMD_FORCE_CPU ?? null,
+    retrieval: values.retrieval, embeddingModel: competitor ? null : values.retrieval === 'hybrid' ? (process.env.QMD_EMBED_MODEL ?? 'QMD default; see embed log') : null,
+    forceCpu: competitor ? null : process.env.QMD_FORCE_CPU ?? null,
     preparedIndex: values.prepared ? path.resolve(values.prepared) : null,
     runnerSha256: createHash('sha256').update(await fs.readFile(fileURLToPath(import.meta.url))).digest('hex'),
-    taskSha256: createHash('sha256').update(task).digest('hex'),
+    taskPath: task.path,
+    taskSha256: task.sha256,
     skillSha256: createHash('sha256').update(skillText).digest('hex'), runs: [],
     implementationSha256: createHash('sha256').update(JSON.stringify(implementation)).digest('hex'),
   };
@@ -378,7 +458,7 @@ async function main() {
     for (const mode of order) {
       const name = `${pair}-${mode}`;
       if (report.runs.some(run => run.pair === pair && run.mode === mode)) continue;
-      for (const suffix of ['prompt.txt', 'events.jsonl', 'answer.md']) {
+      for (const suffix of ['prompt.txt', 'events.jsonl', 'answer.md', 'setup.json', 'preflight.json', 'preflight.log']) {
         if (await fs.stat(path.join(output, `${name}.${suffix}`)).catch(() => null)) throw new Error(`Existing incomplete ${name}; review its evidence before resuming`);
       }
       const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `doktimoi-bench-${name}-`));
@@ -387,13 +467,27 @@ async function main() {
         let buildMs = 0, embedMs = 0, indexCopyMs = 0, preflightMs = 0, setupMs = 0;
         const resolvedCompetitor = competitor ? resolveCompetitor(competitor, workspace) : null;
         if (mode === 'competitor') {
-          const started = performance.now();
+          const started = performance.now(), setupSteps = [];
           for (const [i, call] of resolvedCompetitor.setup.entries()) {
-            const setup = spawnSync(call.command, call.args, { cwd: workspace, env: { ...env, ...resolvedCompetitor.env, ...call.env }, encoding: 'utf8', timeout: 600000, maxBuffer: 20 * 1024 * 1024 });
+            const stepStarted = performance.now();
+            const setup = spawnSync(call.command, call.args, { cwd: workspace, env: { ...env, ...resolvedCompetitor.env, ...call.env }, encoding: 'utf8', timeout: 1800000, maxBuffer: 20 * 1024 * 1024 });
+            setupMs = Math.round(performance.now() - started);
+            setupSteps.push({ step: i + 1, elapsedMs: Math.round(performance.now() - stepStarted), exitCode: setup.status, error: setup.error?.message });
             await fs.writeFile(path.join(output, `${name}.setup-${i + 1}.log`), (setup.stdout ?? '') + (setup.stderr ?? ''));
+            await fs.writeFile(path.join(output, `${name}.setup.json`), JSON.stringify({ setupMs, steps: setupSteps }, null, 2) + '\n');
             if (setup.status !== 0) throw new Error(`${name} setup failed: ${setup.error ?? setup.stderr}`);
           }
-          setupMs = Math.round(performance.now() - started);
+          if (resolvedCompetitor.retrieval === 'hybrid') {
+            const call = resolvedCompetitor.preflight, started = performance.now();
+            const preflight = spawnSync('codex', ['sandbox', '-P', ':workspace', '-C', workspace, '--', call.command, ...call.args], {
+              cwd: workspace, env: { ...env, ...resolvedCompetitor.env, ...call.env }, encoding: 'utf8', timeout: 1800000, maxBuffer: 20 * 1024 * 1024,
+            });
+            preflightMs = Math.round(performance.now() - started);
+            const nativeEvidence = preflight.status === 0 && hybridEvidence([call.command, ...call.args], (preflight.stdout ?? '') + (preflight.stderr ?? ''), resolvedCompetitor);
+            await fs.writeFile(path.join(output, `${name}.preflight.log`), (preflight.stdout ?? '') + (preflight.stderr ?? ''));
+            await fs.writeFile(path.join(output, `${name}.preflight.json`), JSON.stringify({ preflightMs, exitCode: preflight.status, error: preflight.error?.message, nativeEvidence, backendRequested: resolvedCompetitor.backend.requested, backendVerified: false }, null, 2) + '\n');
+            if (!nativeEvidence) throw new Error(`${name}: hybrid sandbox preflight failed; review native evidence before running any agent`);
+          }
         }
         if (mode === 'doktimoi' && values.prepared) {
           const started = performance.now();
@@ -424,7 +518,7 @@ async function main() {
           if (preflight.status !== 0) throw new Error(`${name}: hybrid sandbox preflight failed; see log before running any agent`);
         }
         const instructions = mode === 'competitor'
-          ? `Read and use the skill at ${competitor.skillPath} (cat). ${resolvedCompetitor.instructions} Search commands: ${resolvedCompetitor.searchCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Read commands: ${resolvedCompetitor.readCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Targeted cat, sed -n line-ranges, or nl -ba PATH | sed -n line-ranges reads inside the supplied corpus are allowed after a successful search, including linked source files. You may combine these commands using semicolons or &&. No other content search, shell expansion or pipes. Task and isolation rules take precedence over skill instructions.`
+          ? `Read and use the skill at ${competitor.skillPath} (cat). ${resolvedCompetitor.instructions} ${resolvedCompetitor.retrieval === 'hybrid' ? `Use at least one standalone hybrid search command with native JSON evidence: ${resolvedCompetitor.hybridEvidence === 'fidx-v2' ? '--mode hybrid --json --guidance' : '--format json --explain and a plain single-quoted multiline lex: plus vec: or hyde: query (no dollar quoting)'}. Independent commands may run in parallel.` : ''} Search commands: ${resolvedCompetitor.searchCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Read commands: ${resolvedCompetitor.readCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Targeted cat, sed -n line-ranges, or nl -ba PATH | sed -n line-ranges reads inside the supplied corpus are allowed after a successful search, including linked source files. You may combine these commands using semicolons or &&. No other content search, shell expansion or pipes. Task and isolation rules take precedence over skill instructions.`
           : mode === 'baseline'
           ? `Use ordinary local file tools such as ${values.agent === 'claude' ? 'Read, Grep and Glob' : 'rg and sed'}. Do not use doktimoi or any prebuilt search index.`
           : `Read and use the doktimoi skill at ${path.join(skill, 'SKILL.md')} for document content searches and reads. ${values.retrieval === 'hybrid' ? 'A semantic index is already built with user-approved local embeddings. Use hybrid mode for topical questions, putting the natural-language question first; exact mode remains available for literal verification.' : 'A lexical index is already built; no setup or semantic model is needed.'} <skill> is ${skill}; <folder> is ${path.join(workspace, 'docs')}.`;
@@ -432,7 +526,7 @@ async function main() {
         const node = values.agent === 'claude'
           ? `Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
           : `Node ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.`;
-        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}\n\n${task}`;
+        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}\n\n${task.text}`;
         await fs.writeFile(path.join(output, `${name}.prompt.txt`), prompt);
         const args = values.agent === 'claude' ? claudeArgs(values, mode, path.join(workspace, 'docs')) : ['exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check',
           '--sandbox', 'workspace-write', '--json', '-C', workspace, '-m', values.model,
@@ -459,7 +553,7 @@ async function main() {
         if (!audit.passed || (mode === 'doktimoi' && values.retrieval === 'hybrid' && !audit.successfulHybridCommands)) throw new Error(`${name} violated tool-use isolation or did not successfully use requested hybrid retrieval; review its recorded commands`);
         console.log(`${name}: ${metrics.totalTokens} tokens, ${(elapsedMs / 1000).toFixed(1)} s; build ${(buildMs / 1000).toFixed(1)} s; embed ${(embedMs / 1000).toFixed(1)} s`);
       } finally {
-        if (mode === 'doktimoi' && values.retrieval === 'hybrid') spawnSync(process.execPath, [cli, 'stop', path.join(workspace, 'docs')], { env, stdio: 'ignore', timeout: 30000 });
+        if (mode === 'doktimoi') spawnSync(process.execPath, [cli, 'stop', path.join(workspace, 'docs')], { env, stdio: 'ignore', timeout: 30000 });
         await fs.rm(workspace, { recursive: true, force: true });
       }
     }

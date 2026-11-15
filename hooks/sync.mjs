@@ -39,8 +39,8 @@ async function refresh(root, pluginRoot) {
 }
 
 /**
- * Starts the folder's search server if none runs and asks it to load the embedding model in the
- * background, so the session's first hybrid search is fast. Failures are ignored: searches then
+ * Opens the folder's search server in the background, loading an embedding model only when
+ * semantic search was already enabled, so the session's first search can reuse the project. Failures are ignored: searches then
  * start the server or run in-process themselves.
  */
 export async function warmServer(root, pluginRoot) {

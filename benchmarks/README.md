@@ -2,7 +2,11 @@
 
 The [15 November skill comparison](codex/skill-comparison-2026-11-15/README.md)
 contains fresh `gpt-6.1-sol` runs, competitor source pins and diagnostic failures.
-It is still in progress; do not pool its results with the older models below.
+Its revised workflow used 244,629 versus 294,694 total tokens (−17.0%) and
+116.6 versus 118.2 seconds (−1.4%), but all three treatment answers omitted a
+required prerequisite. QMD averaged 368,229 tokens / 114.5 seconds and retained
+the required qualifiers. These are not equal-quality savings; the correction
+and expanded comparison are in progress. Do not pool them with the older models below.
 
 The benchmark measures the entire assistant task, including repeated model
 context, rather than equating a small tool response with a token saving.
@@ -24,7 +28,7 @@ Three [hybrid runs](claude/hybrid-2026-11-10-windows/README.md) against the same
 used a mean 545,563 tokens (−66.4%) in 100.2 s. Embeddings ran on the GPU (Vulkan,
 integrated Radeon 780M); one-time embedding took 418.9 s and is excluded.
 
-## Codex, macOS: completed measurements
+## Earlier Codex, macOS: 10 November, gpt-6-astra
 
 | Arm, 3 fresh contexts each | Total tokens across runs | Mean tokens | Mean agent seconds | Commands across runs |
 | --- | ---: | ---: | ---: | ---: |
@@ -52,6 +56,11 @@ ten interacting Kubernetes topics: availability, topology, probes, termination,
 resources, autoscaling, networking, Secrets, storage and validation. Every answer
 must cite local source ranges and distinguish guarantees from prerequisites and
 application-specific unknowns.
+
+[meeting-question.fi.md](meeting-question.fi.md) is a separate Finnish meeting
+question about availability guarantees. Select it with `--task PATH`; the runner
+records its content hash. Its timing and quality results must stay separate from
+the long-task results, and the ten-section answer checker does not apply to it.
 
 The [example corpus](../examples/kubernetes/README.md) contains 409 unchanged
 Kubernetes v1.32 Markdown files, 8,513,875 bytes. Every file is at least 8 KiB.

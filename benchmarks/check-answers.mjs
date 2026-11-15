@@ -14,7 +14,7 @@ for (const directory of directories) {
     const text = await fs.readFile(path.join(directory, file), 'utf8');
     const sections = [...text.matchAll(/^\s*(?:#{1,3}\s*|\*\*)?(\d+)\.\s/gm)].map(match => Number(match[1]));
     const citations = [];
-    for (const match of text.matchAll(/((?:concepts|tasks|reference)\/[^\s`:)]+\.md)(?::|#L|`?,\s+(?:lines?\s+|L))(\d+(?:[-–](?:L)?\d+)?(?:,\s*L?\d+(?:[-–](?:L)?\d+)?)*)/g)) {
+    for (const match of text.matchAll(/((?:concepts|tasks|reference)\/[^\s`:)]+\.md)(?::|#L|[`)]?,\s+(?:lines?\s+|L))(\d+(?:[-–](?:L)?\d+)?(?:,\s*L?\d+(?:[-–](?:L)?\d+)?)*)/g)) {
       const source = path.resolve(corpus, match[1]);
       assert.ok(source.startsWith(corpus), 'Citation must stay inside corpus');
       const lines = (await fs.readFile(source, 'utf8')).split('\n').length;

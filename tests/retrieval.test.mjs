@@ -120,10 +120,10 @@ test('inline batches keep question-specific scopes and work without stdin', asyn
   await fs.writeFile(path.join(root, 'b.md'), '# B\n\nBETA matches the second question.');
   const cli = fileURLToPath(new URL('../skills/doktimoi/scripts/doktimoi.mjs', import.meta.url));
   const requests = JSON.stringify([{ queries: ['ALPHA'], paths: ['a.md'] }, { queries: ['BETA'], paths: ['b.md'] }]);
-  const output = execFileSync(process.execPath, [cli, 'batch', root, '--requests', requests], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  const output = execFileSync(process.execPath, [cli, 'batch', root, '--requests', requests], { encoding: 'utf8', env: { ...process.env, DOKTIMOI_NO_SERVER: '1' }, timeout: 30000, windowsHide: true });
   assert.match(output, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\nb\.md:[\s\S]*BETA/);
   const partialRequests = JSON.stringify([{ queries: ['ALPHA'], paths: ['a.md'] }, { queries: ['ALPHA'], paths: ['missing.md'] }, { queries: ['BETA'], paths: ['b.md'] }]);
-  const partial = execFileSync(process.execPath, [cli, 'batch', root, '--requests', partialRequests], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  const partial = execFileSync(process.execPath, [cli, 'batch', root, '--requests', partialRequests], { encoding: 'utf8', env: { ...process.env, DOKTIMOI_NO_SERVER: '1' }, timeout: 30000, windowsHide: true });
   assert.match(partial, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\n\[Error: No indexed source under --path missing\.md; locate the source without a path filter\.\]\n\nQ3\nb\.md:[\s\S]*BETA/);
 });
 
@@ -366,7 +366,7 @@ test('the CLI runs through the symlink used by npm executables', {
   await fs.writeFile(path.join(root, 'policy.md'), '# Policy\n\nSYMLINK_CLI requires approval.');
   // Only build creates an index; search then runs through the same symlink.
   assert.equal(JSON.parse(execFileSync(process.execPath, [link, 'build', root], { encoding: 'utf8', windowsHide: true })).files, 1);
-  const output = execFileSync(process.execPath, [link, 'search', root, '--query', 'SYMLINK_CLI'], { encoding: 'utf8', windowsHide: true });
+  const output = execFileSync(process.execPath, [link, 'search', root, '--query', 'SYMLINK_CLI'], { encoding: 'utf8', env: { ...process.env, DOKTIMOI_NO_SERVER: '1' }, windowsHide: true });
   assert.match(output, /policy.md:/);
   assert.match(output, /SYMLINK_CLI requires approval/);
 });

@@ -16,12 +16,23 @@ Inspected local clone `/tmp/doktimoi-competitors-20261115/caveman`, commit `b4ee
 
 ## Fit to current Doktimoi
 
+User constraint: requested artifacts such as `suunnitelma.md` must retain their
+full requested detail, completeness and precision. Doktimoi must not impose
+Caveman's voice or shorten those artifacts. The skill now explicitly separates
+retrieval-output budgets from the requested document's length and detail.
+Only redundant retrieval, duplicate headings and tool framing are candidates
+for small reductions; source qualifications and artifact content remain intact.
+
 Our `skills/doktimoi/SKILL.md` already batches independent questions, reads only missing evidence, avoids rereads, copies exact source paths, preserves prerequisites/defaults/negation/units/versions, and stops when every requested point has evidence. These target dominant repeated input cost more directly than terse final prose. Retain them.
 
 `benchmarks/task.md` explicitly requires 900–1400 words, ten numbered questions, line citations for every answer, and distinctions among guarantees/configuration/prerequisites/unknowns. Terse output cannot be treated as improvement if it drops any of those. The runner's `totalTokens` is provider input + output, with cache reads/writes included through adapter accounting; `toolOutputTokensEstimate` is a different diagnostic, not billed usage or total cost.
 
 Small compatible ideas: remove duplicated instruction prose only after checking all behavioral requirements; prefer one normal-language instruction over loading a full output persona; keep source evidence verbatim and shorten only CLI framing, exact duplicates and unnecessary reminders if measured. Never compress source passages into broken grammar or drop adjacent conditions merely to win a token table. A source-summary transform would need fidelity tests and recovery reads, which are beyond a small prompt change.
 
-Optional controlled prompt experiment, not implemented: append `Write directly; omit repeated setup and conclusions. Preserve every required point, citation and qualification, and the requested length.` to the existing skill. Compare against unchanged skill; if testing a full Caveman arm, add a plain concise control to separate generic brevity from Caveman-specific effects. Keep the task, 900–1400 words, corpus, model/effort, tool permissions, setup, host instructions and validation unchanged. Alternate paired arms and retain negatives. Report provider input, cache input, output, total tokens, tool calls/reads, failed calls, time and setup separately; cost needs price-weighted cache/output rates or provider cost, not raw token totals. Gate results on all ten answers, valid supporting citations, correct qualifications and length. Do not launch benchmarks during current OCR window.
+No final-answer brevity experiment will be added: it would target the wrong
+part of this user's workflow. Any retrieval-only experiment must keep the task,
+900–1400 words, corpus, model/effort, permissions and validation unchanged.
+Report provider input, cache input, output, total tokens, calls, failures and
+time separately; gate savings on supporting citations and all qualifications.
 
 No Doktimoi files changed. No agent/model runs, OCR, installation, or heavy tests performed. Savings for Doktimoi remain unknown until a controlled quality-gated A/B.

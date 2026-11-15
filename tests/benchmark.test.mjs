@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { auditRun, commandWords, commandGroups, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { createHash } from 'node:crypto';
+import { auditRun, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -232,4 +233,87 @@ test('competitor path diagnostics normalize Windows drive case and source-relati
   assert.equal(audit().targetedReads[0].wasReturned, true);
   items[2].command = 'cat "C:/elsewhere/pods.md"';
   assert.equal(audit().passed, false);
+});
+
+
+test('hybrid config requires pinned artifacts, native evidence and preflight', async t => {
+  const config = { name: 'hybrid-search', repository: 'https://github.com/example/search', commit: 'a'.repeat(40), sourcePath: path.resolve('/tmp/search'), skillPath: path.resolve('/tmp/search/SKILL.md'), instructions: 'Use hybrid.', setup: [], searchCommands: [{ command: process.execPath, argsPrefix: ['search'] }], retrieval: 'hybrid', hybridEvidence: 'fidx-v2', backend: { requested: 'cpu' }, artifacts: [{ path: process.execPath, sha256: 'b'.repeat(64) }], preflight: { command: process.execPath, args: ['search', 'docs'] } };
+  assert.equal(validateCompetitor(config), config);
+  for (const key of ['hybridEvidence', 'backend', 'artifacts', 'preflight']) {
+    const invalid = { ...config }; delete invalid[key];
+    assert.throws(() => validateCompetitor(invalid), /Hybrid competitor/);
+  }
+  assert.throws(() => validateCompetitor({ ...config, hybridEvidence: 'trust-me' }), /native evidence/);
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-artifact-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = path.join(root, 'model.bin'); await fs.writeFile(file, 'pinned model');
+  const artifact = { path: file, sha256: createHash('sha256').update('pinned model').digest('hex') };
+  await verifyArtifacts([artifact]);
+  await fs.writeFile(file, 'changed model');
+  await assert.rejects(verifyArtifacts([artifact]), /artifact changed/);
+});
+
+test('fidx hybrid proof uses executed native mode and vector evidence, not suggestions', () => {
+  const words = ['/bin/fidx', 'search', 'pods', '--mode', 'hybrid', '--json', '--guidance'];
+  const config = { hybridEvidence: 'fidx-v2', searchCommands: [{ command: '/bin/fidx', argsPrefix: ['search'] }] };
+  const payload = { schema: 'fidx.search.v2', status: 'ok', query: 'pods', request: { mode: 'hybrid' }, diagnostics: { execution: { complete: true } }, results: [{ sources: { lexical: 0.2, vector: 0.7 } }] };
+  assert.equal(hybridEvidence(words, JSON.stringify(payload), config), true);
+  assert.equal(hybridEvidence(words, 'native log [before]\n' + JSON.stringify(payload) + '\nnative log [after]', config), true);
+  assert.equal(hybridEvidence([...words, '--mode=lexical'], JSON.stringify(payload), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify({ ...payload, request: { mode: 'lexical' }, next_actions: [{ command: words }] }), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify({ ...payload, results: [{ sources: { lexical: 0.2 } }] }), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify({ ...payload, diagnostics: { execution: { complete: false } } }), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify({ ...payload, query: 'unexecuted query' }), config), false);
+  assert.equal(hybridEvidence(words, 'Error: no embedding model\n' + JSON.stringify(payload), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify({ ...payload, results: {} }), config), false);
+});
+
+test('meme hybrid proof needs completed matching vector contributions from structured input', () => {
+  const query = 'intent: Pod shutdown\nlex: grace period\nvec: pod termination sequence';
+  const words = ['/bin/meme', 'query', query, '--format', 'json', '--explain'];
+  const config = { hybridEvidence: 'meme-structured', searchCommands: [{ command: '/bin/meme', argsPrefix: ['query'] }] };
+  const payload = [{ file: 'pods.md', explain: { vectorScores: [0.7], rrf: { contributions: [{ source: 'vec', queryType: 'vec', query: 'pod termination sequence', backendScore: 0.7 }] } } }];
+  assert.equal(hybridEvidence(words, 'Structured search: 2 queries (lex+vec)\n' + JSON.stringify(payload), config), true);
+  assert.equal(hybridEvidence(['/bin/meme', 'query', 'lex: grace period', '--explain'], JSON.stringify(payload), config), false);
+  assert.equal(hybridEvidence(words, 'Structured search: 2 queries (lex+vec)\nError: inference failed', config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify([]), config), false);
+  assert.equal(hybridEvidence(['/bin/meme', 'query', 'lex:\nvec: pod termination sequence', '--explain'], JSON.stringify(payload), config), false);
+  assert.equal(hybridEvidence(words, JSON.stringify([{ explain: { vectorScores: [], rrf: { contributions: [] } } }]), config), false);
+  const parsed = commandGroups(`/bin/meme query '${query}' --format json --explain`);
+  assert.equal(hybridEvidence(parsed[0], JSON.stringify(payload), config), true);
+});
+
+test('hybrid task audit requires native proof in a successful standalone search', () => {
+  const config = { retrieval: 'hybrid', hybridEvidence: 'fidx-v2', skillPath: '/skill/SKILL.md', searchCommands: [{ command: '/bin/fidx', argsPrefix: ['search'] }] };
+  const payload = { schema: 'fidx.search.v2', status: 'ok', query: 'pods', request: { mode: 'hybrid' }, diagnostics: { execution: { complete: true } }, results: [{ sources: { vector: 0.7 } }] };
+  const items = [{ command: 'cat /skill/SKILL.md', exit_code: 0 }, { command: '/bin/fidx search pods --mode hybrid --json --guidance', exit_code: 0, aggregated_output: JSON.stringify(payload) }];
+  const audit = () => auditRun(items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', ...item } })).join('\n'), 'competitor', config);
+  assert.equal(audit().passed, true);
+  assert.equal(audit().successfulHybridCommands, 1);
+  items[1].exit_code = 1;
+  assert.equal(audit().passed, false);
+  items[1].exit_code = 0; items[1].command += '; /bin/fidx search pods --mode lexical';
+  assert.equal(audit().passed, false);
+  items.pop();
+  assert.equal(audit().passed, false);
+});
+
+
+test('benchmark task defaults to the existing task and hashes selected content', async t => {
+  const original = await fs.readFile(new URL('../benchmarks/task.md', import.meta.url), 'utf8');
+  const standard = await loadBenchmarkTask();
+  assert.equal(standard.text, original);
+  assert.equal(standard.sha256, createHash('sha256').update(original).digest('hex'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-benchmark-task-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = path.join(root, 'question.md'); await fs.writeFile(file, 'Which conditions apply?');
+  const selected = await loadBenchmarkTask(file);
+  assert.equal(selected.path, path.resolve(file));
+  assert.equal(selected.text, 'Which conditions apply?');
+  assert.notEqual(selected.sha256, standard.sha256);
+  const copy = path.join(root, 'same-question.md'); await fs.copyFile(file, copy);
+  assert.equal((await loadBenchmarkTask(copy)).sha256, selected.sha256);
+  await fs.writeFile(file, 'A changed question.');
+  assert.notEqual((await loadBenchmarkTask(file)).sha256, selected.sha256);
+  await assert.rejects(loadBenchmarkTask(path.join(root, 'missing.md')), /ENOENT/);
 });

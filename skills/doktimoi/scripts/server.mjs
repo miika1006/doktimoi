@@ -51,8 +51,8 @@ export function withHiddenWindow(name, args) {
 export async function viaServer(root, script, request) {
   if (process.env.DOKTIMOI_NO_SERVER) return null;
   let info = await readInfo(root);
-  // Only semantic folders get a server; a running one answers without opening SQLite here.
-  if (!info && !hasSemanticIndex(root)) return null;
+  // Never turn a hook or direct server request into index creation.
+  if (!info && !existsSync(path.join(root, CACHE_DIR, 'index.sqlite'))) return null;
   // A newer plugin version takes the folder over; an older client leaves a newer server alone.
   if (info && info.script !== script && isOlder(info.version, await ownVersion())) info = await stopServer(root, info);
   if (!info) info = await waitForInfo(root, start(root, script));
@@ -183,7 +183,7 @@ export async function serve(root, script, version, run, close, describe, idleMs 
 
 /**
  * Tells whether semantic search was enabled for the folder (its index has a vector table), read
- * directly from SQLite so that neither QMD nor the model loads; only such folders get a server.
+ * directly from SQLite so that neither QMD nor the model loads.
  */
 export function hasSemanticIndex(root) {
   return readIndex(root, db => !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'vectors_vec'").get()) ?? false;
@@ -223,6 +223,7 @@ function start(root, script) {
 async function waitForInfo(root, child) {
   let exited = false;
   child.once('exit', () => { exited = true; });
+  child.once('error', () => { exited = true; });
   for (const deadline = Date.now() + START_WAIT_MS; Date.now() < deadline;) {
     const info = await readInfo(root);
     if (info || exited) return info;

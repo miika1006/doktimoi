@@ -71,13 +71,40 @@ test('help prints usage without creating an index, taking the lock or starting a
   assert.match(run(['search', root, '--nope']).stderr, /^doktimoi: Unknown option '--nope'; run with --help for usage\n$/);
 });
 
-test('a lexical-only folder never starts a server, from searches or the session-start hook', async t => {
+test('lexical searches and the session-start hook reuse a server without enabling a model', async t => {
   const root = await folder(t, false);
-  assert.match(run(['search', root, '--query', 'SERVER_TOKEN']).stdout, /needs approval/);
-  spawnSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
+  const direct = { DOKTIMOI_NO_SERVER: '1' };
+  const search = ['search', root, '--query', 'SERVER_TOKEN'];
+  assert.deepEqual(run(search), run(search, direct));
+  const first = await readInfo(root);
+  assert.ok(first);
+  assert.equal(run(['read', root, 'guide.md:3']).stdout, run(['read', root, 'guide.md:3'], direct).stdout);
+  await stopServer(root);
+  const hook = spawnSync(process.execPath, [path.join(pluginRoot, 'hooks', 'sync.mjs')], {
     input: JSON.stringify({ hook_event_name: 'SessionStart', cwd: root }), env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot }, encoding: 'utf8', windowsHide: true,
   });
+  assert.equal(hook.status, 0, hook.stderr);
+  const warmed = await readInfo(root);
+  assert.ok(warmed);
+  assert.notEqual(warmed.pid, first.pid);
+  assert.deepEqual(run(search), run(search, direct));
+  assert.equal((await readInfo(root)).pid, warmed.pid);
+  const state = JSON.parse((await request(warmed, { command: 'status', token: warmed.token })).output);
+  assert.equal(state.modelLoaded, false);
+  assert.match(run(['status', root]).stdout, /Semantic search: off/);
+  const db = new Database(path.join(root, '.doktimoi', 'index.sqlite'), { readonly: true });
+  assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name = 'vectors_vec'").get(), undefined);
+  db.close();
+});
+
+test('a lexical search falls back promptly when its server child exits before listening', { timeout: 8000 }, async t => {
+  const root = await folder(t, false);
+  const script = path.join(root, 'cannot-serve.mjs');
+  await fs.writeFile(script, 'process.exit(1);');
+  const { viaServer } = await import('../skills/doktimoi/scripts/server.mjs');
+  assert.equal(await viaServer(root, script, { command: 'search', values: { query: ['SERVER_TOKEN'] } }), null);
   assert.equal(await readInfo(root), null);
+  assert.match(run(['search', root, '--query', 'SERVER_TOKEN'], { DOKTIMOI_NO_SERVER: '1' }).stdout, /needs approval/);
 });
 
 test('while the index lock is held, the server and in-process searches answer alike from the current index', async t => {
@@ -229,7 +256,9 @@ test('disable-semantic stops the server and leaves a working keyword-only index'
   assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name = 'vectors_vec'").get(), undefined);
   db.close();
   assert.match(run(['search', root, '--query', 'SERVER_TOKEN']).stdout, /needs approval/);
-  assert.equal(await readInfo(root), null);
+  const lexical = await readInfo(root);
+  assert.ok(lexical);
+  assert.equal(JSON.parse((await request(lexical, { command: 'status', token: lexical.token })).output).modelLoaded, false);
   assert.match(run(['status', root]).stdout, /Semantic search: off/);
   assert.match(run(['search', root, '--query', 'SERVER_TOKEN', '--mode', 'hybrid']).stderr, /Semantic index missing; run embed/);
 });
@@ -274,7 +303,7 @@ test('search prints no unsupported-file or extraction-total notices; status keep
 });
 
 test('subfolder scope, --path, --exclude and the budget cap give the same output via the server', async t => {
-  const root = await folder(t, true);
+  const root = await folder(t, false);
   await fs.mkdir(path.join(root, 'plans'));
   await fs.writeFile(path.join(root, 'plans', 'own.md'), '# Own\n\nSERVER_TOKEN in my plan.');
   await fs.writeFile(path.join(root, 'plans', 'other.md'), '# Other\n\nSERVER_TOKEN in another plan.');
@@ -297,8 +326,8 @@ test('subfolder scope, --path, --exclude and the budget cap give the same output
   assert.equal(run(['batch', root], {}, batch).stdout, 'Q1\nguide.md:1-3\n# Guide\n\nSERVER_TOKEN needs approval.\n');
 });
 
-test('parallel searches through one server all answer with the in-process output', async t => {
-  const root = await folder(t, true);
+test('parallel lexical searches through one server all answer with the in-process output', async t => {
+  const root = await folder(t, false);
   const args = ['search', root, '--query', 'SERVER_TOKEN'];
   const direct = run(args, { DOKTIMOI_NO_SERVER: '1' });
   assert.equal(run(args).stdout, direct.stdout);
@@ -313,7 +342,7 @@ test('parallel searches through one server all answer with the in-process output
 });
 
 test('several references, several questions and exact listing give the same output via the server', async t => {
-  const root = await folder(t, true);
+  const root = await folder(t, false);
   await fs.copyFile(new URL('../examples/office/example.docx', import.meta.url), path.join(root, 'example.docx'));
   const direct = { DOKTIMOI_NO_SERVER: '1' };
   const cases = [

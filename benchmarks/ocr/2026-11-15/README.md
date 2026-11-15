@@ -2,6 +2,8 @@
 
 Generated Finnish/English application form, row-linked values, small gray instructions and checked/unchecked controls. This is synthetic material, contains no private data, and uses no third-party document corpus. The four PNGs and truth.json are the exact final inputs; recorded JSON outputs must not be edited. The same normal screenshot is embedded in DOCX, PPTX, XLSX and image-only PDF copies of existing project fixtures (native template text remains, OCR facts are scored separately).
 
+Broader format coverage, retained converters, researched alternatives, applied fixes and final LibreOffice integration validation are documented in [the converter assessment](converters.md).
+
 ## Results
 
 macOS arm64 only. Native Windows support was checked in upstream documentation, **not executed on Windows**. Three sequential recognition runs per image/settings; figures are medians, not end-to-end indexing time. No timed retrieval/indexing job ran concurrently. Earlier exploratory passes are excluded. Each cell is exact critical strings passed /10, row associations /3; milliseconds in parentheses.

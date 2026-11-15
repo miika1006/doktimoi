@@ -12,6 +12,13 @@ and [first QMD answer](qmd1-quality.md) document the difference; all three QMD
 answers retained that condition. The expanded CPU/GPU/multiformat comparison
 and correction of this quality regression are pending.
 
+A subsequent [single-pair pilot](phase2/quality-pilot-review.md) recovered the
+missing prerequisite in Doktimoi's answer, at 258,332 tokens / 104.8 seconds
+versus its control's 308,486 / 123.0 seconds. A citation-precision defect remained;
+the control omitted the prerequisite. This is a diagnostic pilot, not proof of
+equal quality. Its [frozen phase inputs](phase2/) precede the later lexical-server
+and task-routing changes.
+
 The subsequent 0.14.0 checkpoint also includes [controlled UI screenshot OCR
 measurements](../../ocr/2026-11-15/), automatic layout/orientation detection and
 preservation of Word superscripts/subscripts. [Caveman research](caveman-research.md)
@@ -47,14 +54,28 @@ older `gpt-6-astra` measurements or Claude/Windows results.
 | QMD Search | [glebis/claude-skills at 4d37d3b](https://github.com/glebis/claude-skills/tree/4d37d3b0af1f98cb4ac820d9abbce95e38e909fb/qmd-search) | Its Bash wrapper over the same QMD runtime |
 | library-docs | [um1b/library-docs at 4fade60](https://github.com/um1b/library-docs/tree/4fade60d18fcfd8dd166cdd4936a6b6005256292) | Python standard-library SQLite FTS5 and section reads |
 | doc-search | [r04943083/doc-search-skill at 92c601a](https://github.com/r04943083/doc-search-skill/tree/92c601ac408923b0a3a47720df616ded9ac0946f) | Python BM25 CLI, replacing its MCP transport |
+| fidx | [williamliu-ai/fidx at 1299e30](https://github.com/williamliu-ai/fidx/tree/1299e30dab7d925c905606cd7db329c29a431ab4) | Python/SQLite FTS5 + ONNX CPU; full-corpus preparation in progress |
+| GBrain | [garrytan/gbrain at aab958d](https://github.com/garrytan/gbrain/tree/aab958d1a0f8cd0e2cb0cdd98e90308f4c6d18fc) | Bun/PGlite keyword search; local embedding service evaluated separately |
+| Meme | [qntx/meme at 1098381](https://github.com/qntx/meme/tree/10983816e0f24781d4ed562331ff48e1362865f5) | Rust 1.0.0; lexical and structured CPU/Metal hybrid preparation |
 
-All four were cloned separately and their MIT licenses inspected. The selection
+The first four were cloned separately and their MIT licenses inspected. The selection
 targets available local-document search skills with a runnable model-free mode;
 it is not an exhaustive survey. QMD was pinned to its published package's exact
 commit so the skill and installed runtime match. The wrapper is a separate skill
 workflow, not an independent search engine. No embedding model was downloaded or
 enabled for these first four lexical arms. The expanded study has explicit user
 consent for local models; CPU/Metal semantic results will be reported separately.
+
+The three user-selected additions were also cloned separately into temporary
+directories. GBrain is MIT; Meme is MIT OR Apache-2.0. **fidx by William Liu** uses
+[MIT AND AI Idea Attribution Addendum v1.0](https://github.com/williamliu-ai/fidx/blob/1299e30dab7d925c905606cd7db329c29a431ab4/LICENSE).
+Its collection relocation and explicit token-budgeted retrieval informed the
+comparison adapters; no fidx source code was copied into Doktimoi.
+[Caveman](https://github.com/juliusbrussee/caveman/tree/b4ee71d557d96e3cbc14f88fa6e953a1362865f5)
+is a separately inspected output-style/compression project, not a document
+retriever. Its published output-token reductions are not substituted for this
+benchmark's measured provider totals. Requested plans and files keep their full
+detail; no Caveman writing style is applied.
 
 ## Method and reproducibility
 
