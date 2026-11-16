@@ -17,5 +17,5 @@ sentence (`pod-v1.md:1688-1713`) rather than the Container section (line 1008).
 
 An earlier start of this arm stopped at its first Doktimoi run: Claude tried the Read tool on
 the corpus, which the host denied, and the audit then counted the denied calls as
-violations. That run is kept in [read-tool-attempt-2026-11-16-windows](../read-tool-attempt-2026-11-16-windows/);
+violations. That run is in git history;
 the SKILL.md wording and the audit were corrected before this run.

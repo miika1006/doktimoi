@@ -16,7 +16,7 @@
     "ocrCacheHits": 0,
     "unsupported": [],
     "warnings": [],
-    "ms": 15276.79
+    "ms": 20509.72
   },
   "passed": 20,
   "afterRefinement": 20,
@@ -30,7 +30,7 @@
         135
       ],
       "resultTokens": 254,
-      "ms": 526
+      "ms": 580
     },
     {
       "id": "pdb-failure",
@@ -40,7 +40,7 @@
         130
       ],
       "resultTokens": 524,
-      "ms": 280
+      "ms": 45
     },
     {
       "id": "rollout-limit",
@@ -52,7 +52,7 @@
         1203
       ],
       "resultTokens": 3077,
-      "ms": 675
+      "ms": 111
     },
     {
       "id": "zone-skew",
@@ -65,7 +65,7 @@
         111
       ],
       "resultTokens": 1894,
-      "ms": 406
+      "ms": 71
     },
     {
       "id": "zone-loss",
@@ -75,7 +75,7 @@
         110
       ],
       "resultTokens": 2387,
-      "ms": 327
+      "ms": 109
     },
     {
       "id": "startup",
@@ -85,7 +85,7 @@
         494
       ],
       "resultTokens": 3912,
-      "ms": 551
+      "ms": 116
     },
     {
       "id": "termination-clock",
@@ -96,7 +96,7 @@
         1701
       ],
       "resultTokens": 974,
-      "ms": 389
+      "ms": 48
     },
     {
       "id": "terminating-endpoints",
@@ -106,7 +106,7 @@
         627
       ],
       "resultTokens": 617,
-      "ms": 387
+      "ms": 55
     },
     {
       "id": "cpu-limit",
@@ -116,7 +116,7 @@
         43
       ],
       "resultTokens": 3323,
-      "ms": 777
+      "ms": 147
     },
     {
       "id": "oom",
@@ -126,7 +126,7 @@
         52
       ],
       "resultTokens": 551,
-      "ms": 254
+      "ms": 38
     },
     {
       "id": "hpa-requests",
@@ -136,7 +136,7 @@
         101
       ],
       "resultTokens": 3790,
-      "ms": 798
+      "ms": 279
     },
     {
       "id": "hpa-missing",
@@ -146,7 +146,7 @@
         184
       ],
       "resultTokens": 470,
-      "ms": 301
+      "ms": 35
     },
     {
       "id": "hpa-downscale",
@@ -156,7 +156,7 @@
         216
       ],
       "resultTokens": 1253,
-      "ms": 507
+      "ms": 59
     },
     {
       "id": "network-additive",
@@ -166,7 +166,7 @@
         75
       ],
       "resultTokens": 2396,
-      "ms": 1235
+      "ms": 303
     },
     {
       "id": "network-both-ends",
@@ -176,7 +176,7 @@
         79
       ],
       "resultTokens": 1250,
-      "ms": 467
+      "ms": 60
     },
     {
       "id": "network-plugin",
@@ -186,7 +186,7 @@
         49
       ],
       "resultTokens": 1387,
-      "ms": 520
+      "ms": 62
     },
     {
       "id": "secret-encoding",
@@ -196,7 +196,7 @@
         306
       ],
       "resultTokens": 632,
-      "ms": 248
+      "ms": 45
     },
     {
       "id": "secret-pod-access",
@@ -206,7 +206,7 @@
         38
       ],
       "resultTokens": 4589,
-      "ms": 1125
+      "ms": 207
     },
     {
       "id": "pv-delete",
@@ -216,7 +216,7 @@
         204
       ],
       "resultTokens": 151,
-      "ms": 238
+      "ms": 36
     },
     {
       "id": "pvc-retain",
@@ -226,7 +226,7 @@
         414
       ],
       "resultTokens": 1007,
-      "ms": 352
+      "ms": 76
     }
   ]
 }

@@ -52,10 +52,10 @@ Doktimoi's three-run setup mean, 146 s, predates the 0.14.2 indexing change belo
   task forbids. It was replaced by run 4 (`--resume --pairs 4`), as the runner allows.
 - **First QMD pilot failed**: Claude batched QMD searches in Bash `for` loops. The
   competitor prompt for Claude now asks for one literal command per Bash call, issued in
-  parallel; the [pilot](pilot-qmd-shell-loops/) is kept.
+  parallel. The pilot is in git history.
 - **GBrain imports 406 of 409 pages**: three pages have frontmatter slugs that differ from
   their paths, so `gbrain import` exits 1. The adapter accepts exactly that outcome; the
-  [first attempt](setup-failure-gbrain-import-exit/) failed on it.
+  first attempt failed on it.
 - **QMD Search** needs a sparse checkout on Windows (an upstream file name contains `<`);
   the runner now identifies a competitor by its Git tree and a clean status.
 - Doktimoi answers cite the grace-period countdown at `pod-v1.md:1688-1713`, an identical

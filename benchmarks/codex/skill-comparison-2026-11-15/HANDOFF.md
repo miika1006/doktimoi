@@ -50,7 +50,7 @@ On macOS with Codex:
 7. **Three frozen Codex pairs of 0.14.2** on the production and held-out tasks:
    `node benchmarks/agent-benchmark.mjs --agent codex --model gpt-6.1-sol --output benchmarks/codex/<new-name> --pairs 3`.
    Check the `StatefulSetAutoDeletePVC` prerequisite (section 9) and the grace-period
-   countdown citation (section 4) with [the rubric](../../quality-review.md).
+   countdown citation (section 4) with [the rubric](../quality-review.md).
 8. **Codex competitor runs** for fidx, GBrain and Meme with macOS paths (copy the
    Windows adapters and change executables and clone paths), and Metal hybrid runs.
 

@@ -50,8 +50,11 @@ all three: use `path`, never hard-coded separators, and test Windows paths
 
 ## Benchmarks
 
-- Results are evidence: never edit recorded runs (`benchmarks/** -text`). Keep only the
-  latest run per agent and retrieval mode; older runs live in git history.
+- Results are evidence: never edit recorded runs (`benchmarks/** -text`).
+- Keep only the latest results. When a benchmark is run again in the same environment
+  (agent, OS and retrieval mode), commit the new run, delete the older run folders with
+  their pilots, failed attempts, reviews and logs, and make the docs show only the newest
+  results. Older runs live in git history.
   The runner refuses existing output folders; `--resume` continues only when nothing changed.
 - Results are separated by agent: `benchmarks/codex/` and `benchmarks/claude/`.
   `node benchmarks/agent-benchmark.mjs --agent codex|claude --output benchmarks/<agent>/<name> --pairs 3`.
