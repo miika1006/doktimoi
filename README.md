@@ -1,12 +1,9 @@
 # Doktimoi
 
-**Measured with Claude Code: 48–65% fewer tokens than Claude's own tools, and fewer than
-six other local retrieval skills.** On 16 November, Doktimoi 0.14.2 used 64.7% fewer total
-tokens than Read/Grep/Glob on a 409-file documentation review and 48.5% fewer on a
-held-out task written after all tuning, with 21–34% less agent time and comparable cited
-answers. QMD, its Rust port Meme and four other skills all used more tokens and tool calls.
-With Codex the saving is smaller and not yet shown at equal quality.
-[Results, methods and raw evidence](#measured-results).
+**With Claude Code, Doktimoi used 48–65% fewer tokens than Claude's own file tools and
+fewer than every other local retrieval skill tested on the same documentation task.** The saving
+comes from answering in fewer model rounds, so it depends on the agent; see
+[Measured results](#measured-results).
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -32,15 +29,10 @@ For Markdown-only collections, QMD's own skill may be enough.
 
 ## Measured results
 
-The tasks use 409 pinned Kubernetes v1.32 files (8.5 MB). Numbers below are per-run
-means over three fresh contexts per row. Total tokens are provider input plus output,
-including cached input once. Indexing is excluded from agent time and reported
-separately. Models, dates and phases are not pooled.
-
-### Claude Code, Windows — 16 November
-
-`claude-opus-5-5`, medium effort. Real-time antivirus scanning was on, which slows
-indexing and process start-up; times compare within these runs.
+On 16 November 2026, Claude Code (`claude-opus-5-5`, Windows) answered two ten-question
+reviews of 409 Kubernetes documentation files, the second written after all tuning, three
+fresh runs per row. Doktimoi 0.14.2 used the fewest tokens and tool calls and the least
+time of every arm, with answers of comparable quality.
 
 | Task | Retrieval | Total tokens | vs control | Agent time | Tool calls |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -54,85 +46,32 @@ indexing and process start-up; times compare within these runs.
 | | doc-search | 2,127,833 | +94.8% | 423.2 s | 44 |
 | Held-out batch platform | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | 34 |
 | | **Doktimoi 0.14.2** | **642,117** | **−48.5%** | **93.8 s** | 14 |
-| Meeting question (Finnish) | Read/Grep/Glob control | 347,239 | — | 52.4 s | 8 |
-| | Doktimoi 0.14.1 | 171,786 | −50.5% | 52.5 s | 3 |
 
-The competitors return leads and the agent then reads files, 37–47 tool calls per run;
-Doktimoi returns cited passages in batches, about 11. Each model round re-sends the
-growing context, so rounds, not response size, decide the total. The held-out task was
-written after every workflow change. All Doktimoi answers passed the tool-use audit and
-cite only existing source ranges; quality screens found them equivalent to the controls
-(details per run). The competitor study is paused: QMD Search has one of three runs and
-the hybrid competitor arms are pending. [Claude results](benchmarks/claude/competitors-2026-11-16/README.md).
+**Where Doktimoi's tokens go.** A Doktimoi run on the production task took 5–7 model
+rounds: one to read the skill, one or two in which the agent sends several search
+batches at once, a few to fill gaps, and one to write the answer. Every round sends the
+whole conversation so far back to the model, so about 83% of the 385k tokens are this
+repeated context read from the provider's cache, about 14% is new context written to the
+cache, and only about 2% is the model's own output (the 1,700-word memo). The searches
+returned about 20k tokens of cited passages in total; they cost far more than that
+because each later round re-reads them. The control needed 31 tool calls and the
+competitors 37–47, because their tools return file names or snippets and the agent then
+opens files, round after round; Doktimoi returns the passages themselves, several
+questions per call, so it needs fewer rounds. Total tokens follow the number of rounds,
+not the size of one response.
 
-Indexing the 409 files takes about 22 s with 0.14.2 (146 s with 0.14.1) on this machine;
-optional semantic embedding took a further 7.5 minutes on the integrated GPU, and on
-this task hybrid search did not beat keyword search.
+**Where the time goes.** Of the 93.6 s, writing the final memo took about 53 s, the
+searches and reads about 10 s in total (including starting the folder's background
+server on the first call), and the model's work between rounds the remaining 30 s or
+so. Fewer rounds therefore also saves time, while faster search alone would save little.
+Building the index is a one-off step outside these times: about 22 s for the 409 files
+(146 s before 0.14.2). Optional semantic search needed another 7.5 minutes of GPU
+embedding and on this task did not beat keyword search; its agents made more rounds.
 
-### Codex and competitor runs — 15 November
-
-Codex `gpt-6.1-sol`, medium effort, macOS Apple M1. The two workflow experiments
-each have their own three paired controls. QMD is a separate three-run arm.
-
-| Workflow | Total tokens | vs paired control | Agent time | Quality finding |
-| --- | ---: | ---: | ---: | --- |
-| Initial control (`rg`/`sed`) | 296,498 | — | 115.0 s | See per-answer review |
-| Doktimoi initial workflow | 333,688 | +12.5% | 125.7 s | One citation defect; one omitted default |
-| Revised-workflow control | 294,694 | — | 118.2 s | One omitted default |
-| Doktimoi revised workflow | 244,629 | **−17.0%** | 116.6 s | **All three omitted a prerequisite** |
-| QMD native skill / lexical CLI | 368,229 | Separate arm | 114.5 s | Required qualifiers retained in all three |
-
-The revised Doktimoi workflow groups independent batches into the same tool
-round and reuses unused passage budgets. It reduces repeated input context,
-but its API-only evidence missed a condition in the conceptual documentation.
-QMD was slightly faster in this sample and retained that condition, while using
-more tokens. The evidence does not establish Doktimoi as the fastest or an
-equal-quality token-saving winner. A subsequent single-pair
-[accuracy pilot](benchmarks/codex/skill-comparison-2026-11-15/phase2/quality-pilot-review.md)
-restored the missing prerequisite: 258,332 versus 308,486 tokens and 104.8 versus
-123.0 seconds. One citation remained imprecise, while its control omitted the
-prerequisite. This pilot is not a three-pair or equal-quality result; further
-corrections are being tested. Unfinished runs are excluded.
-
-The [comparison study](benchmarks/codex/skill-comparison-2026-11-15/README.md)
-links source commits, complete traces, quality reviews and setup/audit failures.
-It also tracks QMD Search, library-docs, doc-search, fidx, GBrain and Meme;
-preparation failures are not reported as successful fast runs. Caveman's writing
-style is not applied: requested plans and files retain their full detail.
-
-A separate [process-reuse probe](benchmarks/codex/skill-comparison-2026-11-15/lexical-server-probe/results.json)
-measured lexical CLI medians of **365 ms in-process versus 53 ms through an
-already-running server**, with byte-identical evidence and diagnostics in all
-nine pairs. Server startup took 65 ms and its first query 361 ms. This isolates
-retrieval latency; it is not an end-to-end AI response or token-saving result.
-
-### Earlier agent comparison — 10 November
-
-Claude Code used `claude-opus-5-5` on Windows; Codex used `gpt-6-astra` on macOS.
-These are historical measurements of an earlier workflow, not measurements of
-the latest Sol changes above.
-
-| Agent | Retrieval | Total tokens | vs baseline | Agent time |
-| --- | --- | ---: | ---: | ---: |
-| Claude Code, Windows | Read/Grep/Glob baseline | 1,624,913 | — | 159.3 s |
-| Claude Code, Windows | Doktimoi lexical | 583,475 | **−64.1%** | 91.9 s |
-| Claude Code, Windows | Doktimoi hybrid (GPU) | 545,563 | **−66.4%** | 100.2 s |
-| Codex, macOS | `rg`/`sed` baseline | 250,858 | — | 147.8 s |
-| Codex, macOS | Doktimoi lexical | 302,660 | +20.6% | 167.0 s |
-| Codex, macOS | Doktimoi hybrid (CPU) | 274,583 | +9.5% | 197.6 s |
-
-Claude's lexical arm used 42.3% less agent time and 37.1% less reported cost.
-Its baseline made about 42 tool calls per run versus about 11 with Doktimoi.
-The earlier Codex baseline already grouped lookups into about nine shell calls;
-Doktimoi's 9–11 calls saved no rounds, while repeating skill/command overhead.
-That explains why smaller search responses alone did not produce total-token savings.
-
-Cold indexing averaged about 11.6 s on macOS and 58.9 s in the recorded Windows
-lexical runs. One-time embedding took 470.9 s on the Mac CPU and 418.9 s on the
-Windows integrated GPU. Hybrid arms reused earlier lexical controls. The
-20-query evidence check scored 20/20 lexical and 18/20 hybrid; semantic ranking
-can miss precise lexical conditions. One task and machine per agent do not
-establish general superiority. [Earlier methods and raw results](benchmarks/README.md).
+Real-time antivirus scanning was on during all runs, which slows indexing and process
+start-up. Totals count provider input plus output with cached input once; costs, quality
+checks, raw traces, the paused competitor study and earlier Codex results are in
+[benchmarks/](benchmarks/README.md).
 
 ## Example uses
 
