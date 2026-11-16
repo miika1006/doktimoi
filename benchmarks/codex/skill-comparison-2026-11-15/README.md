@@ -30,7 +30,10 @@ Checkpoint validation: [141 tests passed, 4 skipped](tests-0140.log) with
 legacy DOC/XLS conversion; [20/20 lexical retrieval cases](retrieval-0140.json).
 The first OCR-enabled attempt lacked LibreOffice and failed those two legacy
 cases. macOS sandbox restrictions also blocked a test attempt; the recorded
-passing full suite ran outside that sandbox. No Windows execution is claimed.
+passing full suite ran outside that sandbox. Version 0.14.1 was later checked on
+Windows: [146 tests passed, 5 skipped](tests-0141-windows.log) without OCR tests,
+and [20/20 retrieval cases](retrieval-0141-windows.json). Remaining macOS/Codex
+work is listed in [HANDOFF.md](HANDOFF.md).
 
 The [before](before/) and [after](after/) snapshots retain the actual code hashes,
 prompts and raw usage. They evaluate the initial 0.13.3/0.13.4 workflow, before the

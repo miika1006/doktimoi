@@ -40,8 +40,8 @@ async function refresh(root, pluginRoot) {
 
 /**
  * Opens the folder's search server in the background, loading an embedding model only when
- * semantic search was already enabled, so the session's first search can reuse the project. Failures are ignored: searches then
- * start the server or run in-process themselves.
+ * semantic search was already enabled, so the session's first search can reuse the project.
+ * Failures are ignored: searches then start the server or run in-process themselves.
  */
 export async function warmServer(root, pluginRoot) {
   const scripts = path.join(pluginRoot, 'skills', 'doktimoi', 'scripts');

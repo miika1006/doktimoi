@@ -168,8 +168,9 @@ Windows and the macOS CPU backend for semantic search.
 
 The index is a disposable, machine-local `.doktimoi/` folder; source documents are never
 rewritten or uploaded. Keyword search needs no AI model. Optional semantic search runs a
-local embedding model only after you agree to download it; a hidden per-folder server then
-keeps the model loaded and answers searches in parallel.
+local embedding model only after you agree to download it. A hidden per-folder server keeps
+the index open (and the model loaded, when enabled) and answers searches in parallel; it never
+creates an index or enables a model.
 
 `search` returns cited passages; `--next` and `batch --requests` answer several
 questions in one call, and `--mode exact` lists every matching line. `read` expands up to
