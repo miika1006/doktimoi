@@ -1,0 +1,182 @@
+{
+  "startedAt": "2026-11-16T08:34:10.160Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.325 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "doktimoi",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "1e67b86182d8ee158f580c86ef51988fd105b872c2f7a1e068ab5212bf05f866",
+  "taskPath": "c:\\TEMP\\doktimoi\\benchmarks\\task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "e0b482ec95f2db44ea5135fc957d14decc775e7cd3c0ed40d9bc7e46f53f26db",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 76463,
+      "buildMs": 20682,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "a954c466-b40a-4822-995c-3104dc80bc4f",
+      "usage": {
+        "input_tokens": 267762,
+        "cached_input_tokens": 197106,
+        "cache_write_input_tokens": 68265,
+        "output_tokens": 7903,
+        "cost_usd": 0.7435088
+      },
+      "totalTokens": 275665,
+      "uncachedInputTokens": 70656,
+      "commands": 8,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 17652,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 7,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 103636,
+      "buildMs": 23732,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "d679d5be-0509-4887-b225-e0c868a54746",
+      "usage": {
+        "input_tokens": 430956,
+        "cached_input_tokens": 379980,
+        "cache_write_input_tokens": 48579,
+        "output_tokens": 10185,
+        "cost_usd": 0.6681543
+      },
+      "totalTokens": 441141,
+      "uncachedInputTokens": 50976,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21180,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_0123uWYMDk3AjZq7j1ajXmtF",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/workloads/autoscaling/horizontal-pod-autoscale.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "toolu_019H3xua6C482yqME5T6BNsZ",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 100584,
+      "buildMs": 21387,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "af8efa64-a6cc-4e95-b723-273c0a3e6077",
+      "usage": {
+        "input_tokens": 429724,
+        "cached_input_tokens": 379166,
+        "cache_write_input_tokens": 48161,
+        "output_tokens": 9852,
+        "cost_usd": 0.658007
+      },
+      "totalTokens": 439576,
+      "uncachedInputTokens": 50558,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21050,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_0159WWFEo1v8jUstjxGmDGvZ",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path concepts/security/secrets-good-practices.md; locate the source without a path filter.]"
+            ]
+          },
+          {
+            "id": "toolu_01LUvJu7fqEFCcJmeXoZ1vQ5",
+            "exitCode": 0,
+            "messages": [
+              "[Error: No indexed source under --path tasks/administer-cluster/change-pv-reclaim-policy.md; locate the source without a path filter.]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 2,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "994fc87ca652083e64aa6f51f0d4b27ed1fb744fc76c14e3ecac383422ce50ec"
+}

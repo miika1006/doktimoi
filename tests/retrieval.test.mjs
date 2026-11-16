@@ -124,7 +124,9 @@ test('inline batches keep question-specific scopes and work without stdin', asyn
   assert.match(output, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\nb\.md:[\s\S]*BETA/);
   const partialRequests = JSON.stringify([{ queries: ['ALPHA'], paths: ['a.md'] }, { queries: ['ALPHA'], paths: ['missing.md'] }, { queries: ['BETA'], paths: ['b.md'] }]);
   const partial = execFileSync(process.execPath, [cli, 'batch', root, '--requests', partialRequests], { encoding: 'utf8', env: { ...process.env, DOKTIMOI_NO_SERVER: '1' }, timeout: 30000, windowsHide: true });
-  assert.match(partial, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\n\[Error: No indexed source under --path missing\.md; locate the source without a path filter\.\]\n\nQ3\nb\.md:[\s\S]*BETA/);
+  // An absent path widens only its own request, labelled; the others keep their filters.
+  assert.match(partial, /^Q1\na\.md:[\s\S]*ALPHA[\s\S]*Q2\n\[No indexed source under --path missing\.md; searched all sources instead\.\]\na\.md:[\s\S]*ALPHA[\s\S]*Q3\nb\.md:[\s\S]*BETA/);
+  assert.doesNotMatch(partial.split('Q3')[1], /ALPHA/);
 });
 
 test('batches reuse unused output space for later complete passages', async t => {

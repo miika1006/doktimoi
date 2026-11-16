@@ -35,12 +35,13 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
   in separate requests. Partial-term
   fallbacks are labeled. Use `--brief` only to locate uncertain topics/sections.
 - Cite returned ranges unchanged unless narrower supporting lines are verified
-  in the visible passage. Batch **only missing evidence** into reads;
+  in the visible passage. Batch **only missing evidence** into one doktimoi
+  `read` call, not file-read tools;
   do not reread passages just to verify the search tool. Expand omitted conditions
   when needed, then stop searching once every requested point has evidence.
 - **Copy returned paths; never guess them.** Linked pages may be absent. After
-  discovery, scope a batch request with `"paths":["returned/a.md"]`. If a path
-  is absent, locate evidence without that filter; other batch answers remain valid.
+  discovery, scope a batch request with `"paths":["returned/a.md"]`. A request whose
+  path is absent searches all sources, labelled; other batch answers remain valid.
   `search --next` also batches questions, but CLI filters apply to all of them.
 - Use `"mode":"exact"` for literal phrases (up to 20 alternatives); it lists
   matching source lines. If semantic search is enabled, use `"mode":"hybrid"`

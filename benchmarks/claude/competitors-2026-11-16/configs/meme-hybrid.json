@@ -1,0 +1,86 @@
+{
+  "name": "meme-hybrid",
+  "repository": "https://github.com/qntx/meme",
+  "commit": "10983816e0f24781d4ed562331ff48e136d03a4c",
+  "sourcePath": "C:/TEMP/doktimoi-competitors/meme",
+  "skillPath": "C:/TEMP/doktimoi-competitors/meme/crates/meme-bin/skills/meme/SKILL.md",
+  "env": {
+    "MEME_CONFIG_DIR": "{workspace}/meme-config",
+    "INDEX_PATH": "{workspace}/meme.sqlite"
+  },
+  "retrieval": "hybrid",
+  "hybridEvidence": "meme-structured",
+  "backend": {
+    "requested": "cpu (built without GPU features)"
+  },
+  "artifacts": [
+    {
+      "path": "C:/Users/miikame/.cache/meme/models/hf_ggml-org_embeddinggemma-300M-Q8_0.gguf",
+      "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63"
+    }
+  ],
+  "setup": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "args": [
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    },
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "args": [
+        "embed",
+        "-c",
+        "kubernetes",
+        "--timeout",
+        "0"
+      ]
+    }
+  ],
+  "preflight": {
+    "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+    "args": [
+      "query",
+      "intent: Pod shutdown\nlex: grace period\nvec: pod termination sequence",
+      "-c",
+      "kubernetes",
+      "--no-rerank",
+      "--format",
+      "json",
+      "--explain"
+    ]
+  },
+  "instructions": "Rust port of QMD 2.8.3, built from source; embeddings are prebuilt with the local embeddinggemma model. Use structured meme query with intent:, lex: and vec: lines plus -c kubernetes --no-rerank, and meme search for exact terms. Never run pull, embed, update or the expand mode (no generation or rerank model is installed).",
+  "searchCommands": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "query"
+      ]
+    },
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "get"
+      ]
+    },
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "multi-get"
+      ]
+    }
+  ]
+}

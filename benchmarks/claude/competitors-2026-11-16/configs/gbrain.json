@@ -1,0 +1,49 @@
+{
+  "name": "gbrain",
+  "repository": "https://github.com/garrytan/gbrain",
+  "commit": "aab958d1a0f8cd0e2cb0cdd98e90308f4c6d18fc",
+  "sourcePath": "C:/TEMP/doktimoi-competitors/gbrain",
+  "skillPath": "C:/TEMP/doktimoi-competitors/gbrain/plugin/skills/query/SKILL.md",
+  "env": {
+    "GBRAIN_HOME": "{workspace}/gbrain-home"
+  },
+  "setup": [
+    {
+      "command": "C:/Users/miikame/.bun/bin/bun.exe",
+      "args": [
+        "run",
+        "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+        "init",
+        "--pglite"
+      ]
+    },
+    {
+      "command": "C:/Program Files/Git/usr/bin/bash.exe",
+      "args": [
+        "-c",
+        "\"C:/Users/miikame/.bun/bin/bun.exe\" run \"C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts\" import \"{docs}\" --no-embed 2>&1 | tee /dev/stderr | grep -q \"imported=406 skipped=3 errors=3\""
+      ]
+    }
+  ],
+  "instructions": "The brain was imported keyword-only from the corpus (no embeddings). Use gbrain search for keyword search and gbrain get SLUG to read a page; slugs are corpus paths without .md. Never enable embeddings, run query/ask, or use network services.",
+  "searchCommands": [
+    {
+      "command": "C:/Users/miikame/.bun/bin/bun.exe",
+      "argsPrefix": [
+        "run",
+        "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "C:/Users/miikame/.bun/bin/bun.exe",
+      "argsPrefix": [
+        "run",
+        "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+        "get"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "name": "qmd",
+  "repository": "https://github.com/tobi/qmd",
+  "commit": "facd35e01359e59d938bc9418e93fb9318addee3",
+  "sourcePath": "C:/TEMP/doktimoi-competitors/qmd",
+  "skillPath": "C:/TEMP/doktimoi-competitors/qmd/skills/qmd/SKILL.md",
+  "env": {
+    "QMD_CONFIG_DIR": "{workspace}/qmd-config",
+    "XDG_CACHE_HOME": "{workspace}/qmd-cache"
+  },
+  "setup": [
+    {
+      "command": "C:/nvm4w/nodejs/node.exe",
+      "args": [
+        "C:/TEMP/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    }
+  ],
+  "instructions": "Use lexical BM25 search only with collection kubernetes. Never run embed, query, vsearch, pull, model or downloads.",
+  "searchCommands": [
+    {
+      "command": "C:/nvm4w/nodejs/node.exe",
+      "argsPrefix": [
+        "C:/TEMP/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "C:/nvm4w/nodejs/node.exe",
+      "argsPrefix": [
+        "C:/TEMP/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "get"
+      ]
+    },
+    {
+      "command": "C:/nvm4w/nodejs/node.exe",
+      "argsPrefix": [
+        "C:/TEMP/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/bin/qmd",
+        "multi-get"
+      ]
+    }
+  ]
+}

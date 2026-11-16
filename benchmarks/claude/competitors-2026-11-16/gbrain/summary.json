@@ -1,0 +1,866 @@
+{
+  "startedAt": "2026-11-16T08:18:44.908Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.325 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "gbrain",
+    "repository": "https://github.com/garrytan/gbrain",
+    "commit": "aab958d1a0f8cd0e2cb0cdd98e90308f4c6d18fc",
+    "sourcePath": "C:/TEMP/doktimoi-competitors/gbrain",
+    "skillPath": "C:/TEMP/doktimoi-competitors/gbrain/plugin/skills/query/SKILL.md",
+    "env": {
+      "GBRAIN_HOME": "{workspace}/gbrain-home"
+    },
+    "setup": [
+      {
+        "command": "C:/Users/miikame/.bun/bin/bun.exe",
+        "args": [
+          "run",
+          "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+          "init",
+          "--pglite"
+        ]
+      },
+      {
+        "command": "C:/Program Files/Git/usr/bin/bash.exe",
+        "args": [
+          "-c",
+          "\"C:/Users/miikame/.bun/bin/bun.exe\" run \"C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts\" import \"{docs}\" --no-embed 2>&1 | tee /dev/stderr | grep -q \"imported=406 skipped=3 errors=3\""
+        ]
+      }
+    ],
+    "instructions": "The brain was imported keyword-only from the corpus (no embeddings). Use gbrain search for keyword search and gbrain get SLUG to read a page; slugs are corpus paths without .md. Never enable embeddings, run query/ask, or use network services.",
+    "searchCommands": [
+      {
+        "command": "C:/Users/miikame/.bun/bin/bun.exe",
+        "argsPrefix": [
+          "run",
+          "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+          "search"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "C:/Users/miikame/.bun/bin/bun.exe",
+        "argsPrefix": [
+          "run",
+          "C:/TEMP/doktimoi-competitors/gbrain/src/cli.ts",
+          "get"
+        ]
+      }
+    ],
+    "configSha256": "a17009f8979e382521dc84225baa2308b8e66cf470d0b0dca0343d6fe17bc450",
+    "sourceTree": "640ed57608ed7a03cb5edb98033784366d94847d",
+    "skillSha256": "48adeb67d57ebc63cc5703682e702e3232e14f3a26eb8bf94cb06e2029c3b729"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "1e67b86182d8ee158f580c86ef51988fd105b872c2f7a1e068ab5212bf05f866",
+  "taskPath": "C:\\TEMP\\doktimoi\\benchmarks\\task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "e0b482ec95f2db44ea5135fc957d14decc775e7cd3c0ed40d9bc7e46f53f26db",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 177579,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 68646,
+      "threadId": "8083dc79-b731-45e7-bee3-fbfa8913a817",
+      "usage": {
+        "input_tokens": 1525371,
+        "cached_input_tokens": 1450502,
+        "cache_write_input_tokens": 72164,
+        "output_tokens": 12537,
+        "cost_usd": 1.113232
+      },
+      "totalTokens": 1537908,
+      "uncachedInputTokens": 74869,
+      "commands": 39,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 34719,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01UAmHQXJENoL1mpXUpMMJ2w",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/workloads/pods/disruptions.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01VfXrh4FzrL4fhjfWnPCWKx",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01GLrxrCHVD2qYkpv4bYQxxh",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_013j61AYqMFuF5QTNwLiy3aw",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/workloads/pods/pod-lifecycle.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01BMaLK7gV71JvfKHGvDJdAy",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01LkPVsfZwrdeqzjLcbGDBS3",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/workloads/controllers/deployment.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01SPkvw16NLePMPBW1sTJLct",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/tasks/run-application/horizontal-pod-autoscale.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01JnW9Y6cFbWuitgUX3xXJaU",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/configuration/manage-resources-containers.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_013XhGpoATsFEmRiDUu5zsZ5",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_011k7oReCXVxqeCkABJYmD4L",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/configuration/secret.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01YKjNzuiPG3jndg3YGigUCD",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01XoViVeR7FLjb125tEKMUEn",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/storage/storage-classes.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01FrMPwjB8nu3YDBDf6z4svS",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/storage/persistent-volumes.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01YanTujPvXAWneUyqUdsFjv",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/workloads/controllers/statefulset.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_017gmoZAz9B6gurdp1TMvgtt",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/workloads/controllers/statefulset.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01GPh1utZ8cEMfBd3ckuj3LY",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/tasks/administer-cluster/encrypt-data.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01CbSe8Wx65kgLRWbQpZqS9b",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-competitor-bRnZPk/docs/concepts/storage/storage-classes.md"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 21,
+        "successfulCompetitorCommands": 21,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 18,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 4,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "competitor",
+      "elapsedMs": 173995,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 67679,
+      "threadId": "1ebd0ce3-989d-4cf5-b383-cc1c610a66db",
+      "usage": {
+        "input_tokens": 1201946,
+        "cached_input_tokens": 1127697,
+        "cache_write_input_tokens": 71552,
+        "output_tokens": 14011,
+        "cost_usd": 1.0781175
+      },
+      "totalTokens": 1215957,
+      "uncachedInputTokens": 74249,
+      "commands": 41,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 35401,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01DY7deENnSTtfpEuRr3muCf",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/pods/disruptions.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_017ChUTnZFSuNDWbC5SRnZ9h",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/controllers/deployment.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_011xBVZ5kT6pdsRCYqverSx6",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01XuBKoo53sSM4hcAGiTHrZb",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "190,215p;560,620p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01VvN9zXqM7A4NfJgePTqZLQ",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "300,380p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_013oFiC11tYQtB8jnA1e3SEz",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "480,580p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01Mka3mbpcBQA9DnkZpbNLBE",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "580,650p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01EvcVzFd2hb5wXsY4vETpGV",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "270,330p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01PFVJKCgDagutmtBdzHprHH",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "330,380p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01MuLXL2ktFvndKo74X4PuDX",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "90,240p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01Fyyd727MQxLBtTarXqjK1t",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "20,80p;225,275p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01UFMDtgxZzgEFf8oG6Gi4RP",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "20,120p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01PKBtzgnfa8P9AwAxQYjVRr",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "20,60p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_013MNDN6VmVTKXFnXf3ZpY2S",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/security/rbac-good-practices.md",
+              "|",
+              "sed",
+              "-n",
+              "20,60p;95,135p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01GRLHfwXT5C8HwiYRBSxwzX",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "235,290p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01LB1mzkNfvyCY4cPfbwDEeS",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/tasks/administer-cluster/encrypt-data.md",
+              "|",
+              "sed",
+              "-n",
+              "14,40p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_0197MK5P57cCttMH13tY2UWx",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "95,125p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01E9ZS9kQbBmFgmEjPaDYGyu",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "125,145p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01F73a5V6wKuENTLsVjyhi9v",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "180,240p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01CFACt4VHnZjVF1VPpN271r",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "395,450p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01BLWvPc4fLGDkLU97sKx15Q",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "30,50p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01BZCcuuAZ9kjGizj4RB4srF",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-competitor-nN3J2R/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "45,75p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 18,
+        "successfulCompetitorCommands": 18,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 23,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "competitor",
+      "elapsedMs": 157738,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 55677,
+      "threadId": "e7783620-3913-4559-8051-a4e8dc005c3e",
+      "usage": {
+        "input_tokens": 1275104,
+        "cached_input_tokens": 1187896,
+        "cache_write_input_tokens": 84511,
+        "output_tokens": 12049,
+        "cost_usd": 1.15464
+      },
+      "totalTokens": 1287153,
+      "uncachedInputTokens": 87208,
+      "commands": 39,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 43873,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01Tyy34s8K1DodBrN4d3UL69",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/pods/disruptions.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01TzvEsPJieeqBvncC9StaPV",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/pods/pod-lifecycle.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01AzyfvkpSokpNUo27AfWgKU",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/pods/pod-lifecycle.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01V8AqiKcoWCrTG27QxVtdrz",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01CzmpLkMFeEjDc23SsYdpUN",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "540,620p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01SiPwdjUADVjHqtz31e3Xtp",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1080,1180p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_018vkezgqVTjgBaZcDiUSnv7",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1186,1250p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_016LwPcAp2tmqz9yti7HqvhB",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "90,300p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01APCSd27c64Z27fPuGk2RMp",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "30,80p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01GrXmfEjGgbbsdK9PEvFDem",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "240,300p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_018Sg8RpzrYvCKc53s3gPUuz",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "1,110p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01NuFpzehtakikQTCNmd3L28",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "215,300p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_0127XT9dRvzaHrKUnykBT3qb",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "20,75p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_018Ew3jtBY3hYHhY9hzDuL38",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "50,62p;395,445p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01N6ntZYhMiuUUbH4mCgPjdF",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "150,260p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01V8rbFLT4FE6Y427aLpta9Q",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "60,130p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01NrLa9s5L56TUUnXnkqNZe7",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "130,145p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01CZi8frtRNUVB7ttf6yXEpg",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/tasks/run-application/configure-pdb.md",
+              "|",
+              "sed",
+              "-n",
+              "230,330p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_016BFwCQ5PQNmetamFDZxBgS",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/concepts/services-networking/endpoint-slices.md",
+              "|",
+              "sed",
+              "-n",
+              "90,140p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_018ZTovDSY93EVk8kzha1NkK",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/tasks/administer-cluster/encrypt-data.md",
+              "|",
+              "sed",
+              "-n",
+              "14,40p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_016ZrHJHZct6TVJyToJkUpdN",
+            "words": [
+              "nl",
+              "-ba",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-IJ7Kcw/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "20,45p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 16,
+        "successfulCompetitorCommands": 16,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 23,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 1,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "994fc87ca652083e64aa6f51f0d4b27ed1fb744fc76c14e3ecac383422ce50ec"
+}

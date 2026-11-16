@@ -1,11 +1,12 @@
 # Doktimoi
 
-**Token savings depend on the agent and answer quality.** Earlier Claude Code
-runs used **64–66% fewer total tokens**. A completed three-pair Codex workflow
-experiment used **17.0% fewer tokens and 1.4% less agent time**, but all three
-answers omitted a required prerequisite: this is **not an equal-quality saving**.
-[Results, competitor comparisons and raw evidence](#measured-results) distinguish
-these experiments and their limits. New accuracy and CPU/GPU comparisons are in progress.
+**Measured with Claude Code: 48–65% fewer tokens than Claude's own tools, and fewer than
+six other local retrieval skills.** On 16 November, Doktimoi 0.14.2 used 64.7% fewer total
+tokens than Read/Grep/Glob on a 409-file documentation review and 48.5% fewer on a
+held-out task written after all tuning, with 21–34% less agent time and comparable cited
+answers. QMD, its Rust port Meme and four other skills all used more tokens and tool calls.
+With Codex the saving is smaller and not yet shown at equal quality.
+[Results, methods and raw evidence](#measured-results).
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -31,12 +32,44 @@ For Markdown-only collections, QMD's own skill may be enough.
 
 ## Measured results
 
-The same production-design task uses 409 pinned Kubernetes v1.32 files (8.5 MB).
-Numbers below are per-run means over three fresh contexts per row. Total tokens
-are provider input plus output, including cached input once. Indexing is excluded
-from agent time and reported separately. Models, dates and phases are not pooled.
+The tasks use 409 pinned Kubernetes v1.32 files (8.5 MB). Numbers below are per-run
+means over three fresh contexts per row. Total tokens are provider input plus output,
+including cached input once. Indexing is excluded from agent time and reported
+separately. Models, dates and phases are not pooled.
 
-### Latest completed Codex and competitor runs — 15 November
+### Claude Code, Windows — 16 November
+
+`claude-opus-5-5`, medium effort. Real-time antivirus scanning was on, which slows
+indexing and process start-up; times compare within these runs.
+
+| Task | Retrieval | Total tokens | vs control | Agent time | Tool calls |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Production design | Read/Grep/Glob control | 1,092,232 | — | 140.7 s | 31 |
+| | **Doktimoi 0.14.2** | **385,461** | **−64.7%** | **93.6 s** | 11 |
+| | Doktimoi 0.14.2 hybrid (GPU) | 476,179 | −56.4% | 108.8 s | 11 |
+| | Meme 1.0.0 (Rust port of QMD) | 777,178 | −28.8% | 194.5 s | 43 |
+| | QMD 2.8.3 | 836,378 | −23.4% | 135.8 s | 44 |
+| | library-docs | 1,335,672 | +22.3% | 147.7 s | 37 |
+| | GBrain (keyword) | 1,347,006 | +23.3% | 169.8 s | 40 |
+| | doc-search | 2,127,833 | +94.8% | 423.2 s | 44 |
+| Held-out batch platform | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | 34 |
+| | **Doktimoi 0.14.2** | **642,117** | **−48.5%** | **93.8 s** | 14 |
+| Meeting question (Finnish) | Read/Grep/Glob control | 347,239 | — | 52.4 s | 8 |
+| | Doktimoi 0.14.1 | 171,786 | −50.5% | 52.5 s | 3 |
+
+The competitors return leads and the agent then reads files, 37–47 tool calls per run;
+Doktimoi returns cited passages in batches, about 11. Each model round re-sends the
+growing context, so rounds, not response size, decide the total. The held-out task was
+written after every workflow change. All Doktimoi answers passed the tool-use audit and
+cite only existing source ranges; quality screens found them equivalent to the controls
+(details per run). The competitor study is paused: QMD Search has one of three runs and
+the hybrid competitor arms are pending. [Claude results](benchmarks/claude/competitors-2026-11-16/README.md).
+
+Indexing the 409 files takes about 22 s with 0.14.2 (146 s with 0.14.1) on this machine;
+optional semantic embedding took a further 7.5 minutes on the integrated GPU, and on
+this task hybrid search did not beat keyword search.
+
+### Codex and competitor runs — 15 November
 
 Codex `gpt-6.1-sol`, medium effort, macOS Apple M1. The two workflow experiments
 each have their own three paired controls. QMD is a separate three-run arm.

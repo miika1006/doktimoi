@@ -35,4 +35,10 @@ test('answer checker accepts prose citations and still rejects missing sources a
   const noRanges = await check(answer(() => `\`docs/${source}\``));
   assert.notEqual(noRanges.status, 0);
   assert.match(noRanges.stderr, /missing numbered sections or source ranges/);
+  // A file name or bare lines refer back to the latest matching full path.
+  const short = await check(`Sources: \`${source}\`.\n` + answer(i => i % 2 ? '(`disruptions.md:99-136`)' : '(`:140-145`)'));
+  assert.equal(short.status, 0, short.stderr);
+  assert.equal(JSON.parse(short.stdout).answers[0].abbreviatedCitationRanges, 10);
+  const shortInvalid = await check(`Sources: \`${source}\`.\n` + answer(() => '(`disruptions.md:99-99999`)'));
+  assert.match(shortInvalid.stderr, /invalid range/);
 });

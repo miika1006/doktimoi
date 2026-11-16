@@ -47,10 +47,10 @@ async function snapshot(root, project) {
   } finally { db.close(); }
 }
 
-/** Rebuilds the folder's QMD database from scratch and returns its snapshot; the project is reopened. */
+/** Rebuilds the folder's whole index from scratch and returns its snapshot; the project is reopened. */
 async function rebuilt(state) {
   await state.project.close();
-  await fs.rm(path.join(state.root, '.doktimoi', 'index.sqlite'), { force: true });
+  await fs.rm(path.join(state.root, '.doktimoi'), { recursive: true, force: true });
   state.project = await openProject(state.root);
   assert.equal((await state.project.sync()).index, 'full');
   return snapshot(state.root, state.project);

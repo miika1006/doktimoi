@@ -59,7 +59,7 @@ older `gpt-6-astra` measurements or Claude/Windows results.
 | doc-search | [r04943083/doc-search-skill at 92c601a](https://github.com/r04943083/doc-search-skill/tree/92c601ac408923b0a3a47720df616ded9ac0946f) | Python BM25 CLI, replacing its MCP transport |
 | fidx | [williamliu-ai/fidx at 1299e30](https://github.com/williamliu-ai/fidx/tree/1299e30dab7d925c905606cd7db329c29a431ab4) | Python/SQLite FTS5 + ONNX CPU; full-corpus preparation in progress |
 | GBrain | [garrytan/gbrain at aab958d](https://github.com/garrytan/gbrain/tree/aab958d1a0f8cd0e2cb0cdd98e90308f4c6d18fc) | Bun/PGlite keyword search; local embedding service evaluated separately |
-| Meme | [qntx/meme at 1098381](https://github.com/qntx/meme/tree/10983816e0f24781d4ed562331ff48e1362865f5) | Rust 1.0.0; lexical and structured CPU/Metal hybrid preparation |
+| Meme | [qntx/meme at 1098381](https://github.com/qntx/meme/tree/10983816e0f24781d4ed562331ff48e136d03a4c) | Rust 1.0.0; lexical and structured CPU/Metal hybrid preparation |
 
 The first four were cloned separately and their MIT licenses inspected. The selection
 targets available local-document search skills with a runnable model-free mode;

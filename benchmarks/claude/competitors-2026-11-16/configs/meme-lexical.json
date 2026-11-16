@@ -1,0 +1,46 @@
+{
+  "name": "meme-lexical",
+  "repository": "https://github.com/qntx/meme",
+  "commit": "10983816e0f24781d4ed562331ff48e136d03a4c",
+  "sourcePath": "C:/TEMP/doktimoi-competitors/meme",
+  "skillPath": "C:/TEMP/doktimoi-competitors/meme/crates/meme-bin/skills/meme/SKILL.md",
+  "env": {
+    "MEME_CONFIG_DIR": "{workspace}/meme-config",
+    "XDG_CACHE_HOME": "{workspace}/meme-cache"
+  },
+  "setup": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "args": [
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    }
+  ],
+  "instructions": "Rust port of QMD 2.8.3, built from source. Use lexical BM25 meme search only with collection kubernetes. Never run query, vsearch, embed, pull, model or downloads.",
+  "searchCommands": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "get"
+      ]
+    },
+    {
+      "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+      "argsPrefix": [
+        "multi-get"
+      ]
+    }
+  ]
+}

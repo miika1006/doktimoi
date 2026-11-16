@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { auditRun, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { auditRun, samePath, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -316,4 +316,33 @@ test('benchmark task defaults to the existing task and hashes selected content',
   await fs.writeFile(file, 'A changed question.');
   assert.notEqual((await loadBenchmarkTask(file)).sha256, selected.sha256);
   await assert.rejects(loadBenchmarkTask(path.join(root, 'missing.md')), /ENOENT/);
+});
+
+test('Claude permission denials are recorded as attempts, not as executed reads', () => {
+  const use = (id, name, input) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name, input }] } });
+  const result = (id, content, is_error) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content, is_error }] } });
+  const raw = [
+    { type: 'system', subtype: 'init', session_id: 's' },
+    use('a', 'Bash', { command: 'node "/skill/scripts/doktimoi.mjs" search "/w/docs" --query pods' }), result('a', 'pods.md:1-3\nPods', false),
+    use('b', 'Read', { file_path: '/w/docs/pods.md' }), result('b', '<tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>', true),
+    { type: 'result', subtype: 'success', modelUsage: { m: { inputTokens: 1, outputTokens: 1 } } },
+  ].map(e => JSON.stringify(e)).join('\n');
+  const audit = auditRun(claudeToCodexEvents(raw), 'doktimoi', null, '/w');
+  assert.equal(audit.passed, true);
+  assert.equal(audit.deniedAttempts.length, 1);
+  const approval = raw.replace('File is in a directory that is denied by your permission settings.', 'This Bash command contains multiple operations. The following part requires approval: xargs grep');
+  assert.equal(auditRun(claudeToCodexEvents(approval), 'doktimoi', null, '/w').deniedAttempts.length, 1);
+  const failed = raw.replace('denied by your permission settings', 'missing');
+  assert.equal(auditRun(claudeToCodexEvents(failed), 'doktimoi', null, '/w').passed, false);
+});
+
+test('competitor audit matches Windows commands and skill paths regardless of slashes and case', () => {
+  const config = { skillPath: 'C:\\tools\\qmd\\SKILL.md', searchCommands: [{ command: 'C:\\tools\\meme.exe', argsPrefix: ['search'] }] };
+  const items = [
+    { command: 'cat "c:/tools/qmd/SKILL.md"', exit_code: 0 },
+    { command: 'C:/Tools/meme.exe search pods', exit_code: 0, aggregated_output: 'docs/pods.md:1' },
+  ];
+  const raw = items.map((item, i) => JSON.stringify({ type: 'item.completed', item: { id: String(i), type: 'command_execution', ...item } })).join('\n');
+  assert.equal(auditRun(raw, 'competitor', config).passed, true);
+  assert.equal(samePath('/usr/bin/x', '/USR/bin/x'), false);
 });

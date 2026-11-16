@@ -1,0 +1,15 @@
+{
+  "setupMs": 61096,
+  "steps": [
+    {
+      "step": 1,
+      "elapsedMs": 59863,
+      "exitCode": 0
+    },
+    {
+      "step": 2,
+      "elapsedMs": 1226,
+      "exitCode": 0
+    }
+  ]
+}

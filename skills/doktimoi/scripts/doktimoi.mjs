@@ -106,6 +106,7 @@ const OR_FALLBACK = 'No passage has every term of a query; these match some term
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
 const SOURCE_CHANGE_ATTEMPTS = 6;
 const SAFETY_SYNC_MS = 60000;
+const CHUNK_WRITE_CONCURRENCY = 32;
 const QUERY_CACHE_SIZE = 200;
 const BRIEF_CHARS = 120;
 const MATCH_CHARS = 200;
@@ -381,9 +382,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         await fs.writeFile(path.join(cache, 'dirty'), 'updating\n');
         // A chunk's name hashes its text, so an existing file already holds it; a full update rewrites all.
         const kept = new Set(full ? [] : existing);
-        for (const { id, body } of writes) {
-          if (!kept.has(`${id}.md`)) { assertLock(); await atomicWrite(path.join(chunkDir, `${id}.md`), body); }
-        }
+        await writeChunks(writes.filter(({ id }) => !kept.has(`${id}.md`)));
         const obsolete = existing.filter(name => !wanted.has(name) && /^[a-f0-9]{32}\.md$/.test(name));
         for (const name of obsolete) { assertLock(); await fs.unlink(path.join(chunkDir, name)); }
         indexMode = await updateIndex(full, writes, obsolete, wanted.size);
@@ -416,13 +415,40 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
      */
     async function updateIndex(full, writes, obsolete, expected) {
       let indexFallback;
-      if (!full && incremental) {
-        try { indexChunks(writes, obsolete, expected); return { index: 'incremental' }; }
+      // A first build or converter change holds every chunk in memory, so QMD need not read them back from disk.
+      const complete = full && new Set(writes.map(write => write.id)).size === expected;
+      if (incremental && (!full || complete)) {
+        // Sorted by chunk name, a full build gives equal-scoring chunks the same order on every platform.
+        const ordered = full ? writes.toSorted((a, b) => a.id.localeCompare(b.id)) : writes;
+        try { indexChunks(ordered, full ? staleChunks(writes) : obsolete, expected); return { index: full ? 'full' : 'incremental' }; }
         catch (error) { indexFallback = error.message; }
       }
       const indexed = await store.update();
       if (indexed.skipped) throw new Error(`Index update skipped ${indexed.skipped} chunks; check cache readability and retry`);
       return { index: 'full', ...(indexFallback && { indexFallback }) };
+    }
+
+    /**
+     * Writes chunk files concurrently: each write waits on the disk and virus scanning, not on the CPU.
+     * No temp-file rename is needed: the dirty marker set before this makes an interrupted update
+     * rewrite every chunk, so a torn file never survives.
+     */
+    async function writeChunks(chunks) {
+      let next = 0;
+      await Promise.all(Array.from({ length: Math.min(CHUNK_WRITE_CONCURRENCY, chunks.length) }, async () => {
+        while (next < chunks.length) {
+          const { id, body } = chunks[next++];
+          assertLock();
+          await fs.writeFile(path.join(chunkDir, `${id}.md`), body);
+        }
+      }));
+    }
+
+    /** Lists the active indexed chunks that a complete set of written chunks no longer contains. */
+    function staleChunks(writes) {
+      const names = new Set(writes.map(({ id }) => `${id}.md`));
+      return store.internal.db.prepare("SELECT path FROM documents WHERE collection = 'docs' AND active = 1").all()
+        .map(row => row.path).filter(name => !names.has(name));
     }
 
     /**
@@ -1147,15 +1173,19 @@ async function searchEach(project, requests, values, notices) {
     // Short answers leave room for later full passages instead of forcing another read round.
     const remaining = requests.length - index;
     const share = { budget: Math.max(256, Math.floor(tokensLeft / remaining)), maxBytes: Math.floor(bytesLeft / remaining) };
+    const options = { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope };
+    let found, label = '';
     try {
-      const found = await project.search(request.queries, { ...request, budget: Math.min(request.budget, share.budget), maxBytes: share.maxBytes, scope: values.scope });
-      outputs.push(`Q${index + 1}\n${render(found.payload)}`);
-      if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
+      found = await project.search(request.queries, options);
     } catch (error) {
       if (error.code !== 'UNKNOWN_SOURCE_PATH') throw error;
-      // One absent path must not discard other questions' evidence or silently widen its scope.
-      outputs.push(`Q${index + 1}\n[Error: ${error.message}; locate the source without a path filter.]`);
+      // Agents guess paths from links to pages outside the folder; widening that one question, with
+      // a label, answers it now instead of costing another round, and keeps the other answers.
+      found = await project.search(request.queries, { ...options, paths: [] });
+      label = `[${error.message}; searched all sources instead.]\n`;
     }
+    outputs.push(`Q${index + 1}\n${label}${render(found.payload)}`);
+    if (values.metrics) notices.push(JSON.stringify({ query: index + 1, ...found.metrics }));
     const piece = (index ? '\n\n' : '') + outputs.at(-1);
     tokensLeft -= tokens(piece);
     bytesLeft -= Buffer.byteLength(piece);

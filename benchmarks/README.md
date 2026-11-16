@@ -1,5 +1,33 @@
 # Agent benchmark
 
+## Claude Code, Windows: 16 November, Doktimoi 0.14.1–0.14.2
+
+`claude-opus-5-5`, medium effort, Claude Code 2.1.325, Windows 11. **Real-time antivirus
+scanning was on** for all of these runs; it slows indexing and process start-up, so the
+times compare with each other, not with a machine without scanning. Means of three runs;
+total tokens are provider input plus output with cached input counted once.
+
+| Task | Arm | Total tokens | vs control | Agent time | Cost |
+| --- | --- | ---: | ---: | ---: | ---: |
+| [Production design](claude/lexical-2026-11-16-windows/README.md) | Read/Grep/Glob control | 1,092,232 | — | 140.7 s | $0.85 |
+| | Doktimoi 0.14.1 | 580,316 | −46.9% | 99.4 s | $0.63 |
+| | [Doktimoi 0.14.2](claude/lexical-0142-2026-11-16-windows/README.md) | 385,461 | −64.7% | 93.6 s | $0.69 |
+| [Held-out batch platform](claude/heldout-2026-11-16-windows/README.md) | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | $0.99 |
+| | Doktimoi 0.14.2 | 642,117 | −48.5% | 93.8 s | $0.70 |
+| [Meeting question (fi)](claude/meeting-2026-11-16-windows/README.md) | Read/Grep/Glob control | 347,239 | — | 52.4 s | $0.38 |
+| | Doktimoi 0.14.1 | 171,786 | −50.5% | 52.5 s | $0.28 |
+| [Production design, hybrid](claude/hybrid-2026-11-16-windows/README.md) | Doktimoi 0.14.2 hybrid (GPU) | 476,179 | −56.4% | 108.8 s | $0.61 |
+
+The [competitor comparison](claude/competitors-2026-11-16/README.md) ran QMD, Meme (QMD's
+Rust port), QMD Search, library-docs, GBrain and doc-search on the production task with the
+same agent; it is paused with the hybrid arms incomplete. Doktimoi used the fewest tokens
+and tool calls of all arms. The held-out task was written after every workflow change.
+0.14.2 builds the 409-file index in about 22 s instead of 146 s. Its checks on this
+machine: [148 tests passed, 5 skipped](claude/tests-0142-windows.log) (OCR tests not
+enabled) and [20/20 retrieval cases](claude/retrieval-0142-windows.json).
+
+## Codex, macOS: 15 November
+
 The [15 November skill comparison](codex/skill-comparison-2026-11-15/README.md)
 contains fresh `gpt-6.1-sol` runs, competitor source pins and diagnostic failures.
 Its revised workflow used 244,629 versus 294,694 total tokens (−17.0%) and
@@ -12,10 +40,11 @@ The benchmark measures the entire assistant task, including repeated model
 context, rather than equating a small tool response with a token saving.
 Results are kept per agent: [codex/](codex/) and [claude/](claude/). The Codex
 lexical results are in [release-2026-11-10](codex/release-2026-11-10/), with a
-separate [semantic CPU comparison](codex/semantic-cpu-2026-11-10/). The Claude Code
-results are in [claude/release-2026-11-10-windows](claude/release-2026-11-10-windows/README.md).
+separate [semantic CPU comparison](codex/semantic-cpu-2026-11-10/). The latest Claude Code
+results are in [claude/](claude/); the 10 November Claude runs below were replaced by the
+16 November runs and remain in git history (commit 83c39d7).
 
-## Claude Code, Windows
+## Earlier Claude Code, Windows: 10 November
 
 Same task and corpus, `claude-opus-5-5` at medium effort, three alternating pairs.
 Doktimoi lexical used **64.1% fewer total tokens** than the Read/Grep/Glob baseline
@@ -24,7 +53,7 @@ reported cost. Cold indexing (58.9 s mean) is excluded from agent time. The Clau
 baseline made about 42 tool calls per run; Codex's shell baseline made about 9. The saving
 comes from fewer model rounds, so it depends on the agent and is not a general result.
 
-Three [hybrid runs](claude/hybrid-2026-11-10-windows/README.md) against the same baseline
+Three hybrid runs against the same baseline
 used a mean 545,563 tokens (−66.4%) in 100.2 s. Embeddings ran on the GPU (Vulkan,
 integrated Radeon 780M); one-time embedding took 418.9 s and is excluded.
 
@@ -61,6 +90,10 @@ application-specific unknowns.
 question about availability guarantees. Select it with `--task PATH`; the runner
 records its content hash. Its timing and quality results must stay separate from
 the long-task results, and the ten-section answer checker does not apply to it.
+
+[heldout-task.md](heldout-task.md) is a second ten-question review (a multi-team batch
+platform) on the same corpus, written after the workflow changes so none was tuned on it.
+The answer checker applies to it.
 
 The [example corpus](../examples/kubernetes/README.md) contains 409 unchanged
 Kubernetes v1.32 Markdown files, 8,513,875 bytes. Every file is at least 8 KiB.

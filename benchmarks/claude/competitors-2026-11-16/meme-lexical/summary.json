@@ -1,0 +1,818 @@
+{
+  "startedAt": "2026-11-16T08:04:07.284Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.325 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "meme-lexical",
+    "repository": "https://github.com/qntx/meme",
+    "commit": "10983816e0f24781d4ed562331ff48e136d03a4c",
+    "sourcePath": "C:/TEMP/doktimoi-competitors/meme",
+    "skillPath": "C:/TEMP/doktimoi-competitors/meme/crates/meme-bin/skills/meme/SKILL.md",
+    "env": {
+      "MEME_CONFIG_DIR": "{workspace}/meme-config",
+      "XDG_CACHE_HOME": "{workspace}/meme-cache"
+    },
+    "setup": [
+      {
+        "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+        "args": [
+          "collection",
+          "add",
+          "{docs}",
+          "--name",
+          "kubernetes"
+        ]
+      }
+    ],
+    "instructions": "Rust port of QMD 2.8.3, built from source. Use lexical BM25 meme search only with collection kubernetes. Never run query, vsearch, embed, pull, model or downloads.",
+    "searchCommands": [
+      {
+        "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+        "argsPrefix": [
+          "search"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+        "argsPrefix": [
+          "get"
+        ]
+      },
+      {
+        "command": "C:/TEMP/doktimoi-competitors/meme/target/release/meme.exe",
+        "argsPrefix": [
+          "multi-get"
+        ]
+      }
+    ],
+    "configSha256": "c782b3311acf5308272d68b24c8e888c7ada6323494ff3122f47fca8b1d861d4",
+    "sourceTree": "ce21d52942b161383896a8452ef7bf75a90092e9",
+    "skillSha256": "bec3578b7624a3d01877fed02a004b946a55f23fdeb240d42152bd90dc42a104"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "1e67b86182d8ee158f580c86ef51988fd105b872c2f7a1e068ab5212bf05f866",
+  "taskPath": "C:\\TEMP\\doktimoi\\benchmarks\\task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "e0b482ec95f2db44ea5135fc957d14decc775e7cd3c0ed40d9bc7e46f53f26db",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 238772,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 6392,
+      "threadId": "295ce70e-b7ac-42a0-97db-e398bc1ac6ed",
+      "usage": {
+        "input_tokens": 773731,
+        "cached_input_tokens": 710950,
+        "cache_write_input_tokens": 60128,
+        "output_tokens": 11498,
+        "cost_usd": 0.8531234
+      },
+      "totalTokens": 785229,
+      "uncachedInputTokens": 62781,
+      "commands": 39,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 27850,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 23,
+        "successfulCompetitorCommands": 23,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 16,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "competitor",
+      "elapsedMs": 152724,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 4842,
+      "threadId": "d36b3849-bbf4-42e4-8aab-a6dec8a24611",
+      "usage": {
+        "input_tokens": 862880,
+        "cached_input_tokens": 804197,
+        "cache_write_input_tokens": 56026,
+        "output_tokens": 11556,
+        "cost_usd": 0.8401133000000001
+      },
+      "totalTokens": 874436,
+      "uncachedInputTokens": 58683,
+      "commands": 48,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25330,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01SLhkT5keppkMmudX7Kbqdh",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/disruptions.md",
+              "|",
+              "sed",
+              "-n",
+              "120,240p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_013oM7FsvCCbV6NJnt7Nbu4A",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "60,175p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01V2hLq1ZJ6o6Q9i7gYxh9cd",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "440,640p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Bg6cbJqwT4knn4p3eQXGKF",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/disruptions.md",
+              "|",
+              "sed",
+              "-n",
+              "20,60p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_014eEr32TCVNSzAUGE11EYvk",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1186,1212p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01V1nDKd8zvzerSRQyGxHMmP",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1322,1332p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_0147da9ikafkBrjZbZZy9yJ3",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "600,620p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_013YVxuSRsqpZVrnEVfj6DXh",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "120,240p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01P2X4jmjC79idWwJ233doZW",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "36,60p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_011LK7YbDWgNPvyKeHJeS2sP",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "30,80p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01E3FzGTmYgdtX3tod4hJM6C",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "90,102p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01SA61zXPVvDqdSkGjKDWNn5",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "36,52p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01AScR9MCAm823dMMMTxDcrE",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "80,84p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_015qPD2RJAJ2vzCfPNAAPi5Q",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "126,136p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01BXmhguT9HVcZRcLPr3LxsW",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "180,212p"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_011Tx2N2v1skqBF3T9vSdyc4",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "48,56p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01WWamV2A2XAGMwsXAeKSid6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "391,412p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "toolu_01GcJjCdYykggnf9z7vYysJv",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/security/rbac-good-practices.md",
+              "|",
+              "sed",
+              "-n",
+              "93,110p"
+            ],
+            "wasReturned": true
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 16,
+        "successfulCompetitorCommands": 16,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 19,
+        "filenameCommands": 0,
+        "violations": [
+          {
+            "id": "toolu_01UQPhB6CY4GKisuQYuVHYu4",
+            "command": "grep -n -i \"maxUnavailable\\|maxSurge\\|minReadySeconds\\|progressDeadline\" docs/concepts/workloads/controllers/deployment.md"
+          },
+          {
+            "id": "toolu_016KAPMdm59gUSg1pJkhJhY7",
+            "command": "grep -n -i \"known limitations\\|scaling down\\|unhealthy\\|tainted\\|cluster autoscaler\\|not guaranteed\\|rebalanc\" docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+          },
+          {
+            "id": "toolu_01VqPEuAybT8CFYRzWWjQGa7",
+            "command": "grep -n -i \"throttl\\|OOM\\|out of memory\\|hard limit\\|reactively\\|enforce\" docs/concepts/configuration/manage-resources-containers.md"
+          },
+          {
+            "id": "toolu_01RLFXgoU5pZAm2hRfEoFHFT",
+            "command": "grep -n -i \"stabilization\\|300\\|downscale-stabilization\\|initial-readiness-delay\\|cpu-initialization\" docs/tasks/run-application/horizontal-pod-autoscale.md"
+          },
+          {
+            "id": "toolu_01HppcA11p37RfDjCjKQ6XFy",
+            "command": "grep -n -i \"resource request\\|not set\\|will not take any action\\|requests for\" docs/tasks/run-application/horizontal-pod-autoscale.md"
+          },
+          {
+            "id": "toolu_017FTUW1Hv2YZY9edmhGiCNC",
+            "command": "grep -n -i \"DNS\\|default deny\\|default-deny\\|port 53\" docs/concepts/services-networking/network-policies.md"
+          },
+          {
+            "id": "toolu_015hf9KXE1JgzaZy6nDu8d4n",
+            "command": "grep -n -i \"base64\\|manifest\\|encod\\|create a pod\\|least-privilege\\|watch\\|list\" docs/concepts/security/secrets-good-practices.md"
+          },
+          {
+            "id": "toolu_01PHy948xqG2g4hpSnt1vnp4",
+            "command": "grep -n -i \"reclaim\\|Retain\\|existing\\|patch\" docs/concepts/storage/storage-classes.md"
+          },
+          {
+            "id": "toolu_01DULBX953r6pX58jV6mn3py",
+            "command": "grep -n -i \"^### Retain\\|^### Delete\\|released\\|external infrastructure\\|manually reclaim\" docs/concepts/storage/persistent-volumes.md"
+          },
+          {
+            "id": "toolu_01LQUbW8YJvgixNGwTuwHa3E",
+            "command": "grep -n -i \"persistentVolumeClaimRetentionPolicy\\|whenDeleted\\|whenScaled\\|will not delete the volumes\\|data safety\" docs/concepts/workloads/controllers/statefulset.md"
+          },
+          {
+            "id": "toolu_01XSTcae5BXrrhCcj6ttgZeR",
+            "command": "grep -n -i \"workload creation\\|create pods\\|escalation\\|secrets\\b\" docs/concepts/security/rbac-good-practices.md"
+          },
+          {
+            "id": "toolu_01Gu6VqKhS6GMGRRdnFVjCQs",
+            "command": "grep -n -i \"base64\\|obscur\\|encrypt\" docs/concepts/configuration/secret.md"
+          },
+          {
+            "id": "toolu_01WxcZKNJSfCfvbRwriPMHay",
+            "command": "grep -n -i \"failureThreshold \\* periodSeconds\\|300s\\|worst case startup\\|Protect slow starting\\|once the startup probe has succeeded\" docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md"
+          }
+        ],
+        "operationErrors": [
+          {
+            "id": "toolu_015hf9KXE1JgzaZy6nDu8d4n",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": false
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "competitor",
+      "elapsedMs": 190333,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 4483,
+      "threadId": "77f3e1ba-d0a2-4f71-8eb2-e6c1448a22e4",
+      "usage": {
+        "input_tokens": 730488,
+        "cached_input_tokens": 668970,
+        "cache_write_input_tokens": 58864,
+        "output_tokens": 12901,
+        "cost_usd": 0.8626755000000002
+      },
+      "totalTokens": 743389,
+      "uncachedInputTokens": 61518,
+      "commands": 46,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25488,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01YVRLveGkRYf6f3Rn8NGQiV",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/workloads/pods/disruptions.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01E8fPH65sUWXZTuuJ9hk43s",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_013o2iEC4zFg8btDbsZbzw8N",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/workloads/pods/pod-lifecycle.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Br1qKhjzNpSo76bGJhCJtp",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/run-application/horizontal-pod-autoscale.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01YMZqArHkg9zNJrdUGReFXz",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Ftna59B1ePczUozP2sDDoK",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/workloads/controllers/deployment.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01TruecpKkNuxGqn15DCHugk",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Y1irMtxvgkqGoRZFJAmGkM",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/configuration/secret.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_015SFXX7THbd4x19eWZHRWk1",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/storage/persistent-volumes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01TpkupcTuNvjqttXbakGfot",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/storage/storage-classes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01PeqKUsmAqZc6hkriXngAyi",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/workloads/controllers/statefulset.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01FtxVSdZTRCFN1JA6oN6Cwf",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/security/rbac-good-practices.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01JpmKneV6d2cPJCXbUgLEKt",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Xf2GA2jh6E7e9ery7eVSac",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/run-application/horizontal-pod-autoscale.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01XQHSTT9nTsBAT3yFopVHda",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/administer-cluster/encrypt-data.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_011SqaiuFoJbgeUXg2XoMDaq",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_017vr3zm7bNyWZ7sm4XoJENp",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01Wv9g8pqvzLwjj1FDDxzP7p",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/concepts/configuration/manage-resources-containers.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01LMJEMzQqzC68MH1SfshCsS",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-competitor-pJ5sug/docs/tasks/run-application/configure-pdb.md"
+            ],
+            "wasReturned": true
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 26,
+        "successfulCompetitorCommands": 26,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 20,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 4,
+        "passed": true
+      }
+    },
+    {
+      "pair": 4,
+      "mode": "competitor",
+      "elapsedMs": 154457,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 4491,
+      "threadId": "65efa25a-adb1-49aa-baf1-06b6ea32b0a8",
+      "usage": {
+        "input_tokens": 791053,
+        "cached_input_tokens": 732748,
+        "cache_write_input_tokens": 55649,
+        "output_tokens": 11864,
+        "cost_usd": 0.8289791
+      },
+      "totalTokens": 802917,
+      "uncachedInputTokens": 58305,
+      "commands": 43,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 23807,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "toolu_01Dr8NMeGHMZA3jnboK6xPFh",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/workloads/pods/disruptions.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_013GFmV99pqrLwHBniN9DKex",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01E2DwwDAG5sQt2sHQGhG25a",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/workloads/pods/pod-lifecycle.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01WVCXreSchAiKxdPPRwYUcd",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/workloads/controllers/deployment.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01VkUwX4kJx3TZxixXZ4wFub",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/scheduling-eviction/topology-spread-constraints.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_011dZQ9bgAkqMm9YCnDsqGmo",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/configuration/secret.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01QR3A2feBy5R9pMAgpq6HQT",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/workloads/controllers/statefulset.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01NkhqdLqSfVt9gH5RPkFK72",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/storage/storage-classes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01HvVco7CkjGsENZC44CMBQ1",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/tasks/run-application/horizontal-pod-autoscale.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01PNTsj4qbzRD37ZuwkTX3dG",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01BLHWwdgh5UeqZhcVpcQKFA",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/storage/persistent-volumes.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_019PViA5aDCjLkCZd3ao9vk8",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/configuration/manage-resources-containers.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_013ZMuw99oi22uaaCJa1kuvV",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/tasks/run-application/horizontal-pod-autoscale.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_012dqrDnWKa98RbRY9KxXq7u",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/concepts/services-networking/network-policies.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01RLfur1CHo8r3vEBkugTakg",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/tasks/run-application/configure-pdb.md"
+            ],
+            "wasReturned": true
+          },
+          {
+            "id": "toolu_01PGwHnkJUtn3gZDmmHSY45M",
+            "words": [
+              "cat",
+              "C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-4-competitor-GaPwUK/docs/reference/kubernetes-api/workload-resources/pod-v1.md"
+            ],
+            "wasReturned": true
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 26,
+        "successfulCompetitorCommands": 26,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 17,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 3,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "994fc87ca652083e64aa6f51f0d4b27ed1fb744fc76c14e3ecac383422ce50ec"
+}

@@ -1,0 +1,13 @@
+{
+  "scripts/doktimoi.mjs": "9e273ac27465337e91d1a8fa962c37bcadcf07a514b397a55fad21203c9c9ad1",
+  "scripts/drawio.mjs": "7cb867f9a79c80b3d8eaa98718fcfb0f42eca8dcaf1e60c8a7ecb77794b91378",
+  "scripts/extraction.mjs": "c93ad1b72e666281bf91eb30c13bd4ac2b1ad02f4f0dcb2a06ae6f5c6814dc7f",
+  "scripts/html.mjs": "0ddc822344374dc8d5cb16d946dab0bc125d937a44a836b571bc0caf49330ad1",
+  "scripts/office.mjs": "7b2ef1837254cbd3d9bf0c1ed52488503765d7bd22391e131d682c8ef0ca9430",
+  "scripts/server.mjs": "2e0837dbf0ce2c8eefe01a3a5384b479b526b61f511a9c346b310c2f53531299",
+  "scripts/sources.mjs": "2a573bd45ecbf9c2e40f7d0f6d045641f931632197fc41435aad570629189465",
+  "scripts/structured.mjs": "4292db1333fe14b16221c9970bcabea4fc87568f84fbd7d4efd86cc0ecc2ed07",
+  "scripts/svg.mjs": "1b90855e901f3ed6b6662a8422ba15d7c9cde5fd6b11d84c2c0f97bf21d6fd5d",
+  "references/index.md": "99452ef52c0e182d896a4a9ce5e6a28461949a7aee818b3a710ef856cf3b95a0",
+  "references/retrieve.md": "5d005b15965ed5c7498e6879e4b1936f8ba160431cef661ef8d0336d4ee94904"
+}

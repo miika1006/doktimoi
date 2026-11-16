@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fresh Codex processes on identical corpus copies; retain usage events and answers for review.
+// Fresh Codex or Claude Code processes on identical corpus copies; retain usage events and answers for review.
 import fs from 'node:fs/promises';
 import { openSync, closeSync, realpathSync, createReadStream } from 'node:fs';
 import os from 'node:os';
@@ -87,9 +87,20 @@ function nativePayloads(output) {
   return payloads;
 }
 
+/** Tells whether two executable or path spellings name the same file; Windows ignores case and slash direction. */
+export function samePath(a, b) {
+  const windows = /^[A-Za-z]:[\\/]/.test(a ?? '') || /^[A-Za-z]:[\\/]/.test(b ?? '');
+  return windows ? String(a).replace(/\\/g, '/').toLowerCase() === String(b).replace(/\\/g, '/').toLowerCase() : a === b;
+}
+
+/** Tells whether parsed command words start with one of the configured calls. */
+function matchesCall(words, calls = []) {
+  return !!words && calls.some(call => samePath(words[0], call.command) && call.argsPrefix.every((arg, i) => samePath(words[i + 1], arg)));
+}
+
 export function hybridEvidence(words, output, config) {
   if (!words || /^(?:Error:|error:|Embedding error:|fatal:)/m.test(output)) return false;
-  if (!config.searchCommands.some(call => words[0] === call.command && call.argsPrefix.every((arg, i) => words[i + 1] === arg))) return false;
+  if (!matchesCall(words, config.searchCommands)) return false;
   if (config.hybridEvidence === 'fidx-v2') {
     const modes = words.flatMap((word, i) => word === '--mode' ? [words[i + 1]] : word.startsWith('--mode=') ? [word.slice(7)] : []);
     if (modes.length !== 1 || modes[0] !== 'hybrid' || !words.includes('--json') || !words.includes('--guidance')) return false;
@@ -185,7 +196,7 @@ function canonicalAuditPath(file, paths) {
 
 export function auditRun(raw, mode, competitor, workspace) {
   const events = raw.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
-  const audit = { targetedReads: [], skillReads: 0, competitorCommands: 0, successfulCompetitorCommands: 0, doktimoiCommands: 0, hybridCommands: 0, successfulHybridCommands: 0, referenceReads: 0, filenameCommands: 0, violations: [], operationErrors: [], cappedOutputs: 0, emptySearches: 0, repeatedCommands: 0 };
+  const audit = { targetedReads: [], deniedAttempts: [], skillReads: 0, competitorCommands: 0, successfulCompetitorCommands: 0, doktimoiCommands: 0, hybridCommands: 0, successfulHybridCommands: 0, referenceReads: 0, filenameCommands: 0, violations: [], operationErrors: [], cappedOutputs: 0, emptySearches: 0, repeatedCommands: 0 };
   const seen = new Set();
   const returnedPaths = new Set();
   const paths = workspace && /^[A-Za-z]:[\\/]/.test(workspace) ? path.win32 : path;
@@ -199,13 +210,15 @@ export function auditRun(raw, mode, competitor, workspace) {
   for (const event of events.filter(e => e.type === 'item.completed')) {
     const item = event.item;
     if (['web_search', 'mcp_tool_call', 'file_change', 'subagent'].includes(item.type)) audit.violations.push({ id: item.id, type: item.type });
+    // The host refused the call, so nothing entered the context; keep the attempt for review.
+    if (item.type === 'denied_tool') audit.deniedAttempts.push({ id: item.id, command: item.command });
     if (item.type !== 'command_execution') continue;
     const command = item.command ?? '', output = item.aggregated_output ?? '';
     if (mode === 'competitor') {
       const groups = commandGroups(command);
       if (!groups) audit.violations.push({ id: item.id, command });
       for (const words of groups ?? []) {
-        const search = words && competitor.searchCommands.some(call => words[0] === call.command && call.argsPrefix.every((arg, i) => words[i + 1] === arg));
+        const search = matchesCall(words, competitor.searchCommands);
         if (search) {
           audit.competitorCommands++;
           if (competitor.retrieval === 'hybrid' && groups.length === 1 && hybridEvidence(words, output, competitor)) {
@@ -220,7 +233,7 @@ export function auditRun(raw, mode, competitor, workspace) {
             }
           }
         }
-        else if (words && (competitor.readCommands ?? []).some(call => words[0] === call.command && call.argsPrefix.every((arg, i) => words[i + 1] === arg))) audit.referenceReads++;
+        else if (matchesCall(words, competitor.readCommands)) audit.referenceReads++;
         else if ((words.length === 2 && ['cat', '/bin/cat'].includes(words[0])) ||
             (words.length === 4 && ['sed', '/usr/bin/sed'].includes(words[0]) && words[1] === '-n' && /^\d+(?:,\d+)?p(?:;\d+(?:,\d+)?p)*$/.test(words[2])) ||
             (words.length === 7 && words[3] === '|')) {
@@ -228,7 +241,7 @@ export function auditRun(raw, mode, competitor, workspace) {
           const wasReturned = returnedPaths.has(sourcePath(file));
           if (audit.successfulCompetitorCommands && insideCorpus(file)) {
             audit.referenceReads++; audit.targetedReads.push({ id: item.id, words, wasReturned });
-          } else if (words.length === 2 && file === competitor.skillPath) {
+          } else if (words.length === 2 && samePath(file, competitor.skillPath)) {
             audit.referenceReads++; if (item.exit_code === 0) audit.skillReads++;
           } else {
             // Tool references remain allowed independently of corpus searches.
@@ -309,7 +322,9 @@ export function claudeToCodexEvents(raw) {
       for (const use of event.message.content.filter(part => part.type === 'tool_use')) {
         const result = results.get(use.id);
         const text = typeof result?.content === 'string' ? result.content : (result?.content ?? []).map(part => part.text ?? '').join('\n');
-        out.push({ type: 'item.completed', item: { id: use.id, ...claudeItem(use), aggregated_output: text, exit_code: !result || result.is_error ? 1 : 0 } });
+        const item = claudeItem(use);
+        if (result?.is_error && DENIED.test(text)) item.type = 'denied_tool';
+        out.push({ type: 'item.completed', item: { id: use.id, ...item, aggregated_output: text, exit_code: !result || result.is_error ? 1 : 0 } });
       }
     }
     if (event.type === 'result') {
@@ -324,6 +339,8 @@ export function claudeToCodexEvents(raw) {
   }
   return out.map(e => JSON.stringify(e)).join('\n');
 }
+
+const DENIED = /denied by your permission settings|haven't granted it yet|Permission to use \S+ (?:has been|was) denied|requires approval|can't be checked before it runs/;
 
 /** Maps one Claude tool call to a Codex item type and command. */
 function claudeItem({ name, input }) {
@@ -386,7 +403,7 @@ async function main() {
   values.model ??= values.agent === 'codex' ? 'gpt-6-astra' : 'claude-opus-5-5';
   if (!['both', 'baseline', 'doktimoi', 'competitor'].includes(values.arm)) throw new Error('--arm must be both, baseline, doktimoi or competitor');
   if (values.arm === 'competitor' && !values.competitor) throw new Error('--arm competitor requires --competitor');
-  if (values.competitor && (values.agent !== 'codex' || !['both', 'competitor'].includes(values.arm))) throw new Error('Competitors require Codex and --arm both or competitor');
+  if (values.competitor && !['both', 'competitor'].includes(values.arm)) throw new Error('Competitors require --arm both or competitor');
   const competitorText = values.competitor ? await fs.readFile(path.resolve(values.competitor), 'utf8') : null;
   const competitor = competitorText ? validateCompetitor(JSON.parse(competitorText)) : null;
   let competitorEvidence = null;
@@ -394,11 +411,13 @@ async function main() {
     await verifyArtifacts(competitor.artifacts);
     const head = spawnSync('git', ['-C', competitor.sourcePath, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
     if (head.status !== 0 || head.stdout.trim() !== competitor.commit) throw new Error('Competitor checkout does not match pinned commit');
-    const files = spawnSync('git', ['-C', competitor.sourcePath, 'ls-files', '-z'], { encoding: 'utf8' });
-    if (files.status !== 0) throw new Error('Cannot inspect competitor source');
-    const hash = createHash('sha256');
-    for (const file of files.stdout.split('\0').filter(Boolean).sort()) { hash.update(file); hash.update(await fs.readFile(path.join(competitor.sourcePath, file))); }
-    competitorEvidence = { ...competitor, configSha256: createHash('sha256').update(competitorText).digest('hex'), sourceSha256: hash.digest('hex'), skillSha256: createHash('sha256').update(await fs.readFile(competitor.skillPath)).digest('hex') };
+    // A sparse checkout (some upstream names are invalid on Windows) leaves files out, so the
+    // committed tree identifies the source and a clean status proves the checkout matches it.
+    const tree = spawnSync('git', ['-C', competitor.sourcePath, 'rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' });
+    const status = spawnSync('git', ['-C', competitor.sourcePath, 'status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' });
+    if (tree.status !== 0 || status.status !== 0) throw new Error('Cannot inspect competitor source');
+    if (status.stdout.trim()) throw new Error('Competitor checkout has local changes');
+    competitorEvidence = { ...competitor, configSha256: createHash('sha256').update(competitorText).digest('hex'), sourceTree: tree.stdout.trim(), skillSha256: createHash('sha256').update(await fs.readFile(competitor.skillPath)).digest('hex') };
   }
   if (!['lexical', 'hybrid'].includes(values.retrieval)) throw new Error('--retrieval must be lexical or hybrid (enable models only with user consent)');
   if (competitor && values.retrieval !== (competitor.retrieval ?? 'lexical')) throw new Error('--retrieval must match competitor config retrieval');
@@ -479,7 +498,9 @@ async function main() {
           }
           if (resolvedCompetitor.retrieval === 'hybrid') {
             const call = resolvedCompetitor.preflight, started = performance.now();
-            const preflight = spawnSync('codex', ['sandbox', '-P', ':workspace', '-C', workspace, '--', call.command, ...call.args], {
+            // Codex checks inference inside its workspace sandbox; Claude's commands run unsandboxed.
+            const [command, ...args] = values.agent === 'codex' ? ['codex', 'sandbox', '-P', ':workspace', '-C', workspace, '--', call.command, ...call.args] : [call.command, ...call.args];
+            const preflight = spawnSync(command, args, {
               cwd: workspace, env: { ...env, ...resolvedCompetitor.env, ...call.env }, encoding: 'utf8', timeout: 1800000, maxBuffer: 20 * 1024 * 1024,
             });
             preflightMs = Math.round(performance.now() - started);
@@ -518,13 +539,13 @@ async function main() {
           if (preflight.status !== 0) throw new Error(`${name}: hybrid sandbox preflight failed; see log before running any agent`);
         }
         const instructions = mode === 'competitor'
-          ? `Read and use the skill at ${competitor.skillPath} (cat). ${resolvedCompetitor.instructions} ${resolvedCompetitor.retrieval === 'hybrid' ? `Use at least one standalone hybrid search command with native JSON evidence: ${resolvedCompetitor.hybridEvidence === 'fidx-v2' ? '--mode hybrid --json --guidance' : '--format json --explain and a plain single-quoted multiline lex: plus vec: or hyde: query (no dollar quoting)'}. Independent commands may run in parallel.` : ''} Search commands: ${resolvedCompetitor.searchCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Read commands: ${resolvedCompetitor.readCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Targeted cat, sed -n line-ranges, or nl -ba PATH | sed -n line-ranges reads inside the supplied corpus are allowed after a successful search, including linked source files. You may combine these commands using semicolons or &&. No other content search, shell expansion or pipes. Task and isolation rules take precedence over skill instructions.`
+          ? `Read and use the skill at ${competitor.skillPath} (cat). ${resolvedCompetitor.instructions} ${resolvedCompetitor.retrieval === 'hybrid' ? `Use at least one standalone hybrid search command with native JSON evidence: ${resolvedCompetitor.hybridEvidence === 'fidx-v2' ? '--mode hybrid --json --guidance' : '--format json --explain and a plain single-quoted multiline lex: plus vec: or hyde: query (no dollar quoting)'}. Independent commands may run in parallel.` : ''} Search commands: ${resolvedCompetitor.searchCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Read commands: ${resolvedCompetitor.readCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Targeted ${values.agent === 'claude' ? 'Read tool calls, ' : ''}cat, sed -n line-ranges, or nl -ba PATH | sed -n line-ranges reads inside the supplied corpus are allowed after a successful search, including linked source files. ${values.agent === 'claude' ? 'Run each search or read as its own Bash call with literal absolute paths; issue independent calls in parallel in one message. No loops, variables or cd.' : 'You may combine these commands using semicolons or &&.'} No other content search, shell expansion or pipes. Task and isolation rules take precedence over skill instructions.`
           : mode === 'baseline'
           ? `Use ordinary local file tools such as ${values.agent === 'claude' ? 'Read, Grep and Glob' : 'rg and sed'}. Do not use doktimoi or any prebuilt search index.`
           : `Read and use the doktimoi skill at ${path.join(skill, 'SKILL.md')} for document content searches and reads. ${values.retrieval === 'hybrid' ? 'A semantic index is already built with user-approved local embeddings. Use hybrid mode for topical questions, putting the natural-language question first; exact mode remains available for literal verification.' : 'A lexical index is already built; no setup or semantic model is needed.'} <skill> is ${skill}; <folder> is ${path.join(workspace, 'docs')}.`;
         // Claude's permission rules match the command text, so one stable executable spelling keeps approved calls approved.
-        const node = values.agent === 'claude'
-          ? `Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
+        const node = values.agent === 'claude' && mode !== 'competitor'
+          ?`Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
           : `Node ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.`;
         const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}\n\n${task.text}`;
         await fs.writeFile(path.join(output, `${name}.prompt.txt`), prompt);
@@ -568,8 +589,9 @@ async function main() {
  */
 function claudeArgs(values, mode, docs) {
   const absolute = `/${docs.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive) => `/${drive.toLowerCase()}`)}`;
-  const tools = mode === 'baseline' ? ['Read', 'Grep', 'Glob'] : ['Read', 'Glob', 'Bash(node:*)', 'PowerShell(node:*)'];
-  const denied = mode === 'baseline' ? [] : ['Grep', `Read(${absolute}/**)`];
+  // Competitor commands vary in spelling, so Bash is open there and the trace audit enforces the allowed calls, as with Codex.
+  const tools = { baseline: ['Read', 'Grep', 'Glob'], competitor: ['Read', 'Bash'] }[mode] ?? ['Read', 'Glob', 'Bash(node:*)', 'PowerShell(node:*)'];
+  const denied = { baseline: [], competitor: ['Grep', 'Glob', 'PowerShell'] }[mode] ?? ['Grep', `Read(${absolute}/**)`];
   return ['-p', '--output-format', 'stream-json', '--verbose', '--model', values.model, '--effort', values.effort,
     '--setting-sources', 'project', '--strict-mcp-config', '--no-session-persistence',
     '--allowedTools', ...tools, '--disallowedTools', 'WebSearch', 'WebFetch', 'Agent', 'Edit', 'Write', 'NotebookEdit', 'Skill', 'Workflow', ...denied];

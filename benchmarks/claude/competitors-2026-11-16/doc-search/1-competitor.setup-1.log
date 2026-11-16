@@ -1,0 +1,20 @@
+Initializing...
+⠏ Initializing index manager...
+Found 409 file(s) to index
+Processing guestbook.md... --------------------------------------- 100% 0:00:00
+┌────────────────────────────────── Summary ──────────────────────────────────┐
+│ Indexing complete!                                                          │
+│                                                                             │
+│ Files processed: 409                                                        │
+│ Total chunks: 2544                                                          │
+│ Category: kubernetes                                                        │
+│ Index:                                                                      │
+│ C:\Users\miikame\AppData\Local\Temp\doktimoi-bench-1-competitor-6NuKcl\doc- │
+│ search-index                                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+C:\TEMP\doktimoi-competitors\doc-search-venv\Lib\site-packages\fitz\__init__.py:17: FutureWarning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+  warnings.warn(
+Building prefix dict from the default dictionary ...
+Dumping model to file cache C:\Users\miikame\AppData\Local\Temp\jieba.cache
+Loading model cost 0.721 seconds.
+Prefix dict has been built successfully.
