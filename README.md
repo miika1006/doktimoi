@@ -47,31 +47,22 @@ time of every arm, with answers of comparable quality.
 | Held-out batch platform | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | 34 |
 | | **Doktimoi 0.14.2** | **642,117** | **−48.5%** | **93.8 s** | 14 |
 
-**Where Doktimoi's tokens go.** A Doktimoi run on the production task took 5–7 model
-rounds: one to read the skill, one or two in which the agent sends several search
-batches at once, a few to fill gaps, and one to write the answer. Every round sends the
-whole conversation so far back to the model, so about 83% of the 385k tokens are this
-repeated context read from the provider's cache, about 14% is new context written to the
-cache, and only about 2% is the model's own output (the 1,700-word memo). The searches
-returned about 20k tokens of cited passages in total; they cost far more than that
-because each later round re-reads them. The control needed 31 tool calls and the
-competitors 37–47, because their tools return file names or snippets and the agent then
-opens files, round after round; Doktimoi returns the passages themselves, several
-questions per call, so it needs fewer rounds. Total tokens follow the number of rounds,
-not the size of one response.
+**Tokens.** Each model round re-sends the whole conversation, so about 83% of Doktimoi's
+385k tokens are that repeated context, 14% new context and 2% the written answer.
+Doktimoi returns cited passages for several questions per call and needs 5–7 rounds;
+the other tools return file names or snippets, so the agent opens files over 31–47 calls.
 
-**Where the time goes.** Of the 93.6 s, writing the final memo took about 53 s, the
-searches and reads about 10 s in total (including starting the folder's background
-server on the first call), and the model's work between rounds the remaining 30 s or
-so. Fewer rounds therefore also saves time, while faster search alone would save little.
-Building the index is a one-off step outside these times: about 22 s for the 409 files
-(146 s before 0.14.2). Optional semantic search needed another 7.5 minutes of GPU
-embedding and on this task did not beat keyword search; its agents made more rounds.
+**Time.** Of 93.6 s, writing the answer took about 53 s, model work between rounds 30 s
+and the searches about 10 s. Indexing the 409 files takes about 22 s once.
 
-Real-time antivirus scanning was on during all runs, which slows indexing and process
-start-up. Totals count provider input plus output with cached input once; costs, quality
-checks, raw traces, the paused competitor study and earlier Codex results are in
-[benchmarks/](benchmarks/README.md).
+**Hybrid (GPU).** The GPU only computes embeddings and costs no tokens. The hybrid runs
+most likely used more tokens because their agents made 7–9 rounds instead of 5–7: they
+often sent their long natural-language searches one batch per round, and less exact
+semantic hits led to extra exact-match checks. On this English task, keyword search
+already matches the documents' wording.
+
+Antivirus scanning was on during all runs. Costs, quality checks, raw traces and earlier
+Codex results are in [benchmarks/](benchmarks/README.md).
 
 ## Example uses
 
