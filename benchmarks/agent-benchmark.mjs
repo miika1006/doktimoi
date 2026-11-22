@@ -269,7 +269,7 @@ export function auditRun(raw, mode, competitor, workspace) {
       else if (/\brg --files\b/.test(command) && !/\b(cat|sed|head|tail)\b/.test(command)) audit.filenameCommands++;
       else audit.violations.push({ id: item.id, command });
     }
-    if (mode === 'baseline' && (doktimoi || command.includes('.doktimoi'))) audit.violations.push({ id: item.id, command });
+    if (['baseline', 'batched'].includes(mode) && (doktimoi || command.includes('.doktimoi'))) audit.violations.push({ id: item.id, command });
     const messages = output.match(/^(?:doktimoi:|\[Error:).*$/gm) ?? [];
     if (item.exit_code !== 0 || messages.length) audit.operationErrors.push({ id: item.id, exitCode: item.exit_code, messages });
     if (/Output cap reached|\[Continue:/.test(output)) audit.cappedOutputs++;
@@ -356,22 +356,28 @@ function claudeItem({ name, input }) {
   return { type: 'other_tool', name };
 }
 
-export async function verifyCorpus() {
-  const base = path.join(repo, 'examples/kubernetes');
+const defaultCorpus = path.join(repo, 'examples/kubernetes');
+
+export async function verifyCorpus(base = defaultCorpus) {
   const manifest = JSON.parse(await fs.readFile(path.join(base, 'sources.json'), 'utf8'));
   let bytes = 0;
+  const paths = new Set();
   for (const file of manifest.files) {
+    if (!/^docs\//.test(file.path) || file.path.includes('\\') ||
+        file.path.split('/').some(part => !part || part.startsWith('.') || part.includes(':')) || paths.has(file.path)) {
+      throw new Error(`Invalid corpus path: ${file.path}`);
+    }
+    paths.add(file.path);
     const raw = await fs.readFile(path.join(base, file.path));
     if (raw.length !== file.bytes || createHash('sha256').update(raw).digest('hex') !== file.sha256) {
       throw new Error(`Corpus changed: ${file.path}`);
     }
     bytes += raw.length;
   }
-  return { revision: manifest.revision, files: manifest.files.length, bytes };
+  return { revision: manifest.revision, manifestSha256: createHash('sha256').update(JSON.stringify(manifest)).digest('hex'), files: manifest.files.length, bytes };
 }
 
-export async function copyCorpus(destination) {
-  const base = path.join(repo, 'examples/kubernetes');
+export async function copyCorpus(destination, base = defaultCorpus) {
   const manifest = JSON.parse(await fs.readFile(path.join(base, 'sources.json'), 'utf8'));
   // Copy only pinned source files: a developer's local index must never reach the baseline.
   for (const file of manifest.files) {
@@ -390,7 +396,7 @@ export async function loadBenchmarkTask(taskPath = path.join(repo, 'benchmarks/t
 async function main() {
   checkRuntime();
   const { values } = parseArgs({ options: {
-    output: { type: 'string' }, task: { type: 'string' }, pairs: { type: 'string', default: '3' },
+    output: { type: 'string' }, corpus: { type: 'string', default: defaultCorpus }, task: { type: 'string' }, pairs: { type: 'string', default: '3' },
     agent: { type: 'string', default: 'codex' },
     model: { type: 'string' }, effort: { type: 'string', default: 'medium' },
     retrieval: { type: 'string', default: 'lexical' },
@@ -401,7 +407,7 @@ async function main() {
   const pairs = Number(values.pairs);
   if (!['codex', 'claude'].includes(values.agent)) throw new Error('--agent must be codex or claude');
   values.model ??= values.agent === 'codex' ? 'gpt-6-astra' : 'claude-opus-5-5';
-  if (!['both', 'baseline', 'doktimoi', 'competitor'].includes(values.arm)) throw new Error('--arm must be both, baseline, doktimoi or competitor');
+  if (!['both', 'batch-study', 'baseline', 'doktimoi', 'competitor'].includes(values.arm)) throw new Error('--arm must be both, batch-study, baseline, doktimoi or competitor');
   if (values.arm === 'competitor' && !values.competitor) throw new Error('--arm competitor requires --competitor');
   if (values.competitor && !['both', 'competitor'].includes(values.arm)) throw new Error('Competitors require --arm both or competitor');
   const competitorText = values.competitor ? await fs.readFile(path.resolve(values.competitor), 'utf8') : null;
@@ -426,10 +432,10 @@ async function main() {
   if (!values.output || !Number.isInteger(pairs) || pairs < 1 || pairs > 10) throw new Error('Use --output NEW_DIRECTORY --pairs 1..10');
   const output = path.resolve(values.output);
   if (!values.resume) await fs.mkdir(output); // Never overwrite earlier evidence.
-  const corpus = await verifyCorpus();
+  const corpus = await verifyCorpus(values.corpus);
   if (values.prepared) {
     const prepared = JSON.parse(await fs.readFile(path.join(values.prepared, '.doktimoi/manifest.json'), 'utf8'));
-    const expected = JSON.parse(await fs.readFile(path.join(repo, 'examples/kubernetes/sources.json'), 'utf8'));
+    const expected = JSON.parse(await fs.readFile(path.join(values.corpus, 'sources.json'), 'utf8'));
     if (Object.keys(prepared.files).length !== corpus.files || expected.files.some(file => prepared.files[file.path.slice('docs/'.length)]?.hash !== file.sha256)) throw new Error('Prepared index does not match the pinned corpus');
     if (!hasSemanticIndex(values.prepared) || unembeddedChunks(values.prepared) !== 0) throw new Error('Prepared semantic index is incomplete');
   }
@@ -463,7 +469,7 @@ async function main() {
   };
   if (values.resume) {
     const previous = JSON.parse(await fs.readFile(path.join(output, 'summary.json'), 'utf8'));
-    for (const key of ['model', 'reasoningEffort', 'arm', 'retrieval', 'embeddingModel', 'forceCpu', 'preparedIndex', 'runnerSha256', 'taskSha256', 'skillSha256', 'implementationSha256', 'node', 'competitor', values.agent]) {
+    for (const key of ['corpus', 'platform', 'model', 'reasoningEffort', 'arm', 'retrieval', 'embeddingModel', 'forceCpu', 'preparedIndex', 'runnerSha256', 'taskSha256', 'skillSha256', 'implementationSha256', 'node', 'competitor', values.agent]) {
       if (JSON.stringify(previous[key] ?? null) !== JSON.stringify(report[key] ?? null)) throw new Error(`Cannot resume after changing ${key}`);
     }
     report = previous;
@@ -473,7 +479,9 @@ async function main() {
   for (let pair = 1; pair <= pairs; pair++) {
     // Alternate order to reduce systematic first-run/cache bias; each invocation is a new thread.
     const treatment = competitor ? 'competitor' : 'doktimoi';
-    const order = values.arm === 'both' ? (pair % 2 ? ['baseline', treatment] : [treatment, 'baseline']) : [values.arm];
+    const arms = ['baseline', 'batched', 'doktimoi'];
+    const order = values.arm === 'batch-study' ? arms.map((_, i) => arms[(i + pair - 1) % arms.length])
+      : values.arm === 'both' ? (pair % 2 ? ['baseline', treatment] : [treatment, 'baseline']) : [values.arm];
     for (const mode of order) {
       const name = `${pair}-${mode}`;
       if (report.runs.some(run => run.pair === pair && run.mode === mode)) continue;
@@ -482,7 +490,7 @@ async function main() {
       }
       const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `doktimoi-bench-${name}-`));
       try {
-        await copyCorpus(path.join(workspace, 'docs'));
+        await copyCorpus(path.join(workspace, 'docs'), values.corpus);
         let buildMs = 0, embedMs = 0, indexCopyMs = 0, preflightMs = 0, setupMs = 0;
         const resolvedCompetitor = competitor ? resolveCompetitor(competitor, workspace) : null;
         if (mode === 'competitor') {
@@ -540,14 +548,17 @@ async function main() {
         }
         const instructions = mode === 'competitor'
           ? `Read and use the skill at ${competitor.skillPath} (cat). ${resolvedCompetitor.instructions} ${resolvedCompetitor.retrieval === 'hybrid' ? `Use at least one standalone hybrid search command with native JSON evidence: ${resolvedCompetitor.hybridEvidence === 'fidx-v2' ? '--mode hybrid --json --guidance' : '--format json --explain and a plain single-quoted multiline lex: plus vec: or hyde: query (no dollar quoting)'}. Independent commands may run in parallel.` : ''} Search commands: ${resolvedCompetitor.searchCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Read commands: ${resolvedCompetitor.readCommands.map(call => [call.command, ...call.argsPrefix].map(arg => JSON.stringify(arg)).join(' ')).join('; ')}. Targeted ${values.agent === 'claude' ? 'Read tool calls, ' : ''}cat, sed -n line-ranges, or nl -ba PATH | sed -n line-ranges reads inside the supplied corpus are allowed after a successful search, including linked source files. ${values.agent === 'claude' ? 'Run each search or read as its own Bash call with literal absolute paths; issue independent calls in parallel in one message. No loops, variables or cd.' : 'You may combine these commands using semicolons or &&.'} No other content search, shell expansion or pipes. Task and isolation rules take precedence over skill instructions.`
-          : mode === 'baseline'
+          : ['baseline', 'batched'].includes(mode)
           ? `Use ordinary local file tools such as ${values.agent === 'claude' ? 'Read, Grep and Glob' : 'rg and sed'}. Do not use doktimoi or any prebuilt search index.`
           : `Read and use the doktimoi skill at ${path.join(skill, 'SKILL.md')} for document content searches and reads. ${values.retrieval === 'hybrid' ? 'A semantic index is already built with user-approved local embeddings. Use hybrid mode for topical questions, putting the natural-language question first; exact mode remains available for literal verification.' : 'A lexical index is already built; no setup or semantic model is needed.'} <skill> is ${skill}; <folder> is ${path.join(workspace, 'docs')}.`;
         // Claude's permission rules match the command text, so one stable executable spelling keeps approved calls approved.
         const node = values.agent === 'claude' && mode !== 'competitor'
           ?`Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
           : `Node ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.`;
-        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}\n\n${task.text}`;
+        const batching = values.arm === 'batch-study' && mode !== 'baseline'
+          ? '\nGroup independent searches into the same tool round, then group the necessary source reads. Follow up on gaps until you can support every answer.'
+          : '';
+        const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}${batching}\n\n${task.text}`;
         await fs.writeFile(path.join(output, `${name}.prompt.txt`), prompt);
         const args = values.agent === 'claude' ? claudeArgs(values, mode, path.join(workspace, 'docs')) : ['exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check',
           '--sandbox', 'workspace-write', '--json', '-C', workspace, '-m', values.model,
@@ -588,6 +599,7 @@ async function main() {
  * names; Grep and Read of the corpus are denied there, because read-only tools need no approval.
  */
 function claudeArgs(values, mode, docs) {
+  if (mode === 'batched') mode = 'baseline';
   const absolute = `/${docs.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive) => `/${drive.toLowerCase()}`)}`;
   // Competitor commands vary in spelling, so Bash is open there and the trace audit enforces the allowed calls, as with Codex.
   const tools = { baseline: ['Read', 'Grep', 'Glob'], competitor: ['Read', 'Bash'] }[mode] ?? ['Read', 'Glob', 'Bash(node:*)', 'PowerShell(node:*)'];
