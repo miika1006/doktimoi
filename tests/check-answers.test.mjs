@@ -26,6 +26,9 @@ test('answer checker accepts prose citations and still rejects missing sources a
   const linked = await check(answer(() => `[source](docs/${source}), lines 99–136, 140–145`));
   assert.equal(linked.status, 0, linked.stderr);
   assert.equal(JSON.parse(linked.stdout).answers[0].checkedCitationRanges, 20);
+  const defined = await check(answer(() => '[Pod:99–136, 140–145][p]') + `\n[p]: /private/tmp/bench/docs/${source}\n`);
+  assert.equal(defined.status, 0, defined.stderr);
+  assert.equal(JSON.parse(defined.stdout).answers[0].checkedCitationRanges, 20);
   const invalidRange = await check(answer(() => `\`docs/${source}\`, lines 99–99999`));
   assert.notEqual(invalidRange.status, 0);
   assert.match(invalidRange.stderr, /invalid range/);

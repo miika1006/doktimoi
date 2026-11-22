@@ -18,7 +18,10 @@ for (const dir of process.argv.slice(2)) {
       folder: path.basename(dir), arm: mode, runs: passed.length, failedAudits: failed,
       meanTokens: Math.round(mean(run => run.totalTokens)),
       meanSeconds: +(mean(run => run.elapsedMs) / 1000).toFixed(1),
-      meanCostUsd: +mean(run => run.usage.cost_usd ?? 0).toFixed(3),
+      meanCostUsd: passed.length && passed.every(run => Number.isFinite(run.usage.cost_usd))
+        ? +mean(run => run.usage.cost_usd).toFixed(3) : null,
+      meanModelRounds: passed.length && passed.every(run => Number.isInteger(run.modelRounds))
+        ? +mean(run => run.modelRounds).toFixed(1) : null,
       meanCalls: +mean(run => run.commands).toFixed(1),
       meanSetupSeconds: +(mean(run => (run.setupMs ?? 0) + (run.buildMs ?? 0) + (run.embedMs ?? 0)) / 1000).toFixed(1),
       deniedAttempts: passed.reduce((sum, run) => sum + (run.audit.deniedAttempts?.length ?? 0), 0),

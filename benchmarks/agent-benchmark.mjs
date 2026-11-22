@@ -11,6 +11,7 @@ import { createInterface } from 'node:readline';
 import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { checkRuntime, tokens } from '../skills/doktimoi/scripts/doktimoi.mjs';
+import { safePath } from '../skills/doktimoi/scripts/sources.mjs';
 import { hasSemanticIndex, unembeddedChunks } from '../skills/doktimoi/scripts/server.mjs';
 
 const repo = fileURLToPath(new URL('..', import.meta.url));
@@ -394,8 +395,10 @@ function claudeItem({ name, input }) {
 
 const defaultCorpus = path.join(repo, 'examples/kubernetes');
 
-export async function verifyCorpus(base = defaultCorpus) {
-  const manifest = JSON.parse(await fs.readFile(path.join(base, 'sources.json'), 'utf8'));
+export async function verifyCorpus(base = defaultCorpus, destination, expectedHash) {
+  const manifest = JSON.parse(await fs.readFile(await safePath(base, 'sources.json'), 'utf8'));
+  const manifestSha256 = createHash('sha256').update(JSON.stringify(manifest)).digest('hex');
+  if (expectedHash && manifestSha256 !== expectedHash) throw new Error('Corpus manifest changed after preflight');
   let bytes = 0;
   const paths = new Set();
   for (const file of manifest.files) {
@@ -404,23 +407,23 @@ export async function verifyCorpus(base = defaultCorpus) {
       throw new Error(`Invalid corpus path: ${file.path}`);
     }
     paths.add(file.path);
-    const raw = await fs.readFile(path.join(base, file.path));
+    const raw = await fs.readFile(await safePath(base, file.path));
     if (raw.length !== file.bytes || createHash('sha256').update(raw).digest('hex') !== file.sha256) {
       throw new Error(`Corpus changed: ${file.path}`);
     }
+    if (destination) {
+      const target = await safePath(destination, file.path.slice('docs/'.length));
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.writeFile(target, raw);
+    }
     bytes += raw.length;
   }
-  return { revision: manifest.revision, manifestSha256: createHash('sha256').update(JSON.stringify(manifest)).digest('hex'), files: manifest.files.length, bytes };
+  return { revision: manifest.revision, manifestSha256, files: manifest.files.length, bytes };
 }
 
-export async function copyCorpus(destination, base = defaultCorpus) {
-  const manifest = JSON.parse(await fs.readFile(path.join(base, 'sources.json'), 'utf8'));
-  // Copy only pinned source files: a developer's local index must never reach the baseline.
-  for (const file of manifest.files) {
-    const target = path.join(destination, path.relative('docs', file.path));
-    await fs.mkdir(path.dirname(target), { recursive: true });
-    await fs.copyFile(path.join(base, file.path), target);
-  }
+// Copy exactly the bytes verified against this run's manifest, excluding indexes and answer keys.
+export function copyCorpus(destination, base = defaultCorpus, expectedHash) {
+  return verifyCorpus(base, destination, expectedHash);
 }
 
 export async function loadBenchmarkTask(taskPath = path.join(repo, 'benchmarks/task.md')) {
@@ -527,7 +530,7 @@ async function main() {
       }
       const workspace = await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), `doktimoi-bench-${name}-`));
       try {
-        await copyCorpus(path.join(workspace, 'docs'), values.corpus);
+        await copyCorpus(path.join(workspace, 'docs'), values.corpus, corpus.manifestSha256);
         let buildMs = 0, embedMs = 0, indexCopyMs = 0, preflightMs = 0, setupMs = 0;
         const resolvedCompetitor = competitor ? resolveCompetitor(competitor, workspace) : null;
         if (mode === 'competitor') {

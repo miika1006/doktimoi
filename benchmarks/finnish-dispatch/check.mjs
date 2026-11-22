@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 
 const log = 'paivakirjat/Kide/2025-11.txt', receipt = 'kuitit/L-50.png';
 const policy = 'kiertokirjeet/K-09.docx', tariff = 'liitteet/S-10.xlsx';
+const relevant = new Set([log, receipt, policy, tariff]);
 const key = {
   sinetti: ['152511-080', [log]], niteita: [37, [log]], ovi: ['PAJU 4', [receipt]],
   kolleja: [7, [receipt]], luokka: ['Suljettu odotus', [receipt, policy]],
@@ -22,7 +23,7 @@ for (const directory of process.argv.slice(2)) {
     for (const [field, [value, sources]] of Object.entries(key)) {
       const given = answer?.[field];
       if (given?.arvo !== value) wrong.push(field);
-      if (!Array.isArray(given?.lahteet) || sources.some(source => !given.lahteet.includes(source))) unsupported.push(field);
+      if (!Array.isArray(given?.lahteet) || sources.some(source => !given.lahteet.includes(source)) || given.lahteet.some(source => !relevant.has(source))) unsupported.push(field);
     }
     const keysMatch = Object.keys(answer ?? {}).sort().join() === Object.keys(key).sort().join();
     console.log(JSON.stringify({ name, keysMatch, wrong, unsupported, exact: keysMatch && !wrong.length && !unsupported.length }));

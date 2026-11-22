@@ -356,3 +356,26 @@ test('model rounds must reconcile with provider usage including cached input', (
   assert.equal(verifiedRounds([real, real], real), null);
   assert.equal(verifiedRounds([real], { ...real, cached_input_tokens: 0 }), null);
 });
+
+test('a selected corpus copy rejects changes to its frozen manifest and its source bytes', async t => {
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-manifest-'));
+  t.after(() => fs.rm(base, { recursive: true, force: true }));
+  const dest = path.join(base, 'copy');
+  await fs.mkdir(path.join(base, 'docs'));
+  const file = { path: 'docs/log.txt', bytes: 2, sha256: createHash('sha256').update('ok').digest('hex') };
+  const manifest = { revision: 'first', files: [file] };
+  const save = () => fs.writeFile(path.join(base, 'sources.json'), JSON.stringify(manifest));
+  await save();
+  await fs.writeFile(path.join(base, file.path), 'ok');
+  const frozen = await verifyCorpus(base);
+  await copyCorpus(dest, base, frozen.manifestSha256);
+  assert.equal(await fs.readFile(path.join(dest, 'log.txt'), 'utf8'), 'ok');
+  await fs.writeFile(path.join(base, file.path), 'NO');
+  await assert.rejects(copyCorpus(dest, base, frozen.manifestSha256), /Corpus changed/);
+  manifest.revision = 'second';
+  await save();
+  await assert.rejects(copyCorpus(dest, base, frozen.manifestSha256), /manifest changed/);
+  file.path = 'docs/../key.txt';
+  await save();
+  await assert.rejects(copyCorpus(dest, base), /Invalid corpus path/);
+});
