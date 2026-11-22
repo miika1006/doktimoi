@@ -1,0 +1,88 @@
+UPGRADE_AVAILABLE 0.60.722.0 0.60.759.0
+[gbrain phase] import.collect_files start dir=/private/tmp/doktimoi-bench-3-competitor-mGgCn8/docs strategy=markdown
+[gbrain phase] import.collect_files done 40ms files=409
+Found 409 markdown files
+[import.files] start
+[gbrain] markdown fence cap hit (100 fences/page); skipping additional fences. Override via GBRAIN_MAX_FENCES_PER_PAGE env var.
+[import.files] 1/409 (0%) imported=1 skipped=0 errors=0
+[import.files] 11/409 (2%) imported=11 skipped=0 errors=0
+[import.files] 21/409 (5%) imported=21 skipped=0 errors=0
+[import.files] 31/409 (7%) imported=31 skipped=0 errors=0
+[gbrain] content-sanity warn: tasks/extend-kubernetes/custom-resources/custom-resource-definitions (72455 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 33/409 (8%) imported=33 skipped=0 errors=0
+[import.files] 43/409 (10%) imported=43 skipped=0 errors=0
+[import.files] 53/409 (12%) imported=53 skipped=0 errors=0
+[import.files] 63/409 (15%) imported=63 skipped=0 errors=0
+[import.files] 65/409 (15%) imported=65 skipped=0 errors=0
+[import.files] 75/409 (18%) imported=75 skipped=0 errors=0
+[import.files] 85/409 (20%) imported=85 skipped=0 errors=0
+[import.files] 95/409 (23%) imported=95 skipped=0 errors=0
+[gbrain] content-sanity warn: reference/using-api/api-concepts (63382 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/labels-annotations-taints/_index (111809 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/workload-resources/pod-v1 (213476 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2 (53314 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 97/409 (23%) imported=97 skipped=0 errors=0
+[import.files] 107/409 (26%) imported=107 skipped=0 errors=0
+[import.files] 117/409 (28%) imported=117 skipped=0 errors=0
+[import.files] 127/409 (31%) imported=127 skipped=0 errors=0
+[gbrain] content-sanity warn: reference/kubernetes-api/policy-resources/validating-admission-policy-v1 (60489 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/policy-resources/validating-admission-policy-binding-v1 (57547 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/policy-resources/mutating-admission-policy-v1alpha1 (51645 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/policy-resources/mutating-admission-policy-binding-v1alpha1 (51963 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/extend-resources/custom-resource-definition-v1 (53371 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/config-and-storage-resources/volume (55248 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1 (56006 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 129/409 (31%) imported=129 skipped=0 errors=0
+[import.files] 139/409 (33%) imported=139 skipped=0 errors=0
+[import.files] 149/409 (36%) imported=149 skipped=0 errors=0
+[import.files] 159/409 (38%) imported=159 skipped=0 errors=0
+[import.files] 161/409 (39%) imported=161 skipped=0 errors=0
+[import.files] 171/409 (41%) imported=171 skipped=0 errors=0
+[import.files] 181/409 (44%) imported=181 skipped=0 errors=0
+[import.files] 191/409 (46%) imported=191 skipped=0 errors=0
+[import.files] 193/409 (47%) imported=193 skipped=0 errors=0
+[import.files] 203/409 (49%) imported=203 skipped=0 errors=0
+[import.files] 213/409 (52%) imported=213 skipped=0 errors=0
+[import.files] 223/409 (54%) imported=223 skipped=0 errors=0
+[import.files] 225/409 (55%) imported=225 skipped=0 errors=0
+[import.files] 235/409 (57%) imported=235 skipped=0 errors=0
+[import.files] 245/409 (59%) imported=245 skipped=0 errors=0
+[import.files] 255/409 (62%) imported=255 skipped=0 errors=0
+[import.files] 257/409 (62%) imported=257 skipped=0 errors=0
+[import.files] 267/409 (65%) imported=267 skipped=0 errors=0
+[import.files] 277/409 (67%) imported=277 skipped=0 errors=0
+[import.files] 287/409 (70%) imported=287 skipped=0 errors=0
+[gbrain] content-sanity warn: reference/instrumentation/metrics (292045 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/config-api/kubelet-config.v1beta1 (67158 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/config-api/kubeadm-config.v1beta4 (95335 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/config-api/kubeadm-config.v1beta3 (62603 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/config-api/kube-controller-manager-config.v1alpha1 (68090 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/command-line-tools-reference/kubelet (83303 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/command-line-tools-reference/kube-controller-manager (60029 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/command-line-tools-reference/kube-apiserver (68401 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: reference/access-authn-authz/authentication (79975 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 289/409 (70%) imported=289 skipped=0 errors=0
+[import.files] 299/409 (73%) imported=299 skipped=0 errors=0
+[import.files] 309/409 (75%) imported=309 skipped=0 errors=0
+[import.files] 319/409 (77%) imported=319 skipped=0 errors=0
+[gbrain] content-sanity warn: contribute/style/diagram-guide (58211 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: concepts/workloads/controllers/job (57831 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: concepts/workloads/controllers/deployment (57597 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 321/409 (78%) imported=321 skipped=0 errors=0
+  Warning: skipped contribute/review/for-approvers.md: Frontmatter slug "for-approvers" does not match path-derived slug "contribute/review/for-approvers".
+[import.files] 331/409 (80%) imported=330 skipped=1 errors=1
+  Warning: skipped contribute/blog/submission.md: Frontmatter slug "article-submission" does not match path-derived slug "contribute/blog/submission".
+  Warning: skipped contribute/advanced.md: Frontmatter slug "advanced" does not match path-derived slug "contribute/advanced".
+[import.files] 341/409 (83%) imported=338 skipped=3 errors=3
+[import.files] 351/409 (85%) imported=348 skipped=3 errors=3
+[gbrain] content-sanity warn: concepts/storage/volumes (54291 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[gbrain] content-sanity warn: concepts/storage/persistent-volumes (53809 bytes) — exceeds warn threshold; stored and searchable, no action needed
+[import.files] 353/409 (86%) imported=350 skipped=3 errors=3
+[import.files] 363/409 (88%) imported=360 skipped=3 errors=3
+[import.files] 373/409 (91%) imported=370 skipped=3 errors=3
+[import.files] 383/409 (93%) imported=380 skipped=3 errors=3
+[import.files] 385/409 (94%) imported=382 skipped=3 errors=3
+[import.files] 395/409 (96%) imported=392 skipped=3 errors=3
+[import.files] 405/409 (99%) imported=402 skipped=3 errors=3
+[import.files] 409/409 (100%) imported=406 skipped=3 errors=3
+[import.files] 409/409 (100%) done

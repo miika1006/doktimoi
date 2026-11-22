@@ -43,16 +43,4 @@ On Windows with Claude Code (`--agent claude`; adapters in
 5. **Meeting question on 0.14.2** (`--task benchmarks/meeting-question.fi.md`); the
    ten-section checker does not apply to it.
 
-On macOS with Codex:
-
-6. **OCR/legacy tests for 0.14.2**: `DOKTIMOI_TEST_OCR=1 node --test` with LibreOffice,
-   as for [tests-0140.log](tests-0140.log).
-7. **Three frozen Codex pairs of 0.14.2** on the production and held-out tasks:
-   `node benchmarks/agent-benchmark.mjs --agent codex --model gpt-6.1-sol --output benchmarks/codex/<new-name> --pairs 3`.
-   Check the `StatefulSetAutoDeletePVC` prerequisite (section 9) and the grace-period
-   countdown citation (section 4) with [the rubric](../quality-review.md).
-8. **Codex competitor runs** for fidx, GBrain and Meme with macOS paths (copy the
-   Windows adapters and change executables and clone paths), and Metal hybrid runs.
-
-When a step completes, update this folder's README, `benchmarks/README.md`, the
-Claude comparison README and the top-level README.
+The [22 November Mac study](../mac-2026-11-22/README.md) follows up the Codex work with full OCR/legacy tests, both Kubernetes tasks, a batched file-tool control, a Finnish mixed-format archive and pinned competitor runs. It records the Metal preflight failures and CPU measurements separately. The [remaining Mac TODO](../mac-2026-11-22/TODO.md) covers the provider-interrupted fidx trials. The Windows-only items above remain scoped to Claude Code on Windows.

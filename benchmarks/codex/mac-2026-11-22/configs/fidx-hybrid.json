@@ -1,0 +1,85 @@
+{
+  "name": "fidx-hybrid",
+  "repository": "https://github.com/williamliu-ai/fidx",
+  "commit": "1299e30dab7d925c905606cd7db329c29a431ab4",
+  "sourcePath": "/tmp/doktimoi-study-1122/fidx",
+  "skillPath": "/tmp/doktimoi-study-1122/fidx/integrations/claude-code-skill/SKILL.md",
+  "retrieval": "hybrid",
+  "hybridEvidence": "fidx-v2",
+  "backend": {
+    "requested": "cpu (ONNX Runtime)"
+  },
+  "artifacts": [
+    {
+      "path": "/tmp/doktimoi-study-1122/fidx-models/models--nomic-ai--nomic-embed-text-v1.5/snapshots/e9b6763023c676ca8431644204f50c2b100d9aab/onnx/model_quantized.onnx",
+      "sha256": "b4342336debaea79de872370664b0aaeb67dea4605513d00ee236ea871a81f27"
+    }
+  ],
+  "setup": [
+    {
+      "command": "/tmp/doktimoi-study-1122/venv/bin/fidx",
+      "args": [
+        "--db",
+        "{workspace}/fidx.db",
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes",
+        "--glob",
+        "**/*.md"
+      ]
+    },
+    {
+      "command": "/tmp/doktimoi-study-1122/venv/bin/fidx",
+      "args": [
+        "--db",
+        "{workspace}/fidx.db",
+        "index",
+        "--profile",
+        "nomic-768-q"
+      ]
+    }
+  ],
+  "preflight": {
+    "command": "/tmp/doktimoi-study-1122/venv/bin/fidx",
+    "args": [
+      "--db",
+      "{workspace}/fidx.db",
+      "search",
+      "pod termination grace period",
+      "-c",
+      "kubernetes",
+      "--mode",
+      "hybrid",
+      "--json",
+      "--guidance"
+    ]
+  },
+  "instructions": "The index and embeddings are prebuilt (nomic-768-q, CPU). Search with --db {workspace}/fidx.db search QUERY -c kubernetes --json --guidance, using --mode hybrid for topical questions and --mode lexical for exact terms; read with --db {workspace}/fidx.db get. Never fetch models or reindex.",
+  "searchCommands": [
+    {
+      "command": "/tmp/doktimoi-study-1122/venv/bin/fidx",
+      "argsPrefix": [
+        "--db",
+        "{workspace}/fidx.db",
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/tmp/doktimoi-study-1122/venv/bin/fidx",
+      "argsPrefix": [
+        "--db",
+        "{workspace}/fidx.db",
+        "get"
+      ]
+    }
+  ],
+  "env": {
+    "FASTEMBED_CACHE_PATH": "/tmp/doktimoi-study-1122/fidx-models",
+    "FIDX_THREADS": "2",
+    "HF_HUB_OFFLINE": "1"
+  }
+}

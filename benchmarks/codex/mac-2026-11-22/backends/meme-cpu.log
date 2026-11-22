@@ -1,0 +1,56 @@
+Structured search: 2 queries (lex+vec)
+├─ intent: Pod shutdown
+├─ lex: grace period
+├─ vec: pod termination sequence
+└─ Searching...
+Embedding 1 query... (2.3s)
+[
+  {
+    "docid": "#37a885",
+    "score": 1,
+    "file": "meme://kubernetes/design.md",
+    "line": 6,
+    "title": "design",
+    "snippet": "@@ -5,4 @@ (4 before, 33 after)\nto a stateful database. The team proposes minAvailable: 5, rolling updates with\nmaxUnavailable: 2, a 30-second termination grace period, default-allow networking,\nbase64-encoded Secrets in Git, and dynamically provisioned persistent storage.\n",
+    "explain": {
+      "ftsScores": [
+        0.000002749992437520797
+      ],
+      "vectorScores": [
+        0.2149868607521057
+      ],
+      "rrf": {
+        "rank": 1,
+        "positionScore": 1,
+        "weight": 1,
+        "baseScore": 0.04918032786885246,
+        "topRankBonus": 0.05,
+        "totalScore": 0.09918032786885246,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 1,
+            "weight": 2,
+            "backendScore": 0.000002749992437520797,
+            "rrfContribution": 0.03278688524590164
+          },
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 1,
+            "weight": 1,
+            "backendScore": 0.2149868607521057,
+            "rrfContribution": 0.01639344262295082
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 1
+    }
+  }
+]

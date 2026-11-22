@@ -1,0 +1,16 @@
+[node-llama-cpp] Failed to get swap info
+[node-llama-cpp] ggml_metal_init: error: failed to create command queue
+[node-llama-cpp] ggml_backend_metal_device_init_backend: error: failed to allocate context
+[node-llama-cpp] llama_init_from_model: failed to initialize the context: failed to initialize  backend
+[node-llama-cpp] ggml_metal_init: error: failed to create command queue
+[node-llama-cpp] ggml_backend_metal_device_init_backend: error: failed to allocate context
+[node-llama-cpp] llama_init_from_model: failed to initialize the context: failed to initialize  backend
+[node-llama-cpp] ggml_metal_init: error: failed to create command queue
+[node-llama-cpp] ggml_backend_metal_device_init_backend: error: failed to allocate context
+[node-llama-cpp] llama_init_from_model: failed to initialize the context: failed to initialize  backend
+Embedding error: Error: Failed to create any embedding context
+    at file:///Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/dist/llm.js:849:31
+    at async LlamaCpp.ensureEmbedContexts (file:///Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/dist/llm.js:857:20)
+    at async LlamaCpp.ensureEmbedContext (file:///Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/dist/llm.js:867:26)
+    at async LlamaCpp.embed (file:///Users/miikam/Projects/doktimoi/skills/doktimoi/node_modules/@tobilu/qmd/dist/llm.js:1060:29)
+doktimoi: Semantic search returned no candidates; check model/GPU availability

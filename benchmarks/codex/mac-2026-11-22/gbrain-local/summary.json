@@ -1,0 +1,1487 @@
+{
+  "startedAt": "2026-11-22T06:12:17.865Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "manifestSha256": "158933343ec85fb0e0f5c9e751555d1bc4517ef288dee14026c7045057c678fa",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "gbrain",
+    "repository": "https://github.com/garrytan/gbrain",
+    "commit": "aab958d1a0f8cd0e2cb0cdd98e90308f4c6d18fc",
+    "sourcePath": "/tmp/doktimoi-study-1122/gbrain",
+    "skillPath": "/tmp/doktimoi-study-1122/gbrain/plugin/skills/query/SKILL.md",
+    "env": {
+      "GBRAIN_HOME": "{workspace}/gbrain-home"
+    },
+    "setup": [
+      {
+        "command": "/Users/miikam/.bun/bin/bun",
+        "args": [
+          "run",
+          "/tmp/doktimoi-study-1122/gbrain/src/cli.ts",
+          "init",
+          "--pglite"
+        ]
+      },
+      {
+        "command": "/bin/bash",
+        "args": [
+          "-c",
+          "\"/Users/miikam/.bun/bin/bun\" run \"/tmp/doktimoi-study-1122/gbrain/src/cli.ts\" import \"{docs}\" --no-embed 2>&1 | tee /dev/stderr | grep -q \"imported=406 skipped=3 errors=3\""
+        ]
+      }
+    ],
+    "instructions": "The brain was imported keyword-only from the corpus (no embeddings). Use gbrain search for keyword search and gbrain get SLUG to read a page; slugs are corpus paths without .md. Never enable embeddings, run query/ask, or use network services.",
+    "searchCommands": [
+      {
+        "command": "/Users/miikam/.bun/bin/bun",
+        "argsPrefix": [
+          "run",
+          "/tmp/doktimoi-study-1122/gbrain/src/cli.ts",
+          "search"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "/Users/miikam/.bun/bin/bun",
+        "argsPrefix": [
+          "run",
+          "/tmp/doktimoi-study-1122/gbrain/src/cli.ts",
+          "get"
+        ]
+      }
+    ],
+    "configSha256": "9d672828ff7d3b2b34dcf69a7480287daf0b0d3287ae91baa17a77431552d855",
+    "sourceTree": "640ed57608ed7a03cb5edb98033784366d94847d",
+    "skillSha256": "48adeb67d57ebc63cc5703682e702e3232e14f3a26eb8bf94cb06e2029c3b729"
+  },
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "16034a35cf0b866cdd2d0e8b0510d18df20a967e1abbf022e93110fe36b253d9",
+  "taskPath": "/Users/miikam/Projects/doktimoi/benchmarks/task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "5ebae5b1beb56f4040c0fa44e7f711c4edfb81608c56c1a32af08bb8632c4e92",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 143005,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 29716,
+      "threadId": "01a201e2-c2d8-7591-ba9e-0c3f37e39280",
+      "usage": {
+        "input_tokens": 578883,
+        "cached_input_tokens": 491648,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4593,
+        "reasoning_output_tokens": 316
+      },
+      "totalTokens": 583476,
+      "uncachedInputTokens": 87235,
+      "commands": 59,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 82366,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "item_17",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "400,520p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_18",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/pods/disruptions.md",
+              "|",
+              "sed",
+              "-n",
+              "95,160p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_20",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "45,220p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_19",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "570,720p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_22",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "20,75p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_21",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "75,160p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_23",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "45,135p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_24",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "140,205p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_31",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "130,215p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_32",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "75,105p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_33",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "20,85p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_34",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1180,1250p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_35",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "591,650p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_36",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "55,95p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_37",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "570,650p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_39",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "490,585p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_38",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "300,350p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_40",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "660,710p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_41",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/containers/container-lifecycle-hooks.md",
+              "|",
+              "sed",
+              "-n",
+              "55,95p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_42",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/services-networking/dns-pod-service.md",
+              "|",
+              "sed",
+              "-n",
+              "15,45p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_46",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "365,450p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_48",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "610,655p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_47",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "10,23p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_49",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "550,572p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_50",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/administer-cluster/dns-debugging-resolution.md",
+              "|",
+              "sed",
+              "-n",
+              "200,250p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_51",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "120,135p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_52",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "95,150p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_54",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "43,55p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_53",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "130,218p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_55",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "260,300p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_56",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "430,485p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_57",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "350,420p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_58",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/reference/kubernetes-api/workload-resources/pod-v1.md",
+              "|",
+              "sed",
+              "-n",
+              "1930,1950p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_60",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-1-competitor-sWyioT/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "285,325p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 17,
+        "successfulCompetitorCommands": 17,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 42,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "competitor",
+      "elapsedMs": 156319,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 71231,
+      "threadId": "01a201e6-1082-7910-b83e-412a9f2f2ac7",
+      "usage": {
+        "input_tokens": 571235,
+        "cached_input_tokens": 511488,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4751,
+        "reasoning_output_tokens": 393
+      },
+      "totalTokens": 575986,
+      "uncachedInputTokens": 59747,
+      "commands": 55,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 74157,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "item_19",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "70,220p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_22",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "35,220p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_20",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/pods/disruptions.md",
+              "|",
+              "sed",
+              "-n",
+              "95,163p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_21",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "380,630p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_27",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "130,210p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_26",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "20,100p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_25",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "35,95p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_24",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "20,105p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_23",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "20,165p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_28",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1180,1280p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_29",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "160,235p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_30",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "474,565p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_31",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "580,715p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_32",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "45,215p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_33",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "45,155p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_34",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "25,105p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_42",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/containers/container-lifecycle-hooks.md",
+              "|",
+              "sed",
+              "-n",
+              "15,100p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_41",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "390,475p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_43",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/security/multi-tenancy.md",
+              "|",
+              "sed",
+              "-n",
+              "290,355p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_44",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "10,25p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_45",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "213,222p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_46",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "850,1010p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_47",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "120,136p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_49",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "600,800p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_50",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/security/multi-tenancy.md",
+              "|",
+              "sed",
+              "-n",
+              "170,245p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_51",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "540,610p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_53",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "260,400p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_52",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "565,580p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_55",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "415,475p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_56",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/tasks/configmap-secret/managing-secret-using-config-file.md",
+              "|",
+              "sed",
+              "-n",
+              "20,115p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_57",
+            "words": [
+              "nl",
+              "-ba",
+              "/private/tmp/doktimoi-bench-2-competitor-jeIJrI/docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "605,650p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 19,
+        "successfulCompetitorCommands": 19,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 36,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "competitor",
+      "elapsedMs": 151413,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 34360,
+      "threadId": "01a201e8-fb7e-7e11-951b-e360cb5f5527",
+      "usage": {
+        "input_tokens": 525947,
+        "cached_input_tokens": 461952,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4714,
+        "reasoning_output_tokens": 228
+      },
+      "totalTokens": 530661,
+      "uncachedInputTokens": 63995,
+      "commands": 14,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 79765,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "item_6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "80,210p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/scheduling-eviction/topology-spread-constraints.md",
+              "|",
+              "sed",
+              "-n",
+              "580,640p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "40,220p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1220,1300p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_6",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/disruptions.md",
+              "|",
+              "sed",
+              "-n",
+              "95,160p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_8",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "410,490p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_8",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "560,700p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_8",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1620,1705p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_8",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/services-networking/network-policies.md",
+              "|",
+              "sed",
+              "-n",
+              "20,135p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1440,1550p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/pods/pod-lifecycle.md",
+              "|",
+              "sed",
+              "-n",
+              "490,555p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+              "|",
+              "sed",
+              "-n",
+              "315,365p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "25,110p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "20,80p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "125,175p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "175,250p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_9",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "440,535p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_11",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1070,1195p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_11",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/statefulset.md",
+              "|",
+              "sed",
+              "-n",
+              "390,438p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_11",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/manage-resources-containers.md",
+              "|",
+              "sed",
+              "-n",
+              "10,25p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_11",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/containers/container-lifecycle-hooks.md",
+              "|",
+              "sed",
+              "-n",
+              "35,105p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_14",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "680,740p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_14",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/workloads/controllers/deployment.md",
+              "|",
+              "sed",
+              "-n",
+              "1190,1215p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_14",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/services-networking/dns-pod-service.md",
+              "|",
+              "sed",
+              "-n",
+              "20,60p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_14",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/administer-cluster/encrypt-data.md",
+              "|",
+              "sed",
+              "-n",
+              "15,65p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_15",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "570,665p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_15",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/administer-cluster/dns-debugging-resolution.md",
+              "|",
+              "sed",
+              "-n",
+              "120,175p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_15",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/storage-classes.md",
+              "|",
+              "sed",
+              "-n",
+              "171,205p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_15",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "90,125p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_16",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/configuration/secret.md",
+              "|",
+              "sed",
+              "-n",
+              "290,385p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_16",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/storage/persistent-volumes.md",
+              "|",
+              "sed",
+              "-n",
+              "123,145p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_16",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/run-application/horizontal-pod-autoscale.md",
+              "|",
+              "sed",
+              "-n",
+              "425,450p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_16",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/reference/kubernetes-api/workload-resources/pod-v1.md",
+              "|",
+              "sed",
+              "-n",
+              "90,120p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 18,
+        "successfulCompetitorCommands": 16,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 40,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_10",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "2bdbd6c80104331bddcbc6fcbc7c15a3e60f51d4e0a65ef28d60dc1d4e04ff30"
+}

@@ -1,0 +1,7 @@
+{
+  "preflightMs": 963,
+  "exitCode": 0,
+  "nativeEvidence": true,
+  "backendRequested": "cpu (ONNX Runtime)",
+  "backendVerified": false
+}

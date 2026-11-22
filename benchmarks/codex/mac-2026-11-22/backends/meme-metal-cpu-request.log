@@ -1,0 +1,7 @@
+Structured search: 2 queries (lex+vec)
+├─ intent: Pod shutdown
+├─ lex: grace period
+├─ vec: pod termination sequence
+└─ Searching...
+Embedding 1 query...inference error: model unavailable: inference error: failed to create any worker contexts: null reference from llama.cpp
+If meme still behaves unexpectedly, run 'meme doctor' for diagnostics.

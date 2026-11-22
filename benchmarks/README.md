@@ -30,15 +30,16 @@ tokens and tool calls. Current checks on this machine:
 
 ## Codex, macOS
 
-- **Lexical, 15 November** (`gpt-6.1-sol`, Codex CLI 0.166.0, Apple M1): a one-pair
-  [accuracy pilot](codex/skill-comparison-2026-11-15/phase2/quality-pilot-review.md) used
-  258,332 tokens / 104.8 s against its control's 308,486 / 123.0 s and kept the
-  `StatefulSetAutoDeletePVC` prerequisite; three QMD runs averaged 368,229 / 114.5 s.
-  Three-pair runs of 0.14.x remain to be done: see the
-  [study README](codex/skill-comparison-2026-11-15/README.md) and its HANDOFF.
-- **Hybrid CPU, 10 November** (`gpt-6-astra`): [three runs](codex/semantic-cpu-2026-11-10/README.md)
-  averaged 274,583 tokens, 9.5% more than that day's `rg`/`sed` controls (250,858).
-  Codex's own shell already batches lookups, so Doktimoi saved no rounds there.
+The [22 November M1 study](codex/mac-2026-11-22/README.md) ran three fresh Codex sessions per arm and task on `gpt-6.1-sol`. Means below use provider input plus output. The Doktimoi arm used lexical retrieval and the same batching instruction as the batched file control.
+
+| Task | Ordinary files | Batched files | Batched Doktimoi | Doktimoi vs batched files |
+| --- | ---: | ---: | ---: | ---: |
+| Kubernetes production review | 353,923 | 274,694 | 238,710 | −13.1% |
+| Kubernetes batch platform | 313,040 | 247,890 | 234,650 | −5.3% |
+| Finnish archive decision | 126,907 | 111,329 | 139,467 | +25.3% |
+| English receipt comparison of Finnish sources | 88,252 | 105,266 | 151,115 | +43.6% |
+
+All nine lexical/control answers to the Finnish shipment question matched the reference values and sources. In the English receipt comparison ordinary file tools got 1/3 exactly right, batched files and Doktimoi each got 3/3. The two Kubernetes reviews are open-ended. The [answer review](codex/mac-2026-11-22/quality.md) records omitted prerequisites and imprecise citations. The study includes hybrid measurements, agent times, actual model rounds, setup costs and competitor traces. The [native QMD comparison](codex/skill-comparison-2026-11-15/README.md) used an earlier workflow.
 
 OCR converter measurements are in [ocr/2026-11-15](ocr/2026-11-15/).
 
@@ -54,7 +55,7 @@ records its hash.
 
 The [example corpus](../examples/kubernetes/README.md) holds 409 unchanged Kubernetes
 v1.32 Markdown files (8,513,875 bytes) with pinned revision, license and SHA-256 hashes.
-Linked shorter pages and images are intentionally absent.
+Linked shorter pages and images are intentionally absent. The [second corpus](finnish-dispatch/README.md) contains 441 Finnish sources including Word, Excel and scan images. It has an exact answer key and a separate bilingual passage lookup test.
 
 ## Measurement
 
@@ -75,7 +76,7 @@ Linked shorter pages and images are intentionally absent.
 [validation-queries.json](validation-queries.json) defines 20 expected passages;
 [validate-retrieval.mjs](validate-retrieval.mjs) checks they are in the top ten lexical hits
 and that exact-mode lines and reads match the originals (latest: 20/20). Hybrid ranking last
-scored [18/20](codex/semantic-cpu-2026-11-10/retrieval-validation.json): semantic fusion
+scored [18/20](codex/mac-2026-11-22/retrieval-current-hybrid.json): semantic fusion
 can demote precise lexical evidence. [check-answers.mjs](check-answers.mjs) checks answer
 structure and that every cited range exists, which is not proof that a claim is supported;
 answers were also screened for the decision-relevant qualifications
@@ -91,7 +92,7 @@ node benchmarks/check-answers.mjs benchmarks/claude/NEW_DIR
 node benchmarks/claude/summarize-runs.mjs benchmarks/claude/NEW_DIR
 ```
 
-Use `--agent codex` for Codex, `--task PATH` for another task, `--competitor CONFIG --arm
+Use `--agent codex --arm batch-study` for the three-arm batching comparison, `--task PATH` for another task, `--competitor CONFIG --arm
 competitor` for a competitor and, with consent to a local model, `--retrieval hybrid
 --prepared DIR` for a prepared semantic index. Output folders must be new; `--resume`
 continues only when every recorded hash matches. After a new run in the same environment,
@@ -99,7 +100,4 @@ delete the older run and update these documents.
 
 ## Limits
 
-Two tasks on one corpus and three runs per arm do not establish general superiority.
-Caches are not flushed, cloud latency varies and neither machine was a dedicated test
-host. The tasks are English Markdown; they do not measure Office/PDF conversion, OCR or
-cross-language search.
+Three repetitions per arm and two corpora limit generalization. Caches are not flushed, cloud latency varies and neither machine was a dedicated test host. The Finnish task tests a synthetic workflow with a searchable shipment name, small Office files and legible scans. Other layouts, ambiguous requests, real-world OCR noise and tasks without shared identifiers can give different results.

@@ -1,0 +1,302 @@
+{
+  "method": "Whitespace word count; named colon/#L/prose citation ranges, plus abbreviated file-name or bare-line ranges resolved to earlier full paths; range existence is not claim support.",
+  "answers": [
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/1-baseline.answer.md",
+      "words": 1117,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 32,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/1-batched.answer.md",
+      "words": 1092,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 75,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/1-doktimoi.answer.md",
+      "words": 1147,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 20,
+      "abbreviatedCitationRanges": 7,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/2-baseline.answer.md",
+      "words": 1124,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 70,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/2-batched.answer.md",
+      "words": 1130,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 32,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/2-doktimoi.answer.md",
+      "words": 1207,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 22,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/3-baseline.answer.md",
+      "words": 1116,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/3-batched.answer.md",
+      "words": 1108,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 32,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production/3-doktimoi.answer.md",
+      "words": 1126,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 31,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/1-baseline.answer.md",
+      "words": 1102,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 36,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/1-batched.answer.md",
+      "words": 1124,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 40,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/1-doktimoi.answer.md",
+      "words": 1160,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 32,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/2-baseline.answer.md",
+      "words": 1112,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 37,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/2-batched.answer.md",
+      "words": 1100,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 37,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/2-doktimoi.answer.md",
+      "words": 1102,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 37,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/3-baseline.answer.md",
+      "words": 1008,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 52,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/3-batched.answer.md",
+      "words": 1170,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 34,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout/3-doktimoi.answer.md",
+      "words": 1143,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 36,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production-hybrid/1-doktimoi.answer.md",
+      "words": 1189,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 21,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production-hybrid/2-doktimoi.answer.md",
+      "words": 1011,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 44,
+      "abbreviatedCitationRanges": 3,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/production-hybrid/3-doktimoi.answer.md",
+      "words": 1226,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 39,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout-hybrid/1-doktimoi.answer.md",
+      "words": 1135,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 19,
+      "abbreviatedCitationRanges": 23,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout-hybrid/2-doktimoi.answer.md",
+      "words": 1083,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 39,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/heldout-hybrid/3-doktimoi.answer.md",
+      "words": 1138,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 39,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme/1-competitor.answer.md",
+      "words": 1064,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 48,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme/2-competitor.answer.md",
+      "words": 1165,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 27,
+      "abbreviatedCitationRanges": 3,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme/3-competitor.answer.md",
+      "words": 1133,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme-hybrid/1-competitor.answer.md",
+      "words": 1168,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 30,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme-hybrid/2-competitor.answer.md",
+      "words": 1251,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 30,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/meme-hybrid/3-competitor.answer.md",
+      "words": 1116,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 32,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/gbrain-local/1-competitor.answer.md",
+      "words": 1147,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 28,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/gbrain-local/2-competitor.answer.md",
+      "words": 1161,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 36,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    },
+    {
+      "file": "benchmarks/codex/mac-2026-11-22/gbrain-local/3-competitor.answer.md",
+      "words": 1163,
+      "tenSections": true,
+      "withinWordTarget": true,
+      "checkedCitationRanges": 57,
+      "abbreviatedCitationRanges": 0,
+      "allRangesValid": true
+    }
+  ]
+}

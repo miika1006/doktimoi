@@ -1,0 +1,7 @@
+{
+  "preflightMs": 4546,
+  "exitCode": 0,
+  "nativeEvidence": true,
+  "backendRequested": "CPU (GGML_METAL=OFF)",
+  "backendVerified": false
+}

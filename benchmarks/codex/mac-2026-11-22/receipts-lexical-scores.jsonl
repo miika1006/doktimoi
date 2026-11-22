@@ -1,0 +1,9 @@
+{"name":"1-baseline.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"1-batched.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"1-doktimoi.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"2-baseline.answer.md","keysMatch":true,"wrong":["packages","seal","bay","shipped","destination","titles","disposition","hours","fee"],"unsupported":["seal","bay","shipped","destination","titles","disposition","hours","fee"],"exact":false}
+{"name":"2-batched.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"2-doktimoi.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"3-baseline.answer.md","keysMatch":true,"wrong":["packages","seal","bay","shipped","destination","titles","disposition","hours","fee"],"unsupported":["seal","bay","shipped","destination","titles","disposition","hours","fee"],"exact":false}
+{"name":"3-batched.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}
+{"name":"3-doktimoi.answer.md","keysMatch":true,"wrong":[],"unsupported":[],"exact":true}

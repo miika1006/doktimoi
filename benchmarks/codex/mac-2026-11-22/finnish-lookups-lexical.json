@@ -1,0 +1,103 @@
+{
+  "mode": "lexical",
+  "rows": [
+    {
+      "language": "fi",
+      "query": "Montako tallennetta Harmaahaikara-erään pakattiin?",
+      "source": "paivakirjat/Kide/2025-11.txt",
+      "expected": "Niteitä 37",
+      "rank": 1,
+      "returned": [
+        "paivakirjat/Kide/2025-11.txt:82-84"
+      ],
+      "tokens": 214,
+      "ms": 593.27
+    },
+    {
+      "language": "fi",
+      "query": "152511-080",
+      "source": "kuitit/L-50.png",
+      "expected": "PAJU 4",
+      "rank": 1,
+      "returned": [
+        "kuitit/L-50.png:ocr-lines:1-6",
+        "paivakirjat/Kide/2025-11.txt:81-83"
+      ],
+      "tokens": 321,
+      "ms": 27.3
+    },
+    {
+      "language": "fi",
+      "query": "Kuka saa antaa märälle erälle luovutusluvan marraskuussa?",
+      "source": "kiertokirjeet/K-09.docx",
+      "expected": "36 tunnin",
+      "rank": null,
+      "returned": [],
+      "tokens": 40,
+      "ms": 2.91
+    },
+    {
+      "language": "fi",
+      "query": "Mikä on marraskuun enimmäisveloitus yhdestä lähetyksestä?",
+      "source": "liitteet/S-10.xlsx",
+      "expected": "78",
+      "rank": null,
+      "returned": [
+        "kiertokirjeet/K-03.docx:extracted-lines:1-9",
+        "kiertokirjeet/K-12.docx:extracted-lines:1-9",
+        "kiertokirjeet/K-09.docx:extracted-lines:1-9"
+      ],
+      "tokens": 618,
+      "ms": 10.47
+    },
+    {
+      "language": "en",
+      "query": "How many recordings were in the Harmaahaikara delivery?",
+      "source": "paivakirjat/Kide/2025-11.txt",
+      "expected": "Niteitä 37",
+      "rank": 1,
+      "returned": [
+        "paivakirjat/Kide/2025-11.txt:82-84"
+      ],
+      "tokens": 214,
+      "ms": 22.22
+    },
+    {
+      "language": "en",
+      "query": "Which unloading door was used for seal 152511-080?",
+      "source": "kuitit/L-50.png",
+      "expected": "PAJU 4",
+      "rank": 2,
+      "returned": [
+        "paivakirjat/Kide/2025-11.txt:81-83",
+        "kuitit/L-50.png:ocr-lines:1-6"
+      ],
+      "tokens": 351,
+      "ms": 32.62
+    },
+    {
+      "language": "en",
+      "query": "Who can authorize release of moisture-exposed goods in November?",
+      "source": "kiertokirjeet/K-09.docx",
+      "expected": "36 tunnin",
+      "rank": null,
+      "returned": [],
+      "tokens": 40,
+      "ms": 2.97
+    },
+    {
+      "language": "en",
+      "query": "What is the maximum handling charge for one affected shipment in November?",
+      "source": "liitteet/S-10.xlsx",
+      "expected": "78",
+      "rank": null,
+      "returned": [
+        "kiertokirjeet/K-03.docx:extracted-lines:1-9",
+        "kiertokirjeet/K-12.docx:extracted-lines:1-9",
+        "kiertokirjeet/K-09.docx:extracted-lines:1-9"
+      ],
+      "tokens": 618,
+      "ms": 11.52
+    }
+  ]
+}

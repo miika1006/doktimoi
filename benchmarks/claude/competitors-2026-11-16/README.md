@@ -7,7 +7,7 @@ task and a controlled Rust/Node retrieval measurement have not been run. Doktimo
 runs are complete, as are [Doktimoi 0.14.2](../lexical-0142-2026-11-16-windows/README.md)
 runs: 385,461 tokens (−64.7%), 93.6 s.
 [../../codex/skill-comparison-2026-11-15/HANDOFF.md](../../codex/skill-comparison-2026-11-15/HANDOFF.md)
-lists how to resume.
+lists how to resume on Windows. The [Mac/Codex study](../../codex/mac-2026-11-22/README.md) reports its own host-specific runs.
 
 Claude Code 2.1.325, `claude-opus-5-5`, medium effort; Windows 11, Node 26.13.0.
 The unchanged [production-design task](../../task.md) and the 409 pinned Kubernetes

@@ -1,0 +1,89 @@
+{
+  "name": "meme-hybrid-prepared",
+  "repository": "https://github.com/qntx/meme",
+  "commit": "10983816e0f24781d4ed562331ff48e136d03a4c",
+  "sourcePath": "/tmp/doktimoi-study-1122/meme",
+  "skillPath": "/tmp/doktimoi-study-1122/meme/crates/meme-bin/skills/meme/SKILL.md",
+  "env": {
+    "MEME_CONFIG_DIR": "{workspace}/meme-config",
+    "INDEX_PATH": "{workspace}/meme.sqlite",
+    "MEME_EMBED_MODEL": "/tmp/doktimoi-study-1122/embeddinggemma-300M-Q8_0.gguf",
+    "MEME_FORCE_CPU": "1"
+  },
+  "retrieval": "hybrid",
+  "hybridEvidence": "meme-structured",
+  "backend": {
+    "requested": "CPU (GGML_METAL=OFF)"
+  },
+  "artifacts": [
+    {
+      "path": "/tmp/doktimoi-study-1122/embeddinggemma-300M-Q8_0.gguf",
+      "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63"
+    },
+    {
+      "path": "/tmp/doktimoi-study-1122/meme-agent.sqlite",
+      "sha256": "86058b5511d0a3e7d453161a90e11ebdb5312cd3f0bdec1a011f783111b4bf75"
+    }
+  ],
+  "setup": [
+    {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "args": [
+        "collection",
+        "add",
+        "{docs}",
+        "--name",
+        "kubernetes"
+      ]
+    },
+    {
+      "command": "/bin/cp",
+      "args": [
+        "/tmp/doktimoi-study-1122/meme-agent.sqlite",
+        "{workspace}/meme.sqlite"
+      ]
+    }
+  ],
+  "preflight": {
+    "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+    "args": [
+      "query",
+      "intent: Pod shutdown\nlex: grace period\nvec: pod termination sequence",
+      "-c",
+      "kubernetes",
+      "--no-rerank",
+      "--format",
+      "json",
+      "--explain"
+    ]
+  },
+  "instructions": "Rust port of QMD 2.8.3, built from source; embeddings are prebuilt with the local embeddinggemma model. Use structured meme query with intent:, lex: and vec: lines plus -c kubernetes --no-rerank, and meme search for exact terms. Never run pull, embed, update or the expand mode (no generation or rerank model is installed).",
+  "searchCommands": [
+    {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "argsPrefix": [
+        "query"
+      ]
+    },
+    {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "argsPrefix": [
+        "search"
+      ]
+    }
+  ],
+  "readCommands": [
+    {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "argsPrefix": [
+        "get"
+      ]
+    },
+    {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "argsPrefix": [
+        "multi-get"
+      ]
+    }
+  ]
+}

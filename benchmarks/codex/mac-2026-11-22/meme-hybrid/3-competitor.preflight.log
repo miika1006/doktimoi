@@ -1,0 +1,764 @@
+[
+  {
+    "docid": "#89df67",
+    "score": 1,
+    "file": "meme://kubernetes/concepts/scheduling-eviction/node-pressure-eviction.md",
+    "line": 34,
+    "title": "Self healing behavior",
+    "snippet": "@@ -33,4 @@ (32 before, 507 after)\nor the pod's\n`terminationGracePeriodSeconds`. If you use [soft eviction thresholds](#soft-eviction-thresholds),\nthe kubelet respects your configured `eviction-max-pod-grace-period`. If you use\n[hard eviction thresholds](#hard-eviction-thresholds), the kubelet uses a `0s` grace period (immediate s...",
+    "explain": {
+      "ftsScores": [
+        0.8425148320840768
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 1,
+        "positionScore": 1,
+        "weight": 1,
+        "baseScore": 0.03278688524590164,
+        "topRankBonus": 0.05,
+        "totalScore": 0.08278688524590164,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 1,
+            "weight": 2,
+            "backendScore": 0.8425148320840768,
+            "rrfContribution": 0.03278688524590164
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 1
+    }
+  },
+  {
+    "docid": "#0dcab1",
+    "score": 0.5,
+    "file": "meme://kubernetes/concepts/workloads/pods/pod-lifecycle.md",
+    "line": 567,
+    "title": "Pod lifetime",
+    "snippet": "@@ -566,4 @@ (565 before, 167 after)\nterminate, but also be able to ensure that deletes eventually complete.\nWhen you request deletion of a Pod, the cluster records and tracks the intended grace period\nbefore the Pod is allowed to be forcefully killed. With that forceful shutdown tracking in\nplace, the {{< glossary_tooltip text=\"kub...",
+    "explain": {
+      "ftsScores": [
+        0.8419568918215947
+      ],
+      "vectorScores": [
+        0.5230232775211334
+      ],
+      "rrf": {
+        "rank": 2,
+        "positionScore": 0.5,
+        "weight": 1,
+        "baseScore": 0.04838709677419355,
+        "topRankBonus": 0.02,
+        "totalScore": 0.06838709677419355,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 2,
+            "weight": 2,
+            "backendScore": 0.8419568918215947,
+            "rrfContribution": 0.03225806451612903
+          },
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 2,
+            "weight": 1,
+            "backendScore": 0.5230232775211334,
+            "rrfContribution": 0.016129032258064516
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.5
+    }
+  },
+  {
+    "docid": "#e0a1b0",
+    "score": 0.33,
+    "file": "meme://kubernetes/concepts/services-networking/endpoint-slices.md",
+    "line": 259,
+    "title": "EndpointSlice API {#endpointslice-resource}",
+    "snippet": "@@ -258,4 @@ (257 before, 20 after)\nobject, those Endpoints objects could get quite large. For Services that stayed\nstable (the same set of endpoints over a long period of time) the impact was\nless noticeable; even then, some use cases of Kubernetes weren't well served.\n",
+    "explain": {
+      "ftsScores": [],
+      "vectorScores": [
+        0.5435759723186493
+      ],
+      "rrf": {
+        "rank": 3,
+        "positionScore": 0.3333333333333333,
+        "weight": 1,
+        "baseScore": 0.01639344262295082,
+        "topRankBonus": 0.05,
+        "totalScore": 0.06639344262295083,
+        "contributions": [
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 1,
+            "weight": 1,
+            "backendScore": 0.5435759723186493,
+            "rrfContribution": 0.01639344262295082
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.3333333333333333
+    }
+  },
+  {
+    "docid": "#c9f41d",
+    "score": 0.25,
+    "file": "meme://kubernetes/reference/kubectl/generated/kubectl_delete/_index.md",
+    "line": 29,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -28,4 @@ (27 before, 447 after)\n\n Some resources, such as pods, support graceful deletion. These resources define a default period before they are forcibly terminated (the grace period) but you may override that value with the --grace-period flag, or pass --now to set a grace-period of 1. Because these resources often represent...",
+    "explain": {
+      "ftsScores": [
+        0.8373141580849216
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 4,
+        "positionScore": 0.25,
+        "weight": 1,
+        "baseScore": 0.031746031746031744,
+        "topRankBonus": 0.02,
+        "totalScore": 0.05174603174603175,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 3,
+            "weight": 2,
+            "backendScore": 0.8373141580849216,
+            "rrfContribution": 0.031746031746031744
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.25
+    }
+  },
+  {
+    "docid": "#c59d43",
+    "score": 0.2,
+    "file": "meme://kubernetes/concepts/cluster-administration/node-shutdown.md",
+    "line": 37,
+    "title": "Graceful node shutdown {#graceful-node-shutdown}",
+    "snippet": "@@ -36,4 @@ (35 before, 265 after)\nNote that by default, both configuration options described below,\n`shutdownGracePeriod` and `shutdownGracePeriodCriticalPods`, are set to zero,\nthus not activating the graceful node shutdown functionality.\nTo activate the feature, both options should be configured appropriately and",
+    "explain": {
+      "ftsScores": [
+        0.8348888197971415
+      ],
+      "vectorScores": [
+        0.4685119390487671
+      ],
+      "rrf": {
+        "rank": 5,
+        "positionScore": 0.2,
+        "weight": 1,
+        "baseScore": 0.046634615384615385,
+        "topRankBonus": 0,
+        "totalScore": 0.046634615384615385,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 4,
+            "weight": 2,
+            "backendScore": 0.8348888197971415,
+            "rrfContribution": 0.03125
+          },
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 5,
+            "weight": 1,
+            "backendScore": 0.4685119390487671,
+            "rrfContribution": 0.015384615384615385
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.2
+    }
+  },
+  {
+    "docid": "#15480f",
+    "score": 0.17,
+    "file": "meme://kubernetes/tasks/configure-pod-container/configure-liveness-readiness-startup-probes.md",
+    "line": 417,
+    "title": "{{% heading \"prerequisites\" %}}",
+    "snippet": "@@ -416,4 @@ (415 before, 158 after)\n  failed, Kubernetes treats the container as unhealthy and triggers a restart for that\n  specific container. The kubelet honors the setting of `terminationGracePeriodSeconds`\n  for that container.\n  For a failed readiness probe, the kubelet continues running the container that failed",
+    "explain": {
+      "ftsScores": [
+        0.8176585209220475
+      ],
+      "vectorScores": [
+        0.4549739956855774
+      ],
+      "rrf": {
+        "rank": 6,
+        "positionScore": 0.16666666666666666,
+        "weight": 1,
+        "baseScore": 0.0432712215320911,
+        "topRankBonus": 0,
+        "totalScore": 0.0432712215320911,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 9,
+            "weight": 2,
+            "backendScore": 0.8176585209220475,
+            "rrfContribution": 0.028985507246376812
+          },
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 10,
+            "weight": 1,
+            "backendScore": 0.4549739956855774,
+            "rrfContribution": 0.014285714285714285
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.16666666666666666
+    }
+  },
+  {
+    "docid": "#5fe799",
+    "score": 0.14,
+    "file": "meme://kubernetes/reference/kubernetes-api/workload-resources/pod-v1.md",
+    "line": 276,
+    "title": "Pod {#Pod}",
+    "snippet": "@@ -275,4 @@ (274 before, 4116 after)\n\n- **terminationGracePeriodSeconds** (int64)\n\n  Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). If this value is...",
+    "explain": {
+      "ftsScores": [],
+      "vectorScores": [
+        0.504131555557251
+      ],
+      "rrf": {
+        "rank": 7,
+        "positionScore": 0.14285714285714285,
+        "weight": 1,
+        "baseScore": 0.015873015873015872,
+        "topRankBonus": 0.02,
+        "totalScore": 0.035873015873015876,
+        "contributions": [
+          {
+            "listIndex": 1,
+            "source": "vec",
+            "queryType": "vec",
+            "query": "pod termination sequence",
+            "rank": 3,
+            "weight": 1,
+            "backendScore": 0.504131555557251,
+            "rrfContribution": 0.015873015873015872
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.14285714285714285
+    }
+  },
+  {
+    "docid": "#9814e5",
+    "score": 0.13,
+    "file": "meme://kubernetes/concepts/scheduling-eviction/pod-priority-preemption.md",
+    "line": 205,
+    "title": "How to use priority and preemption",
+    "snippet": "@@ -204,4 @@ (203 before, 170 after)\nThe scheduler always tries the \"nominated Node\" before iterating over any other nodes.\nAfter victim Pods are preempted, they get their graceful termination period. If\nanother node becomes available while scheduler is waiting for the victim Pods to\nterminate, scheduler may use the other node to sc...",
+    "explain": {
+      "ftsScores": [
+        0.8286378502567111
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 8,
+        "positionScore": 0.125,
+        "weight": 1,
+        "baseScore": 0.03076923076923077,
+        "topRankBonus": 0,
+        "totalScore": 0.03076923076923077,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 5,
+            "weight": 2,
+            "backendScore": 0.8286378502567111,
+            "rrfContribution": 0.03076923076923077
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.125
+    }
+  },
+  {
+    "docid": "#fd0ab3",
+    "score": 0.11,
+    "file": "meme://kubernetes/reference/kubectl/generated/kubectl_drain/_index.md",
+    "line": 45,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -44,4 @@ (43 before, 356 after)\n  \n  # As above, but abort if there are pods not managed by a replication controller, replica set, job, daemon set, or stateful set, and use a grace period of 15 minutes\n  kubectl drain foo --grace-period=900\n```",
+    "explain": {
+      "ftsScores": [
+        0.8238341836506736
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 9,
+        "positionScore": 0.1111111111111111,
+        "weight": 1,
+        "baseScore": 0.030303030303030304,
+        "topRankBonus": 0,
+        "totalScore": 0.030303030303030304,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 6,
+            "weight": 2,
+            "backendScore": 0.8238341836506736,
+            "rrfContribution": 0.030303030303030304
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.1111111111111111
+    }
+  },
+  {
+    "docid": "#c3f77d",
+    "score": 0.1,
+    "file": "meme://kubernetes/reference/config-api/kubelet-config.v1beta1.md",
+    "line": 1445,
+    "title": "Resource Types",
+    "snippet": "@@ -1444,4 @@ (1443 before, 682 after)\n</tr>\n<tr><td><code>shutdownGracePeriod</code><br/>\n<a href=\"https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration\"><code>meta/v1.Duration</code></a>\n</td>",
+    "explain": {
+      "ftsScores": [
+        0.8208570888645171
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 10,
+        "positionScore": 0.1,
+        "weight": 1,
+        "baseScore": 0.029850746268656716,
+        "topRankBonus": 0,
+        "totalScore": 0.029850746268656716,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 7,
+            "weight": 2,
+            "backendScore": 0.8208570888645171,
+            "rrfContribution": 0.029850746268656716
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.1
+    }
+  },
+  {
+    "docid": "#cc6bf7",
+    "score": 0.09,
+    "file": "meme://kubernetes/reference/command-line-tools-reference/kube-controller-manager.md",
+    "line": 505,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -505,1 @@ (504 before, 533 after)\nTA - default=true)<br/>kube:AnyVolumeDataSource=true|false (BETA - default=true)<br/>kube:AuthorizeNodeWithSelectors=true|false (BETA - default=true)<br/>kube:AuthorizeWithSelectors=true|false (BETA - default=true)<br/>kube:BtreeWatchCache=true|false (BETA - default=true)<br/>kube:CBORServingAndS...",
+    "explain": {
+      "ftsScores": [
+        0.8188656360879545
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 11,
+        "positionScore": 0.09090909090909091,
+        "weight": 1,
+        "baseScore": 0.029411764705882353,
+        "topRankBonus": 0,
+        "totalScore": 0.029411764705882353,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 8,
+            "weight": 2,
+            "backendScore": 0.8188656360879545,
+            "rrfContribution": 0.029411764705882353
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.09090909090909091
+    }
+  },
+  {
+    "docid": "#09c7f4",
+    "score": 0.08,
+    "file": "meme://kubernetes/reference/kubernetes-api/config-and-storage-resources/csi-driver-v1.md",
+    "line": 465,
+    "title": "CSIDriver {#CSIDriver}",
+    "snippet": "@@ -464,4 @@ (463 before, 116 after)\n\n- **gracePeriodSeconds** (*in query*): integer\n\n  <a href=\"{{< ref \"../common-parameters/common-parameters#gracePeriodSeconds\" >}}\">gracePeriodSeconds</a>",
+    "explain": {
+      "ftsScores": [
+        0.8094301721646154
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 12,
+        "positionScore": 0.08333333333333333,
+        "weight": 1,
+        "baseScore": 0.02857142857142857,
+        "topRankBonus": 0,
+        "totalScore": 0.02857142857142857,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 10,
+            "weight": 2,
+            "backendScore": 0.8094301721646154,
+            "rrfContribution": 0.02857142857142857
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.08333333333333333
+    }
+  },
+  {
+    "docid": "#015ed9",
+    "score": 0.08,
+    "file": "meme://kubernetes/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2.md",
+    "line": 1260,
+    "title": "HorizontalPodAutoscaler {#HorizontalPodAutoscaler}",
+    "snippet": "@@ -1259,4 @@ (1258 before, 121 after)\n\n- **gracePeriodSeconds** (*in query*): integer\n\n  <a href=\"{{< ref \"../common-parameters/common-parameters#gracePeriodSeconds\" >}}\">gracePeriodSeconds</a>",
+    "explain": {
+      "ftsScores": [
+        0.8062510564939961
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 13,
+        "positionScore": 0.07692307692307693,
+        "weight": 1,
+        "baseScore": 0.028169014084507043,
+        "topRankBonus": 0,
+        "totalScore": 0.028169014084507043,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 11,
+            "weight": 2,
+            "backendScore": 0.8062510564939961,
+            "rrfContribution": 0.028169014084507043
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.07692307692307693
+    }
+  },
+  {
+    "docid": "#ea0861",
+    "score": 0.07,
+    "file": "meme://kubernetes/reference/command-line-tools-reference/kubelet.md",
+    "line": 401,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -400,4 @@ (399 before, 712 after)\nCrossNamespaceVolumeDataSource=true|false (ALPHA - default=false)<br/>\nCustomCPUCFSQuotaPeriod=true|false (ALPHA - default=false)<br/>\nDRAAdminAccess=true|false (ALPHA - default=false)<br/>\nDRAResourceClaimDeviceStatus=true|false (ALPHA - default=false)<br/>",
+    "explain": {
+      "ftsScores": [
+        0.8040100514686778
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 14,
+        "positionScore": 0.07142857142857142,
+        "weight": 1,
+        "baseScore": 0.027777777777777776,
+        "topRankBonus": 0,
+        "totalScore": 0.027777777777777776,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 12,
+            "weight": 2,
+            "backendScore": 0.8040100514686778,
+            "rrfContribution": 0.027777777777777776
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.07142857142857142
+    }
+  },
+  {
+    "docid": "#dbbd72",
+    "score": 0.07,
+    "file": "meme://kubernetes/reference/command-line-tools-reference/kube-proxy.md",
+    "line": 161,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -160,2 @@ (159 before, 337 after)\n<tr>\n<td></td><td style=\"line-height: 130%; word-wrap: break-word;\"><p>A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br/>APIResponseCompression=true|false (BETA - default=true)<br/>APIServerIdentity=true|false (BETA - default=true)<br/>APIServe...",
+    "explain": {
+      "ftsScores": [
+        0.8015875326064728
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 15,
+        "positionScore": 0.06666666666666667,
+        "weight": 1,
+        "baseScore": 0.0273972602739726,
+        "topRankBonus": 0,
+        "totalScore": 0.0273972602739726,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 13,
+            "weight": 2,
+            "backendScore": 0.8015875326064728,
+            "rrfContribution": 0.0273972602739726
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.06666666666666667
+    }
+  },
+  {
+    "docid": "#17b423",
+    "score": 0.06,
+    "file": "meme://kubernetes/reference/kubectl/generated/kubectl_replace/_index.md",
+    "line": 103,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -102,4 @@ (101 before, 349 after)\n<tr>\n<td colspan=\"2\">--grace-period int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: -1</td>\n</tr>\n<tr>",
+    "explain": {
+      "ftsScores": [
+        0.7968737881152114
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 16,
+        "positionScore": 0.0625,
+        "weight": 1,
+        "baseScore": 0.02702702702702703,
+        "topRankBonus": 0,
+        "totalScore": 0.02702702702702703,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 14,
+            "weight": 2,
+            "backendScore": 0.7968737881152114,
+            "rrfContribution": 0.02702702702702703
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.0625
+    }
+  },
+  {
+    "docid": "#7bb04b",
+    "score": 0.06,
+    "file": "meme://kubernetes/reference/kubernetes-api/cluster-resources/runtime-class-v1.md",
+    "line": 417,
+    "title": "RuntimeClass {#RuntimeClass}",
+    "snippet": "@@ -416,4 @@ (415 before, 116 after)\n\n- **gracePeriodSeconds** (*in query*): integer\n\n  <a href=\"{{< ref \"../common-parameters/common-parameters#gracePeriodSeconds\" >}}\">gracePeriodSeconds</a>",
+    "explain": {
+      "ftsScores": [
+        0.7958228011057742
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 17,
+        "positionScore": 0.058823529411764705,
+        "weight": 1,
+        "baseScore": 0.02666666666666667,
+        "topRankBonus": 0,
+        "totalScore": 0.02666666666666667,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 15,
+            "weight": 2,
+            "backendScore": 0.7958228011057742,
+            "rrfContribution": 0.02666666666666667
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.058823529411764705
+    }
+  },
+  {
+    "docid": "#718990",
+    "score": 0.06,
+    "file": "meme://kubernetes/reference/kubernetes-api/common-parameters/common-parameters.md",
+    "line": 101,
+    "title": "allowWatchBookmarks {#allowWatchBookmarks}",
+    "snippet": "@@ -100,4 @@ (99 before, 136 after)\n\n## gracePeriodSeconds {#gracePeriodSeconds}\n\nThe duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object ...",
+    "explain": {
+      "ftsScores": [
+        0.790850277071522
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 18,
+        "positionScore": 0.05555555555555555,
+        "weight": 1,
+        "baseScore": 0.02631578947368421,
+        "topRankBonus": 0,
+        "totalScore": 0.02631578947368421,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 16,
+            "weight": 2,
+            "backendScore": 0.790850277071522,
+            "rrfContribution": 0.02631578947368421
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.05555555555555555
+    }
+  },
+  {
+    "docid": "#8757e1",
+    "score": 0.05,
+    "file": "meme://kubernetes/reference/kubectl/generated/kubectl_apply/_index.md",
+    "line": 124,
+    "title": "{{% heading \"synopsis\" %}}",
+    "snippet": "@@ -123,4 @@ (122 before, 380 after)\n<tr>\n<td colspan=\"2\">--grace-period int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: -1</td>\n</tr>\n<tr>",
+    "explain": {
+      "ftsScores": [
+        0.7908449209162549
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 19,
+        "positionScore": 0.05263157894736842,
+        "weight": 1,
+        "baseScore": 0.025974025974025976,
+        "topRankBonus": 0,
+        "totalScore": 0.025974025974025976,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 17,
+            "weight": 2,
+            "backendScore": 0.7908449209162549,
+            "rrfContribution": 0.025974025974025976
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.05263157894736842
+    }
+  },
+  {
+    "docid": "#bfab5b",
+    "score": 0.05,
+    "file": "meme://kubernetes/reference/kubernetes-api/cluster-resources/node-v1.md",
+    "line": 937,
+    "title": "Node {#Node}",
+    "snippet": "@@ -936,4 @@ (935 before, 116 after)\n\n- **gracePeriodSeconds** (*in query*): integer\n\n  <a href=\"{{< ref \"../common-parameters/common-parameters#gracePeriodSeconds\" >}}\">gracePeriodSeconds</a>",
+    "explain": {
+      "ftsScores": [
+        0.7904160250038205
+      ],
+      "vectorScores": [],
+      "rrf": {
+        "rank": 20,
+        "positionScore": 0.05,
+        "weight": 1,
+        "baseScore": 0.02564102564102564,
+        "topRankBonus": 0,
+        "totalScore": 0.02564102564102564,
+        "contributions": [
+          {
+            "listIndex": 0,
+            "source": "fts",
+            "queryType": "lex",
+            "query": "grace period",
+            "rank": 18,
+            "weight": 2,
+            "backendScore": 0.7904160250038205,
+            "rrfContribution": 0.02564102564102564
+          }
+        ]
+      },
+      "rerankScore": 0,
+      "blendedScore": 0.05
+    }
+  }
+]
+Structured search: 2 queries (lex+vec)
+├─ intent: Pod shutdown
+├─ lex: grace period
+├─ vec: pod termination sequence
+└─ Searching...
+Embedding 1 query... (1.7s)

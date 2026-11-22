@@ -1,0 +1,4 @@
+  embedded 200/342 docs
+  embedded 342/342 docs
+indexed in 3519.6s: +0 added, ~0 updated, -0 removed, 409 unchanged, 5215 chunks embedded [nomic-768-q/sqlite-vec]
+calibrated truncate_floor=0.0665 (rejects 100% noise, keeps 64% answers; search --truncate calibrated)

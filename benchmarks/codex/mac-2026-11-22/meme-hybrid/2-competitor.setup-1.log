@@ -1,0 +1,7 @@
+Creating collection 'kubernetes'...
+Collection: /private/var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-bench-2-competitor-wCGlxA/docs (**/*.md)
+
+Indexed: 409 new, 0 updated, 0 unchanged, 0 removed
+
+Run 'meme embed' to update embeddings (409 unique hashes need vectors)
+✓ Collection 'kubernetes' created successfully

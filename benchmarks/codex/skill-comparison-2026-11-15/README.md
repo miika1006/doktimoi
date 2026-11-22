@@ -2,28 +2,14 @@
 
 Codex `gpt-6.1-sol`, medium effort, Codex CLI 0.166.0, Node 26.13.0, macOS Apple M1, on the
 unchanged [production-design task](../../task.md) and the 409 pinned Kubernetes v1.32 files.
-Only the latest Codex runs are kept; earlier workflow iterations and failed competitor
-attempts are in git history. [HANDOFF.md](HANDOFF.md) lists what remains to run.
+The [22 November M1 study](../mac-2026-11-22/README.md) supersedes the one-pair Doktimoi pilot. It compares ordinary and explicitly batched file tools with Doktimoi across both Kubernetes tasks and a Finnish Office/image task. [HANDOFF.md](HANDOFF.md) lists the remaining Windows work.
 
-| Arm | Runs | Total tokens | Agent time | Quality |
-| --- | ---: | ---: | ---: | --- |
-| `rg`/`sed` control ([pilot](phase2/quality-pilot/)) | 1 | 308,486 | 123.0 s | Omitted the feature-gate prerequisite |
-| Doktimoi ([pilot](phase2/quality-pilot/)) | 1 | 258,332 | 104.8 s | Kept the prerequisite; one imprecise citation |
-| [QMD 2.8.3 native skill](qmd/) | 3 | 368,229 | 114.5 s | Kept the required qualifiers in all three |
-
-The Doktimoi pilot is a single pair with a different SKILL.md than today's
-([frozen inputs](phase2/snapshot.json), [review](phase2/quality-pilot-review.md)); it is
-not an equal-quality result. Three-pair Codex runs of 0.14.x are still needed. The QMD
-arm used its own skill and BM25 CLI without embeddings ([adapter](configs/qmd.json),
-[runtime](runtime.json)). The other macOS adapters in [configs/](configs/) are ready
-for reruns; their first Codex runs failed setup or audit and were removed.
+The [QMD 2.8.3 native skill](qmd/) used its BM25 CLI and averaged 368,229 total tokens and 114.5 s across three production-design reviews. All three kept the required qualifiers in the review. See its [adapter](configs/qmd.json) and [runtime](runtime.json). The model and pinned documents match the later study, but the competitor prompt and study date differ.
 
 A [process-reuse probe](lexical-server-probe/results.json) measured lexical CLI medians of
 365 ms in-process versus 53 ms through an already-running server, with byte-identical
 output; this led to 0.14.1's lexical background server. [Caveman research](caveman-research.md)
-explains why no terse writing style is applied. Latest macOS checks:
-[tests with OCR and LibreOffice](tests-0140.log) and [20/20 retrieval](retrieval-0140.json)
-for 0.14.0.
+explains why no terse writing style is applied. The current [test log](../mac-2026-11-22/tests.log) includes OCR and LibreOffice; the [lexical lookup results](../mac-2026-11-22/retrieval-current.json) include the original-source roundtrip checks.
 
 ## Pinned competitors
 

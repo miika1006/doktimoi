@@ -1,0 +1,17 @@
+Setting up local brain with PGLite (no server needed)...
+  --no-embedding: deferred setup — enable later with `gbrain init --force --embedding-model voyage:voyage-4 --embedding-dimensions 1024 --path /var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-bench-1-competitor-APiiiZ/gbrain-home/.gbrain/brain.pglite` (setting embedding_model through `gbrain config set` is refused by design)
+[gbrain notice release_channel] This install now follows the stable channel: weekly releases promoted after testing. To get every release instead, run: gbrain config set self_upgrade.channel alpha
+No provider keys detected — continuing in keyless mode:
+  keyword search + memory your agent writes down itself. Everything works.
+  One optional key upgrades capabilities — OpenAI: semantic search + automatic
+  fact extraction; Voyage: semantic search; Anthropic: fact extraction.
+  Fact extraction activates as soon as the key is set (no re-init); semantic
+  search needs a re-run:
+  `gbrain init --force --pglite --embedding-model <id>` (re-imports via `gbrain sync`).
+  Setting up brain schema (v314)...
+  v142: takes.embedding resized to vector(1024); existing take vectors cleared
+  309 migration(s) applied
+[init] Migrations: 14 recorded as not needed on a new brain; 5 setup migration(s) pending (0.11.0, 0.14.0, 0.22.4, 0.28.0, 0.53.0). Finish setup: gbrain apply-migrations --yes --no-autopilot-install
+Error [local_conflict]: A content-root component is not a real directory.
+Fix: /var is a symlink or a file, so /var/folders/3t/t35161bs2slggt46tnrk0b4c0000gn/T/doktimoi-bench-1-competitor-APiiiZ/gbrain-home/.gbrain/content/4f256e7b-6058-4660-9add-910d4f9e3e29/default cannot be a content root. Choose a path whose every parent is a real directory.
+Docs: https://github.com/garrytan/gbrain/blob/master/docs/guides/error-codes.md#local_conflict

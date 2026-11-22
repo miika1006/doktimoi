@@ -1,0 +1,45 @@
+{
+  "verified": true,
+  "rounds": [
+    {
+      "input_tokens": 14113,
+      "output_tokens": 77,
+      "cached_input_tokens": 9856
+    },
+    {
+      "input_tokens": 15357,
+      "output_tokens": 286,
+      "cached_input_tokens": 13952
+    },
+    {
+      "input_tokens": 24822,
+      "output_tokens": 410,
+      "cached_input_tokens": 9856
+    },
+    {
+      "input_tokens": 32553,
+      "output_tokens": 409,
+      "cached_input_tokens": 25088
+    },
+    {
+      "input_tokens": 38255,
+      "output_tokens": 233,
+      "cached_input_tokens": 32768
+    },
+    {
+      "input_tokens": 40208,
+      "output_tokens": 292,
+      "cached_input_tokens": 38272
+    },
+    {
+      "input_tokens": 43149,
+      "output_tokens": 231,
+      "cached_input_tokens": 40320
+    },
+    {
+      "input_tokens": 43998,
+      "output_tokens": 2059,
+      "cached_input_tokens": 43264
+    }
+  ]
+}

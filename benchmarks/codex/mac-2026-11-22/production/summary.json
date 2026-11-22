@@ -1,0 +1,475 @@
+{
+  "startedAt": "2026-11-22T06:24:08.594Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "manifestSha256": "158933343ec85fb0e0f5c9e751555d1bc4517ef288dee14026c7045057c678fa",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "batch-study",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "2e72efd130bbc0d37e460e5333b206c9d228e57b05a8a8ffe2e0c33aa5293ed2",
+  "taskPath": "/Users/miikam/Projects/doktimoi/benchmarks/task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "26ca8568117e8469ac2b3562f1d358e94c183fe3b8c03e1a5897fa24be573688",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 105996,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201ed-26dc-7661-99b3-67211ee908b2",
+      "usage": {
+        "input_tokens": 400219,
+        "cached_input_tokens": 361472,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4072,
+        "reasoning_output_tokens": 298
+      },
+      "totalTokens": 404291,
+      "uncachedInputTokens": 38747,
+      "commands": 12,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 30370,
+      "modelRounds": 13,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "batched",
+      "elapsedMs": 98581,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201ee-c8ea-75a1-9907-0554f200b479",
+      "usage": {
+        "input_tokens": 251483,
+        "cached_input_tokens": 200064,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4132,
+        "reasoning_output_tokens": 193
+      },
+      "totalTokens": 255615,
+      "uncachedInputTokens": 51419,
+      "commands": 18,
+      "failedCommands": 4,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 31323,
+      "modelRounds": 8,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_2",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_12",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_13",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_14",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 121066,
+      "buildMs": 26969,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201f0-b5c5-7ea3-8b5f-cdba3bf353c8",
+      "usage": {
+        "input_tokens": 244264,
+        "cached_input_tokens": 192128,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4035,
+        "reasoning_output_tokens": 247
+      },
+      "totalTokens": 248299,
+      "uncachedInputTokens": 52136,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25705,
+      "modelRounds": 8,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 2,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "batched",
+      "elapsedMs": 106073,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201f2-970b-7031-8383-84820b75ecb5",
+      "usage": {
+        "input_tokens": 289852,
+        "cached_input_tokens": 229888,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4167,
+        "reasoning_output_tokens": 285
+      },
+      "totalTokens": 294019,
+      "uncachedInputTokens": 59964,
+      "commands": 17,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 82833,
+      "modelRounds": 8,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_12",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 105551,
+      "buildMs": 24757,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201f4-991f-7171-82d4-c59a6e0900eb",
+      "usage": {
+        "input_tokens": 171319,
+        "cached_input_tokens": 138624,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3595,
+        "reasoning_output_tokens": 78
+      },
+      "totalTokens": 174914,
+      "uncachedInputTokens": 32695,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25414,
+      "modelRounds": 6,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 10,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 103959,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201f6-3b4c-7670-a37d-fcf76aeedbad",
+      "usage": {
+        "input_tokens": 274724,
+        "cached_input_tokens": 233856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4188,
+        "reasoning_output_tokens": 145
+      },
+      "totalTokens": 278912,
+      "uncachedInputTokens": 40868,
+      "commands": 18,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 27787,
+      "modelRounds": 9,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_12",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 134036,
+      "buildMs": 30323,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201f8-49f2-7151-ac2f-c28f0f501f7b",
+      "usage": {
+        "input_tokens": 288346,
+        "cached_input_tokens": 218368,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4570,
+        "reasoning_output_tokens": 523
+      },
+      "totalTokens": 292916,
+      "uncachedInputTokens": 69978,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 27501,
+      "modelRounds": 9,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 2,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 106841,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201fa-5b93-7872-9eac-07aa346e49de",
+      "usage": {
+        "input_tokens": 374413,
+        "cached_input_tokens": 333952,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4153,
+        "reasoning_output_tokens": 491
+      },
+      "totalTokens": 378566,
+      "uncachedInputTokens": 40461,
+      "commands": 12,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 26625,
+      "modelRounds": 13,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "batched",
+      "elapsedMs": 91156,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201fc-0020-78b2-a52a-41238561d568",
+      "usage": {
+        "input_tokens": 270789,
+        "cached_input_tokens": 227072,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3660,
+        "reasoning_output_tokens": 113
+      },
+      "totalTokens": 274449,
+      "uncachedInputTokens": 43717,
+      "commands": 29,
+      "failedCommands": 3,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 31438,
+      "modelRounds": 8,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_2",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_23",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_25",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "8aa7a497413d107ec9b3a806b5922bad351a25a98c5a243853b619435b830f5c"
+}

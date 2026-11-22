@@ -1,0 +1,65 @@
+{
+  "verified": true,
+  "rounds": [
+    {
+      "input_tokens": 14093,
+      "output_tokens": 92,
+      "cached_input_tokens": 9856
+    },
+    {
+      "input_tokens": 15354,
+      "output_tokens": 402,
+      "cached_input_tokens": 13952
+    },
+    {
+      "input_tokens": 18128,
+      "output_tokens": 52,
+      "cached_input_tokens": 15616
+    },
+    {
+      "input_tokens": 22957,
+      "output_tokens": 610,
+      "cached_input_tokens": 9856
+    },
+    {
+      "input_tokens": 23728,
+      "output_tokens": 58,
+      "cached_input_tokens": 23424
+    },
+    {
+      "input_tokens": 24097,
+      "output_tokens": 313,
+      "cached_input_tokens": 23552
+    },
+    {
+      "input_tokens": 33938,
+      "output_tokens": 438,
+      "cached_input_tokens": 24192
+    },
+    {
+      "input_tokens": 38379,
+      "output_tokens": 419,
+      "cached_input_tokens": 34176
+    },
+    {
+      "input_tokens": 39717,
+      "output_tokens": 53,
+      "cached_input_tokens": 38656
+    },
+    {
+      "input_tokens": 42050,
+      "output_tokens": 348,
+      "cached_input_tokens": 39552
+    },
+    {
+      "input_tokens": 46097,
+      "output_tokens": 357,
+      "cached_input_tokens": 42240
+    },
+    {
+      "input_tokens": 47426,
+      "output_tokens": 2382,
+      "cached_input_tokens": 46336
+    }
+  ]
+}

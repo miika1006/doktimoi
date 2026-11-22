@@ -1,6 +1,0 @@
-{
-  "version": "0.14.1",
-  "runnerSha256": "9dcd0b3b066234d7f01264e4ba909df575904e2a318eeba62005444ca9a5283a",
-  "skillSha256": "3714eb108db6096923b853e20e02b57134ffc8544b819b87493ba332c439cafd",
-  "note": "Fresh phase after path-audit fixes and generic prerequisite guidance; no final-answer compression."
-}

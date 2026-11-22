@@ -23,7 +23,8 @@ for (const dir of process.argv.slice(2)) {
       meanModelRounds: passed.length && passed.every(run => Number.isInteger(run.modelRounds))
         ? +mean(run => run.modelRounds).toFixed(1) : null,
       meanCalls: +mean(run => run.commands).toFixed(1),
-      meanSetupSeconds: +(mean(run => (run.setupMs ?? 0) + (run.buildMs ?? 0) + (run.embedMs ?? 0)) / 1000).toFixed(1),
+      meanSetupSeconds: +(mean(run => (run.setupMs ?? 0) + (run.buildMs ?? 0) + (run.embedMs ?? 0)
+        + (run.indexCopyMs ?? 0) + (run.preflightMs ?? 0)) / 1000).toFixed(1),
       deniedAttempts: passed.reduce((sum, run) => sum + (run.audit.deniedAttempts?.length ?? 0), 0),
       operationErrors: passed.reduce((sum, run) => sum + run.audit.operationErrors.length, 0),
     });

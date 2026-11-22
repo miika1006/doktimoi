@@ -1,0 +1,305 @@
+{
+  "startedAt": "2026-11-22T06:59:23.345Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "manifestSha256": "158933343ec85fb0e0f5c9e751555d1bc4517ef288dee14026c7045057c678fa",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "competitor",
+  "competitor": {
+    "name": "meme-hybrid-prepared",
+    "repository": "https://github.com/qntx/meme",
+    "commit": "10983816e0f24781d4ed562331ff48e136d03a4c",
+    "sourcePath": "/tmp/doktimoi-study-1122/meme",
+    "skillPath": "/tmp/doktimoi-study-1122/meme/crates/meme-bin/skills/meme/SKILL.md",
+    "env": {
+      "MEME_CONFIG_DIR": "{workspace}/meme-config",
+      "INDEX_PATH": "{workspace}/meme.sqlite",
+      "MEME_EMBED_MODEL": "/tmp/doktimoi-study-1122/embeddinggemma-300M-Q8_0.gguf",
+      "MEME_FORCE_CPU": "1"
+    },
+    "retrieval": "hybrid",
+    "hybridEvidence": "meme-structured",
+    "backend": {
+      "requested": "CPU (GGML_METAL=OFF)"
+    },
+    "artifacts": [
+      {
+        "path": "/tmp/doktimoi-study-1122/embeddinggemma-300M-Q8_0.gguf",
+        "sha256": "b5ce9d77a3fc4b3b39ccb5643c36777911cc4eb46a66962eadfa3f5f60490d63"
+      },
+      {
+        "path": "/tmp/doktimoi-study-1122/meme-agent.sqlite",
+        "sha256": "86058b5511d0a3e7d453161a90e11ebdb5312cd3f0bdec1a011f783111b4bf75"
+      }
+    ],
+    "setup": [
+      {
+        "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+        "args": [
+          "collection",
+          "add",
+          "{docs}",
+          "--name",
+          "kubernetes"
+        ]
+      },
+      {
+        "command": "/bin/cp",
+        "args": [
+          "/tmp/doktimoi-study-1122/meme-agent.sqlite",
+          "{workspace}/meme.sqlite"
+        ]
+      }
+    ],
+    "preflight": {
+      "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+      "args": [
+        "query",
+        "intent: Pod shutdown\nlex: grace period\nvec: pod termination sequence",
+        "-c",
+        "kubernetes",
+        "--no-rerank",
+        "--format",
+        "json",
+        "--explain"
+      ]
+    },
+    "instructions": "Rust port of QMD 2.8.3, built from source; embeddings are prebuilt with the local embeddinggemma model. Use structured meme query with intent:, lex: and vec: lines plus -c kubernetes --no-rerank, and meme search for exact terms. Never run pull, embed, update or the expand mode (no generation or rerank model is installed).",
+    "searchCommands": [
+      {
+        "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+        "argsPrefix": [
+          "query"
+        ]
+      },
+      {
+        "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+        "argsPrefix": [
+          "search"
+        ]
+      }
+    ],
+    "readCommands": [
+      {
+        "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+        "argsPrefix": [
+          "get"
+        ]
+      },
+      {
+        "command": "/tmp/doktimoi-study-1122/meme-cpu/release/meme",
+        "argsPrefix": [
+          "multi-get"
+        ]
+      }
+    ],
+    "configSha256": "8e0216661d53869de3b580e2b4fcdb71eb63b994e9f3d9aab9dacb7600c92dce",
+    "sourceTree": "ce21d52942b161383896a8452ef7bf75a90092e9",
+    "skillSha256": "bec3578b7624a3d01877fed02a004b946a55f23fdeb240d42152bd90dc42a104"
+  },
+  "retrieval": "hybrid",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "45d10436f4309a059f94e940de3e99ba38bd692fa7afc5c5bb852b9a3bf6588b",
+  "taskPath": "/Users/miikam/Projects/doktimoi/benchmarks/task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "26ca8568117e8469ac2b3562f1d358e94c183fe3b8c03e1a5897fa24be573688",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "competitor",
+      "elapsedMs": 124159,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 5666,
+      "setupMs": 1742,
+      "threadId": "01a2020d-8b25-71e1-aeda-9886a60ea2e6",
+      "usage": {
+        "input_tokens": 495258,
+        "cached_input_tokens": 450944,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4337,
+        "reasoning_output_tokens": 364
+      },
+      "totalTokens": 499595,
+      "uncachedInputTokens": 44314,
+      "commands": 49,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 37938,
+      "modelRounds": 13,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "item_50",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/containers/container-lifecycle-hooks.md",
+              "|",
+              "sed",
+              "-n",
+              "25,105p"
+            ],
+            "wasReturned": false
+          },
+          {
+            "id": "item_51",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/tasks/configmap-secret/managing-secret-using-config-file.md",
+              "|",
+              "sed",
+              "-n",
+              "20,90p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 19,
+        "successfulCompetitorCommands": 19,
+        "doktimoiCommands": 0,
+        "hybridCommands": 1,
+        "successfulHybridCommands": 1,
+        "referenceReads": 30,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_40",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "competitor",
+      "elapsedMs": 149222,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 5138,
+      "setupMs": 1911,
+      "threadId": "01a2020f-914d-7b63-9683-6eaebdb14a6b",
+      "usage": {
+        "input_tokens": 724445,
+        "cached_input_tokens": 652672,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4871,
+        "reasoning_output_tokens": 319
+      },
+      "totalTokens": 729316,
+      "uncachedInputTokens": 71773,
+      "commands": 54,
+      "failedCommands": 2,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 68755,
+      "modelRounds": 15,
+      "audit": {
+        "targetedReads": [
+          {
+            "id": "item_48",
+            "words": [
+              "nl",
+              "-ba",
+              "docs/concepts/containers/container-lifecycle-hooks.md",
+              "|",
+              "sed",
+              "-n",
+              "25,110p"
+            ],
+            "wasReturned": false
+          }
+        ],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 23,
+        "successfulCompetitorCommands": 23,
+        "doktimoiCommands": 0,
+        "hybridCommands": 1,
+        "successfulHybridCommands": 1,
+        "referenceReads": 31,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_37",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_49",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "competitor",
+      "elapsedMs": 114334,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 4546,
+      "setupMs": 1832,
+      "threadId": "01a20211-f74a-7150-856f-cb8b137e8c85",
+      "usage": {
+        "input_tokens": 459661,
+        "cached_input_tokens": 392960,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3619,
+        "reasoning_output_tokens": 205
+      },
+      "totalTokens": 463280,
+      "uncachedInputTokens": 66701,
+      "commands": 47,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 39676,
+      "modelRounds": 12,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 1,
+        "competitorCommands": 19,
+        "successfulCompetitorCommands": 19,
+        "doktimoiCommands": 0,
+        "hybridCommands": 1,
+        "successfulHybridCommands": 1,
+        "referenceReads": 28,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "6047886a2c646b4adad1a7085fd3513413c79af46d25d8a75edcac6c23209034"
+}
