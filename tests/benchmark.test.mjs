@@ -35,6 +35,11 @@ test('benchmark audit requires real Doktimoi calls and flags bypasses and partia
   const raw = items => items.map(item => JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', exit_code: 0, ...item } })).join('\n');
   const search = { id: 'search', command: 'node "/skill/scripts/doktimoi.mjs" batch docs --requests \'[{"queries":["a"]}]\'', aggregated_output: 'Q1\nsource.md:1-3\nEvidence.' };
   assert.equal(auditRun(raw([search]), 'doktimoi').passed, true);
+  const files = { ...search, command: "/bin/zsh -lc \"rg --files docs -g '!**/.doktimoi/**' | head -70\"" };
+  assert.equal(auditRun(raw([search, files]), 'doktimoi').filenameCommands, 1);
+  for (const command of ['rg --files | head -n 5 docs/secret.md', 'rg --files && rg secret docs', 'rg --files --pre cat docs']) {
+    assert.equal(auditRun(raw([search, { ...files, command }]), 'doktimoi').passed, false);
+  }
   assert.equal(auditRun(raw([search]), 'doktimoi').hybridCommands, 0);
   assert.equal(auditRun(raw([{ ...search, command: `${search.command} --mode hybrid` }]), 'doktimoi').hybridCommands, 1);
   const failedHybrid = auditRun(raw([{ ...search, command: `${search.command} --mode hybrid`, exit_code: 1, aggregated_output: 'Embedding error: Metal unavailable' }]), 'doktimoi');

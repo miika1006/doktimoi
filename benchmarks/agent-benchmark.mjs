@@ -37,7 +37,21 @@ export function commandWords(command, unwrap = true) {
   return words;
 }
 
-// Parsed diagnostics only; numbered reads are the sole accepted pipe shape.
+// A filename listing may be capped with head reading stdin, never an additional file.
+function listsFilenames(command) {
+  const outer = commandWords(command, false);
+  if (outer?.length === 3 && /(?:^|\/)(?:ba|z|da)?sh$/.test(outer[0]) && ['-lc', '-c'].includes(outer[1])) return listsFilenames(outer[2]);
+  const listing = command.replace(/\s*\|\s*head\s+(?:-n\s+|-)[1-9]\d*\s*$/, '');
+  const words = commandWords(listing);
+  if (words?.[0] !== 'rg' || words[1] !== '--files') return false;
+  for (let i = 2; i < words.length; i++) {
+    if (['-g', '--glob'].includes(words[i]) && words[i + 1]) i++;
+    else if (words[i].startsWith('-')) return false;
+  }
+  return true;
+}
+
+// Parsed competitor diagnostics only; numbered reads are the sole accepted pipe shape.
 function commandGroupWords(command) {
   const words = commandWords(command);
   if (words) return words;
@@ -269,7 +283,7 @@ export function auditRun(raw, mode, competitor, workspace) {
     }
     else if (mode === 'doktimoi') {
       if (/\bcat\b/.test(command) && /\/skills\/doktimoi\/(?:references\/|SKILL\.md)/.test(command) && !command.includes('/docs/')) audit.referenceReads++;
-      else if (/\brg --files\b/.test(command) && !/\b(cat|sed|head|tail)\b/.test(command)) audit.filenameCommands++;
+      else if (listsFilenames(command)) audit.filenameCommands++;
       else audit.violations.push({ id: item.id, command });
     }
     if (['baseline', 'batched'].includes(mode) && (doktimoi || command.includes('.doktimoi'))) audit.violations.push({ id: item.id, command });

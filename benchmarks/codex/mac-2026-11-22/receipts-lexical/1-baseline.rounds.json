@@ -1,0 +1,25 @@
+{
+  "verified": true,
+  "rounds": [
+    {
+      "input_tokens": 13618,
+      "output_tokens": 65,
+      "cached_input_tokens": 9856
+    },
+    {
+      "input_tokens": 20901,
+      "output_tokens": 198,
+      "cached_input_tokens": 13568
+    },
+    {
+      "input_tokens": 22356,
+      "output_tokens": 324,
+      "cached_input_tokens": 20864
+    },
+    {
+      "input_tokens": 23671,
+      "output_tokens": 427,
+      "cached_input_tokens": 22528
+    }
+  ]
+}

@@ -64,7 +64,7 @@ test('help prints usage without creating an index, taking the lock or starting a
   for (const args of [['help'], ['--help'], ['search', root, '--query', 'x', '--help'], ['read', '-h']]) {
     const result = run(args);
     assert.equal(result.status, 0, args.join(' '));
-    assert.match(result.stdout, /^Usage: node doktimoi\.mjs[\s\S]*--limit N +search: results, 1-20[\s\S]*file\.md:N-M/);
+    assert.match(result.stdout, /^Usage: node doktimoi\.mjs[\s\S]*--limit N +ranked results, 1-20[\s\S]*file\.md:N-M/);
     assert.equal(result.stderr, '');
   }
   assert.deepEqual(await fs.readdir(root), []);
