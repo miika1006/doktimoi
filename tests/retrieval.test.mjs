@@ -301,6 +301,38 @@ test('a small excerpt retains the matching fact near the end of a long line', as
   assert.ok(tokens(render(payload)) <= 300);
 });
 
+test('a bare indexed workbook returns its first cited sheet and points to the next', async t => {
+  const { root, project } = await fixture(t);
+  const book = XLSX.utils.book_new();
+  for (const [sheet, value] of [['Validity', 'November'], ['Price', 78]]) {
+    XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet([[value]]), sheet);
+  }
+  XLSX.writeFile(book, path.join(root, 'tariff.xlsx'));
+  const first = await project.read('tariff.xlsx');
+  assert.equal(reference(first), 'tariff.xlsx:Validity!rows:1-1');
+  assert.match(first.text, /November/);
+  const next = first.continuation.match(/next: read "([^"]+)"/)[1];
+  assert.match((await project.read(next)).text, /78/);
+  const many = await project.readAll(['tariff.xlsx', next]);
+  assert.match(many.pieces[0], /November/);
+  assert.match(many.pieces[1], /78/);
+});
+
+test('a clipped ledger passage cites its visible lines and reads back the matching record', async t => {
+  const { root, project } = await fixture(t);
+  const rows = Array.from({ length: 150 }, (_, i) => `Delivery ${i + 1}: signed, archived, and transferred to the depot.`);
+  rows[79] += ' HARMAAHAIKARA: seven boxes.';
+  await fs.writeFile(path.join(root, 'ledger.txt'), rows.join('\n'));
+  const { payload } = await project.search(['HARMAAHAIKARA'], { budget: 300 });
+  const item = payload.results[0];
+  assert.ok(item.excerpt);
+  const [, first, last] = /^lines:(\d+)-(\d+)$/.exec(item.location).map(Number);
+  assert.ok(first > 1 && first <= 80 && last >= 80 && last < 150);
+  const read = await project.read(reference(item));
+  assert.equal(read.text, rows.slice(first - 1, last).join('\n'));
+  assert.ok(read.text.includes(item.text.replace(/^ … | … $/g, '')));
+});
+
 test('child ignore rules can restore files in non-Git documentation folders', async t => {
   const { root, project } = await fixture(t);
   await fs.writeFile(path.join(root, '.gitignore'), '*.md\n');

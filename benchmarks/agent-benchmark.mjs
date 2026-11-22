@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // Fresh Codex or Claude Code processes on identical corpus copies; retain usage events and answers for review.
 import fs from 'node:fs/promises';
-import { openSync, closeSync, realpathSync, createReadStream } from 'node:fs';
+import { openSync, closeSync, writeSync, realpathSync, createReadStream } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
+import { createInterface } from 'node:readline';
+import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { checkRuntime, tokens } from '../skills/doktimoi/scripts/doktimoi.mjs';
 import { hasSemanticIndex, unembeddedChunks } from '../skills/doktimoi/scripts/server.mjs';
@@ -281,6 +283,40 @@ export function auditRun(raw, mode, competitor, workspace) {
   return audit;
 }
 
+// Codex sends a two-token connection warm-up before the first model response.
+// Only publish rounds when all three sums reconcile with the provider's turn totals.
+export function verifiedRounds(events, usage) {
+  const rounds = events.slice();
+  const matches = () => ['input_tokens', 'output_tokens', 'cached_input_tokens'].every(key =>
+    rounds.reduce((sum, event) => sum + event[key], 0) === usage[key]);
+  if (!matches() && rounds[0]?.input_tokens === 2 && rounds[0].output_tokens === 0) rounds.shift();
+  return rounds.length && matches() ? rounds : null;
+}
+
+async function runCodex(args, workspace, env, prompt, stdout, stderr) {
+  // Select only the log-only target. Enabling both OTel targets duplicates completions.
+  const child = spawn('codex', args, { cwd: workspace, env: { ...env, RUST_LOG: 'warn,codex_otel.log_only=info' },
+    stdio: ['pipe', stdout, 'pipe'], timeout: 900000 });
+  const closed = once(child, 'close');
+  const rounds = [];
+  const lines = createInterface({ input: child.stderr, crlfDelay: Infinity });
+  const drained = (async () => {
+    for await (const line of lines) {
+      if (/event\.name="codex\.sse_event"/.test(line) && /event\.kind=response\.completed\b/.test(line)) {
+        const count = field => Number(line.match(new RegExp(`\\b${field}=(\\d+)`))?.[1]);
+        rounds.push({ input_tokens: count('input_token_count'), output_tokens: count('output_token_count'),
+          cached_input_tokens: count('cached_token_count') });
+      }
+      // OTel metadata can include account identifiers; only retain its numeric counts above.
+      if (/^\d{4}-\S+Z\s+(?:WARN|ERROR)\s+codex_[\w:]+:/.test(line) && !line.includes('codex_otel')) writeSync(stderr, line + '\n');
+    }
+  })();
+  child.stdin.on('error', error => { if (error.code !== 'EPIPE') child.destroy(error); });
+  child.stdin.end(prompt);
+  const [[status]] = await Promise.all([closed, drained]);
+  return { status, rounds };
+}
+
 export function summarizeEvents(raw) {
   const events = raw.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
   const turns = events.filter(e => e.type === 'turn.completed');
@@ -407,7 +443,7 @@ async function main() {
   const pairs = Number(values.pairs);
   if (!['codex', 'claude'].includes(values.agent)) throw new Error('--agent must be codex or claude');
   values.model ??= values.agent === 'codex' ? 'gpt-6-astra' : 'claude-opus-5-5';
-  if (!['both', 'batch-study', 'baseline', 'doktimoi', 'competitor'].includes(values.arm)) throw new Error('--arm must be both, batch-study, baseline, doktimoi or competitor');
+  if (!['both', 'batch-study', 'batch-doktimoi', 'baseline', 'doktimoi', 'competitor'].includes(values.arm)) throw new Error('--arm must be both, batch-study, batch-doktimoi, baseline, doktimoi or competitor');
   if (values.arm === 'competitor' && !values.competitor) throw new Error('--arm competitor requires --competitor');
   if (values.competitor && !['both', 'competitor'].includes(values.arm)) throw new Error('Competitors require --arm both or competitor');
   const competitorText = values.competitor ? await fs.readFile(path.resolve(values.competitor), 'utf8') : null;
@@ -481,6 +517,7 @@ async function main() {
     const treatment = competitor ? 'competitor' : 'doktimoi';
     const arms = ['baseline', 'batched', 'doktimoi'];
     const order = values.arm === 'batch-study' ? arms.map((_, i) => arms[(i + pair - 1) % arms.length])
+      : values.arm === 'batch-doktimoi' ? ['doktimoi']
       : values.arm === 'both' ? (pair % 2 ? ['baseline', treatment] : [treatment, 'baseline']) : [values.arm];
     for (const mode of order) {
       const name = `${pair}-${mode}`;
@@ -488,7 +525,7 @@ async function main() {
       for (const suffix of ['prompt.txt', 'events.jsonl', 'answer.md', 'setup.json', 'preflight.json', 'preflight.log']) {
         if (await fs.stat(path.join(output, `${name}.${suffix}`)).catch(() => null)) throw new Error(`Existing incomplete ${name}; review its evidence before resuming`);
       }
-      const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `doktimoi-bench-${name}-`));
+      const workspace = await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), `doktimoi-bench-${name}-`));
       try {
         await copyCorpus(path.join(workspace, 'docs'), values.corpus);
         let buildMs = 0, embedMs = 0, indexCopyMs = 0, preflightMs = 0, setupMs = 0;
@@ -555,7 +592,7 @@ async function main() {
         const node = values.agent === 'claude' && mode !== 'competitor'
           ?`Node ${process.version} is first on PATH; run Node commands as plain \`node\`, as a single command without cd or chaining.`
           : `Node ${process.version} is available at ${process.execPath}; use that quoted absolute executable for Node commands because a login shell may change PATH.`;
-        const batching = values.arm === 'batch-study' && mode !== 'baseline'
+        const batching = values.arm.startsWith('batch-') && mode !== 'baseline'
           ? '\nGroup independent searches into the same tool round, then group the necessary source reads. Follow up on gaps until you can support every answer.'
           : '';
         const prompt = `The documentation corpus is in ${path.join(workspace, 'docs')}.\n${node}\n${instructions}${batching}\n\n${task.text}`;
@@ -569,7 +606,11 @@ async function main() {
         console.log(`Starting ${name}`);
         const started = performance.now();
         let run;
-        try { run = spawnSync(values.agent, args, { cwd: workspace, env: mode === 'competitor' ? { ...env, ...resolvedCompetitor.env } : env, input: prompt, stdio: ['pipe', stdout, stderr], timeout: 900000 }); }
+        try {
+          const agentEnv = mode === 'competitor' ? { ...env, ...resolvedCompetitor.env } : env;
+          run = values.agent === 'codex' ? await runCodex(args, workspace, agentEnv, prompt, stdout, stderr)
+            : spawnSync(values.agent, args, { cwd: workspace, env: agentEnv, input: prompt, stdio: ['pipe', stdout, stderr], timeout: 900000 });
+        }
         finally { closeSync(stdout); closeSync(stderr); }
         const elapsedMs = Math.round(performance.now() - started);
         await fs.writeFile(path.join(output, `${name}.timing.json`), JSON.stringify({ elapsedMs, buildMs, embedMs, indexCopyMs, preflightMs, setupMs, exitCode: run.status }, null, 2) + '\n');
@@ -580,6 +621,11 @@ async function main() {
           raw = claudeToCodexEvents(raw);
         }
         const metrics = summarizeEvents(raw), audit = auditRun(raw, mode, resolvedCompetitor, workspace);
+        if (run.rounds) {
+          const rounds = verifiedRounds(run.rounds, metrics.usage);
+          metrics.modelRounds = rounds?.length ?? null;
+          await fs.writeFile(path.join(output, `${name}.rounds.json`), JSON.stringify({ verified: !!rounds, rounds: rounds ?? run.rounds }, null, 2) + '\n');
+        }
         report.runs.push({ pair, mode, elapsedMs, buildMs, embedMs, indexCopyMs, preflightMs, setupMs, ...metrics, audit });
         await fs.writeFile(path.join(output, 'summary.json'), JSON.stringify(report, null, 2) + '\n');
         if (!audit.passed || (mode === 'doktimoi' && values.retrieval === 'hybrid' && !audit.successfulHybridCommands)) throw new Error(`${name} violated tool-use isolation or did not successfully use requested hybrid retrieval; review its recorded commands`);

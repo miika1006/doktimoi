@@ -176,6 +176,19 @@ export function excerpt(text, query, maxChars = 600, db, words = 48) {
   return line.slice(start, start + maxChars);
 }
 
+/** Cite only the source lines visible in a clipped passage when it maps uniquely to the original. */
+function citedExcerpt(item, text) {
+  const result = { ...item, text, excerpt: true };
+  const span = LINE_SPAN.exec(item.location);
+  if (!span) return result; // Converted files need their original chunk location for read().
+  const visible = text.replace(/^ … | … $/g, '');
+  const start = item.text.indexOf(visible);
+  if (!visible || start < 0 || item.text.indexOf(visible, start + 1) !== -1) return result;
+  const first = Number(span[2]) + item.text.slice(0, start).split('\n').length - 1;
+  result.location = `lines:${first}-${first + visible.split('\n').length - 1}`;
+  return result;
+}
+
 export function render(payload) {
   if (!payload.results.length) return (payload.more ? 'No evidence fits this budget; increase --budget.' : 'No matching evidence.') + (payload.note ? `\n[${payload.note}]` : '');
   if (payload.exact) return renderMatches(payload);
@@ -811,7 +824,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         let candidate = brief ? { ...item, text: snippet(item.text, query) } : item;
         const fitting = list => fits(render({ brief, results: list }), budget - 100, maxBytes - 400);
         if (!brief && !fitting(mergeAdjacent([...results, candidate]))) {
-          candidate = { ...item, text: excerpt(item.text, query, 600, store.internal.db), excerpt: true };
+          candidate = citedExcerpt(item, excerpt(item.text, query, 600, store.internal.db));
         }
         if (!fitting(brief ? [...results, candidate] : mergeAdjacent([...results, candidate]))) { omitted++; continue; }
         results.push(candidate);
@@ -861,6 +874,9 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
     /** Reads a reference for read(), on an up-to-date index. */
     async function readReference(ref, from, lines, budget, maxBytes = MAX_OUTPUT_BYTES) {
       const chunks = chunksForReference(ref);
+      // An agent may have a converted filename from a citation without a sheet/page reference.
+      const fileChunks = !chunks.length && manifest.files[ref]?.chunks;
+      if (fileChunks?.length && !LINE_SPAN.test(fileChunks[0].location)) chunks.push(fileChunks[0]);
       if (!chunks.length && await createdSinceSync(ref)) throw sourceChanged(`Source not indexed yet: ${ref}; retry`);
       if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
       const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
@@ -878,7 +894,10 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         result.text = truncate(result.text, available, maxBytes - 500 - Buffer.byteLength(empty));
       }
       const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
-      if (!span) return result;
+      if (!span) {
+        if (fileChunks?.length > 1) result.continuation = `First of ${fileChunks.length} passages; next: read "${ref}:${fileChunks[1].location}". Search with --path for other sections.`;
+        return result;
+      }
       // A cut last line is only partly shown: the location includes it and the continuation repeats it.
       const first = Number(span[1]) + from - 1;
       const shownLines = result.text.split('\n').length;
@@ -1391,7 +1410,7 @@ References:
   Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
   with [Continue: read "file.md:65-120"], the range that reads on. References that did not
   fit a multi-reference read are named in [Output cap reached; not read: ...].
-  Other formats (CSV/TSV, PDF pages, sheets, slides, OCR images) need the exact reference.
+  For converted files use a returned reference, or the indexed filename for its first passage.
   CSV/TSV csv-lines:N-M names the original physical lines; its field text is normalized.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {

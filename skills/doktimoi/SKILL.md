@@ -37,8 +37,8 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
 - Cite returned ranges unchanged unless narrower supporting lines are verified
   in the visible passage. Batch **only missing evidence** into one doktimoi
   `read` call, not file-read tools;
-  do not reread passages just to verify the search tool. Expand omitted conditions
-  when needed, then stop searching once every requested point has evidence.
+  do not reread passages just to verify the search tool. For clipped source lines, read adjacent lines if a condition is missing.
+  Stop once every requested point has evidence.
 - **Copy returned paths; never guess them.** Linked pages may be absent. After
   discovery, scope a batch request with `"paths":["returned/a.md"]`. A request whose
   path is absent searches all sources, labelled; other batch answers remain valid.
@@ -46,14 +46,14 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
 - Use `"mode":"exact"` for literal phrases (up to 20 alternatives); it lists
   matching source lines. If semantic search is enabled, use `"mode":"hybrid"`
   for topical questions and put the natural-language question first. Additional
-  queries can be lexical alternatives. A missing match never proves absence.
+  queries can be lexical alternatives. Use exact mode first for a known identifier; carry it into the next source to join records. A missing match never proves absence.
 
 ## Reading and correctness
 
-Markdown/text `file.md:N-M` reads original lines; other formats require the exact
-returned reference. Read takes up to 20 ranges. Each call shares a cap of 6000
+Markdown/text `file.md:N-M` reads original lines. For Office, PDFs and images,
+read the returned reference or use a bare indexed filename for its first passage. Read takes up to 20 ranges. Each call shares a cap of 6000
 estimated tokens / 20 KB; follow `Continue` or `not read` notices only for evidence
-still needed. `--help` lists options. Never load `.doktimoi` machine files.
+still needed. `--help` lists options. Only open a returned `[Visual: ...]` image inside `.doktimoi`.
 
 Cite original files/locations and preserve prerequisites, defaults, negation,
 units and versions. Before recommending an optional feature from an API/schema

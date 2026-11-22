@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { auditRun, samePath, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { auditRun, samePath, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifiedRounds, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -43,6 +43,7 @@ test('benchmark audit requires real Doktimoi calls and flags bypasses and partia
   assert.equal(auditRun(raw([{ ...search, command: `${search.command} --mode hybrid` }]), 'doktimoi').successfulHybridCommands, 1);
   assert.equal(auditRun(raw([{ ...search, command: search.command.replace('"queries"', '"mode":"hybrid","queries"') }]), 'doktimoi').hybridCommands, 1);
   assert.equal(auditRun(raw([search]), 'baseline').passed, false);
+  assert.equal(auditRun(raw([search]), 'batched').passed, false);
   const bypass = { id: 'bypass', command: 'rg answer docs' };
   assert.equal(auditRun(raw([search, bypass]), 'doktimoi').passed, false);
   assert.equal(auditRun(raw([{ ...search, command: `${search.command}; sed -n '1,20p' docs/source.md` }]), 'doktimoi').passed, false);
@@ -345,4 +346,13 @@ test('competitor audit matches Windows commands and skill paths regardless of sl
   const raw = items.map((item, i) => JSON.stringify({ type: 'item.completed', item: { id: String(i), type: 'command_execution', ...item } })).join('\n');
   assert.equal(auditRun(raw, 'competitor', config).passed, true);
   assert.equal(samePath('/usr/bin/x', '/USR/bin/x'), false);
+});
+
+test('model rounds must reconcile with provider usage including cached input', () => {
+  const warm = { input_tokens: 2, output_tokens: 0, cached_input_tokens: 0 };
+  const real = { input_tokens: 6200, output_tokens: 70, cached_input_tokens: 6000 };
+  assert.deepEqual(verifiedRounds([warm, real], real), [real]);
+  assert.deepEqual(verifiedRounds([real], real), [real]);
+  assert.equal(verifiedRounds([real, real], real), null);
+  assert.equal(verifiedRounds([real], { ...real, cached_input_tokens: 0 }), null);
 });
