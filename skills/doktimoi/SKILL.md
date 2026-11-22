@@ -37,7 +37,7 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
 - Cite returned ranges unchanged unless narrower supporting lines are verified
   in the visible passage. Batch **only missing evidence** into one doktimoi
   `read` call, not file-read tools;
-  do not reread passages just to verify the search tool. For clipped source lines, read adjacent lines if a condition is missing.
+  do not reopen originals or unpack Office XML to double-check values already shown. For clipped source lines, read adjacent lines if a condition is missing.
   Stop once every requested point has evidence.
 - **Copy returned paths; never guess them.** Linked pages may be absent. After
   discovery, scope a batch request with `"paths":["returned/a.md"]`. A request whose
@@ -55,7 +55,7 @@ read the returned reference or use a bare indexed filename for its first passage
 estimated tokens / 20 KB; follow `Continue` or `not read` notices only for evidence
 still needed. `--help` lists options. Only open a returned `[Visual: ...]` image inside `.doktimoi`.
 
-Cite original files/locations and preserve prerequisites, defaults, negation,
+Use the requested citation format. In path-only fields return the bare source path; otherwise cite locations. Preserve prerequisites, defaults, negation,
 units and versions. Before recommending an optional feature from an API/schema
 reference, check its conceptual or task documentation for prerequisites and
 exceptions; state what remains unverified if unavailable.
