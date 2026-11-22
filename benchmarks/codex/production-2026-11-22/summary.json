@@ -1,0 +1,479 @@
+{
+  "startedAt": "2026-11-22T06:04:45.837Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "manifestSha256": "158933343ec85fb0e0f5c9e751555d1bc4517ef288dee14026c7045057c678fa",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "darwin-arm64",
+  "codex": "codex-cli 0.166.0",
+  "model": "gpt-6.1-sol",
+  "reasoningEffort": "medium",
+  "arm": "batch-study",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "16034a35cf0b866cdd2d0e8b0510d18df20a967e1abbf022e93110fe36b253d9",
+  "taskPath": "/Users/miikam/Projects/doktimoi/benchmarks/task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "5ebae5b1beb56f4040c0fa44e7f711c4edfb81608c56c1a32af08bb8632c4e92",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 114571,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201db-6993-7bd3-b331-8bba097d75d7",
+      "usage": {
+        "input_tokens": 412403,
+        "cached_input_tokens": 368256,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4010,
+        "reasoning_output_tokens": 241
+      },
+      "totalTokens": 416413,
+      "uncachedInputTokens": 44147,
+      "commands": 13,
+      "failedCommands": 2,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25942,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_6",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "batched",
+      "elapsedMs": 97112,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201dd-29c1-7501-b962-1dd07f4eb834",
+      "usage": {
+        "input_tokens": 222572,
+        "cached_input_tokens": 182400,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3989,
+        "reasoning_output_tokens": 139
+      },
+      "totalTokens": 226561,
+      "uncachedInputTokens": 40172,
+      "commands": 16,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 31404,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_14",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 107896,
+      "buildMs": 4956,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201de-b918-73c3-b25a-6fdba8ec9518",
+      "usage": {
+        "input_tokens": 252454,
+        "cached_input_tokens": 216192,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4224,
+        "reasoning_output_tokens": 130
+      },
+      "totalTokens": 256678,
+      "uncachedInputTokens": 36262,
+      "commands": 13,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 28523,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 12,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "batched",
+      "elapsedMs": 104774,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e0-61db-7d61-beed-fb5d7707419c",
+      "usage": {
+        "input_tokens": 270769,
+        "cached_input_tokens": 231552,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4432,
+        "reasoning_output_tokens": 308
+      },
+      "totalTokens": 275201,
+      "uncachedInputTokens": 39217,
+      "commands": 14,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 38125,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_11",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 113218,
+      "buildMs": 11953,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e2-2cc8-7461-ae8b-ed75e7d8da9a",
+      "usage": {
+        "input_tokens": 227582,
+        "cached_input_tokens": 199552,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3979,
+        "reasoning_output_tokens": 168
+      },
+      "totalTokens": 231561,
+      "uncachedInputTokens": 28030,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 21883,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_11",
+            "exitCode": 0,
+            "messages": [
+              "[Error: Unknown or obsolete chunk: concepts/containers/container-lifecycle-hooks.md:20-100]"
+            ]
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 94397,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e3-eff2-79b0-8f7e-ed2c7086cc43",
+      "usage": {
+        "input_tokens": 308689,
+        "cached_input_tokens": 274560,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3579,
+        "reasoning_output_tokens": 221
+      },
+      "totalTokens": 312268,
+      "uncachedInputTokens": 34129,
+      "commands": 10,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 27531,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 132689,
+      "buildMs": 28386,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e5-d2fa-7b71-a45f-12d4045ea9c6",
+      "usage": {
+        "input_tokens": 276996,
+        "cached_input_tokens": 228480,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4125,
+        "reasoning_output_tokens": 193
+      },
+      "totalTokens": 281121,
+      "uncachedInputTokens": 48516,
+      "commands": 12,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25181,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 11,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 103550,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e7-ddcd-79a2-95f3-39e0e9e288cc",
+      "usage": {
+        "input_tokens": 293328,
+        "cached_input_tokens": 255744,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4069,
+        "reasoning_output_tokens": 394
+      },
+      "totalTokens": 297397,
+      "uncachedInputTokens": 37584,
+      "commands": 15,
+      "failedCommands": 5,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 29905,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_2",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_8",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_9",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_11",
+            "exitCode": 1,
+            "messages": []
+          },
+          {
+            "id": "item_12",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "batched",
+      "elapsedMs": 99186,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "01a201e9-74cf-7583-8463-65229feb7038",
+      "usage": {
+        "input_tokens": 207782,
+        "cached_input_tokens": 174720,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4043,
+        "reasoning_output_tokens": 338
+      },
+      "totalTokens": 211825,
+      "uncachedInputTokens": 33062,
+      "commands": 10,
+      "failedCommands": 2,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 28314,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "item_6",
+            "exitCode": 2,
+            "messages": []
+          },
+          {
+            "id": "item_9",
+            "exitCode": 2,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "2bdbd6c80104331bddcbc6fcbc7c15a3e60f51d4e0a65ef28d60dc1d4e04ff30"
+}
