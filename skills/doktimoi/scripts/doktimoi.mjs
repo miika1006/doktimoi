@@ -605,7 +605,8 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
           throw new Error(mode === 'exact' ? `Provide 1–${MAX_EXACT_PHRASES} single-line phrases in exact mode`
             : `Provide 1–${MAX_PHRASINGS} single-line queries per question; put other questions after --next, or list up to ${MAX_EXACT_PHRASES} names or phrases with --mode exact`);
         }
-        if (!Number.isInteger(budget) || budget < 256 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new Error('budget >= 256; limit 1–20');
+        if (!Number.isInteger(budget) || budget < 256) throw new Error('budget must be an integer >= 256');
+        if (!Number.isSafeInteger(limit) || limit < 1 || (mode !== 'exact' && limit > 20)) throw new Error('limit must be a positive integer, at most 20 for ranked search');
         budget = Math.min(budget, MAX_BUDGET);
         const update = await prepare({ verify, hybrid: mode === 'hybrid' });
         return gate.read(async () => {
@@ -1397,7 +1398,7 @@ Options:
   --budget N       output tokens, 256-${MAX_BUDGET} (default 1600); larger values are capped so one
                    call's output stays inline; batch and --next split ${MAX_BUDGET} across their
                    searches; a read of several references shares it (default ${MAX_BUDGET}) in order
-  --limit N        search: results, 1-20 (default 4, with --brief 10)
+  --limit N        ranked results, 1-20 (default 4, with --brief 10); exact matches use the output budget
   --brief          search, batch: only the reference, heading path and one matching line per
                    result (default budget 800); read the reference you need afterwards
   --from N         read: start at line N of the returned text, where line 1 is the first

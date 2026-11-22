@@ -140,7 +140,7 @@ test('searches and reads in a semantic folder go through one server with the sam
   assert.match(run(whole).stdout, /^guide\.md:1-7\n# Guide[\s\S]*Unrelated text\.$/m);
   assert.deepEqual(run(whole), run(whole, direct));
   const failing = ['search', root, '--query', 'x', '--budget', '10'];
-  assert.deepEqual(run(failing), { stdout: '', stderr: 'doktimoi: budget >= 256; limit 1–20\n', status: 1 });
+  assert.deepEqual(run(failing), { stdout: '', stderr: 'doktimoi: budget must be an integer >= 256\n', status: 1 });
   const batch = JSON.stringify([{ queries: ['SERVER_TOKEN'] }]);
   assert.deepEqual(run(['batch', root], {}, batch), run(['batch', root], direct, batch));
   assert.equal((await readInfo(root)).pid, info.pid);

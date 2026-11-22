@@ -20,7 +20,7 @@ Answer at the requested depth with sources and conditions.
 For several questions, batch independent lookups, usually 3–4 per call so each has
 room for full passages. Submit independent batches together as parallel tool
 calls in one round, then collect only the remaining gaps. Each request has its **own** `queries`, `paths`, `exclude`,
-`mode`, `limit`, `brief`, and `budget`:
+`mode`, `limit` (1–20 ranked hits), `brief`, and `budget`:
 
 ```sh
 node "<skill>/scripts/doktimoi.mjs" batch "<folder>" --requests '[{"queries":["first terms"]},{"queries":["second terms","alternate phrasing"]}]' --limit 2
@@ -44,7 +44,7 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
   path is absent searches all sources, labelled; other batch answers remain valid.
   `search --next` also batches questions, but CLI filters apply to all of them.
 - Use `"mode":"exact"` for literal phrases (up to 20 alternatives); it lists
-  matching source lines. If semantic search is enabled, use `"mode":"hybrid"`
+  matching source lines within the output budget. If semantic search is enabled, use `"mode":"hybrid"`
   for topical questions and put the natural-language question first. Additional
   queries can be lexical alternatives. Use exact mode first for a known identifier; carry it into the next source to join records. A missing match never proves absence.
 

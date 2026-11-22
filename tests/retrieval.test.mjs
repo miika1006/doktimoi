@@ -836,6 +836,8 @@ test('exact mode lists matching lines of every format, readable by reference, sc
   await assert.rejects(project.search(phrases.slice(0, 5)), /1–4 single-line queries per question; put other questions after --next/);
   await fs.writeFile(path.join(root, 'many.md'), `# Many\n\n${Array.from({ length: 400 }, (_, i) => `MANY_TERM line ${i} ${'filler words '.repeat(8)}`).join('\n')}\n`);
   const capped = await exact(['many_term'], { budget: 1000 });
+  assert.equal(await exact(['many_term'], { budget: 1000, limit: 100 }), capped);
+  await assert.rejects(project.search(['many_term'], { limit: 100 }), /at most 20 for ranked search/);
   assert.ok(tokens(capped) <= 1000, `${tokens(capped)} tokens`);
   const shown = capped.split('\n').filter(line => /^ {2}\d+: MANY_TERM/.test(line)).length;
   assert.ok(shown > 5);
