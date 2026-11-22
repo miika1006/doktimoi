@@ -1,6 +1,6 @@
 # Doktimoi
 
-**On Mac M1, Codex with Doktimoi lexical search used 5–13% fewer total tokens than explicitly batched file tools on two Kubernetes reviews. On two Finnish Office/image tasks, batched file tools gave all six correct answers using 20–30% fewer tokens than Doktimoi.** On the receipt comparison ordinary file tools without the batching instruction chose the wrong shipment twice. On Windows, Claude Code previously used 48–65% fewer tokens with Doktimoi on the Kubernetes reviews. See the [Mac measurements and accuracy review](benchmarks/codex/mac-2026-11-22/README.md) and [Windows results](benchmarks/README.md).
+**On two Kubernetes documentation reviews, Doktimoi saved 48.5–64.7% of total tokens with Claude Code and 25.0–32.6% with Codex** compared with ordinary file tools given no batching instructions. The Codex runs with Doktimoi included a batching instruction. Giving Codex just that instruction (group independent tool calls, such as searches or file reads, in the same round) saved 20.8–22.4% with ordinary file tools alone. [Benchmark results](benchmarks/README.md)
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
