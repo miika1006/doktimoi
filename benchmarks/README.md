@@ -32,12 +32,14 @@ tokens and tool calls. Current checks on this machine:
 
 The [22 November M1 study](codex/mac-2026-11-22/README.md) ran three fresh Codex sessions per arm and task on `gpt-6.1-sol`. Means below use provider input plus output. The Doktimoi arm used lexical retrieval and the same batching instruction as the batched file control.
 
-| Task | Ordinary files | Batched files | Batched Doktimoi | Doktimoi vs batched files |
-| --- | ---: | ---: | ---: | ---: |
-| Kubernetes production review | 353,923 | 274,694 | 238,710 | −13.1% |
-| Kubernetes batch platform | 313,040 | 247,890 | 234,650 | −5.3% |
-| Finnish archive decision | 126,907 | 111,329 | 139,467 | +25.3% |
-| English receipt comparison of Finnish sources | 88,252 | 105,266 | 151,115 | +43.6% |
+| Task | Ordinary files | Batched files | Batched Doktimoi | Doktimoi version | Doktimoi vs batched files |
+| --- | ---: | ---: | ---: | --- | ---: |
+| Kubernetes production review | 353,923 | 274,694 | 238,710 | 0.14.4 | −13.1% |
+| Kubernetes batch platform | 313,040 | 247,890 | 234,650 | 0.14.4 | −5.3% |
+| Finnish archive decision | 126,907 | 111,329 | 139,467 | 0.14.4 | +25.3% |
+| English receipt comparison of Finnish sources | 88,252 | 105,266 | 151,115 | 0.14.7 | +43.6% |
+
+The hybrid runs used 0.14.4 for both Kubernetes tasks, 0.14.6 for the Finnish archive decision and 0.14.7 for the receipt comparison. [Version evidence](codex/mac-2026-11-22/README.md#doktimoi-versions)
 
 All nine lexical/control answers to the Finnish shipment question matched the reference values and sources. In the English receipt comparison ordinary file tools got 1/3 exactly right, batched files and Doktimoi each got 3/3. The two Kubernetes reviews are open-ended. The [answer review](codex/mac-2026-11-22/quality.md) records omitted prerequisites and imprecise citations. The study includes hybrid measurements, agent times, actual model rounds, setup costs and competitor traces. The [native QMD comparison](codex/skill-comparison-2026-11-15/README.md) used an earlier workflow.
 

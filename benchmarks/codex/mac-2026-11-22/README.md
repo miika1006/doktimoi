@@ -4,11 +4,22 @@ Apple M1, Darwin arm64, Node 26.13.0, npm 12.2.2, Codex CLI 0.166.0, `gpt-6.1-so
 
 ## Study design
 
-Each three-run block rotates the order of ordinary local tools, the same tools with a batching instruction, and Doktimoi with that same instruction. Every agent gets a fresh workspace and context. Baselines have the same file, shell and visual inspection capabilities. Only the Doktimoi arm gets the installed skill and a Doktimoi index. The instruction asks to group independent searches and subsequent reads and to resolve evidence gaps. It contains no queries, answers, source hints or word-budget changes. Hybrid follow-ups use the same batching instruction, model, task and source hashes. They run after index preparation.
+Each three-run block rotates the order of ordinary local tools, the same tools with a batching instruction, and Doktimoi with that same instruction. Every agent gets a fresh workspace and context. Baselines have the same file, shell and visual inspection capabilities. Only the Doktimoi arm uses the skill and a Doktimoi index. The instruction asks to group independent searches and subsequent reads and to resolve evidence gaps. It contains no queries, answers, source hints or word-budget changes. Hybrid follow-ups use the same batching instruction, model, task and source hashes. They run after index preparation.
 
 Provider total tokens equal input plus output. Cached input is included once. A model round is one completed response with reconciled per-response usage, including the final answer. The runner drops the CLI's two-token prewarm only if that makes all input, cached input and output sums match the turn event. It records the numeric per-response counts in each `*.rounds.json`. A shell command can contain several searches, and a single round can launch multiple commands. The lexical GBrain and Meme runs predate the per-response logging and have command counts only. See the [Codex event documentation](https://developers.openai.com/codex/config-advanced/#observability-and-telemetry).
 
 The tasks were run concurrently with local indexing and other study processes. Elapsed times describe this session. They include writing the answer and exclude one-time setup. Three repetitions describe these tasks on this machine. Shared cloud caching and model variation affect the estimates.
+
+## Doktimoi versions
+
+The runner uses `skills/doktimoi` from the benchmark checkout. For each benchmark block in the table, the `implementation.json` file hashes and the `skillSha256` in `summary.json` match the listed Git snapshot. The version comes from that snapshot's `skills/doktimoi/package.json`.
+
+| Task | Lexical | Hybrid |
+| --- | --- | --- |
+| Kubernetes production review | [0.14.4](production/) (`9a2f1ad`) | [0.14.4](production-hybrid/) (`9a2f1ad`) |
+| Kubernetes batch platform | [0.14.4](heldout/) (`9a2f1ad`) | [0.14.4](heldout-hybrid/) (`9a2f1ad`) |
+| Finnish archive decision | [0.14.4](finnish/) (`9a2f1ad`) | [0.14.6](finnish-hybrid/) (`526b87a`) |
+| English receipt comparison of Finnish sources | [0.14.7](receipts-lexical-0147/) (`32c64df`) | [0.14.7](receipts-hybrid-0147/) (`32c64df`) |
 
 ## File batching and lexical search
 
@@ -26,7 +37,7 @@ These totals include repeated cached context. If counting only uncached input pl
 
 The [English receipt comparison](../../finnish-dispatch/receipts.en.md) uses the same Finnish sources and starts without a name, identifier, date or branch. The requested maximum spans three images. Ordinary files averaged 88,252 tokens / 4.3 rounds / 32.4 s but produced only 1/3 exact answers. Batched files used 105,266 / 4.7 / 34.3 with 3/3 exact. Batched Doktimoi lexical used 151,115 / 7.0 / 51.8 with 3/3 exact. Hybrid used 156,281 / 7.7 / 56.9 with 3/3 exact. Two ordinary agents chose seven packages and EUR 78. The correct receipt records nine packages and a capped EUR 120 fee. Every field then referred to the wrong transfer. All four arms cited all three images for their comparison. See the [lexical/control scores](receipts-lexical-scores.jsonl) and [hybrid scores](receipts-hybrid-scores.jsonl).
 
-The latest full blocks provide 48 completed, audited Doktimoi/control runs and nine completed competitor runs. The Kubernetes and original Finnish lexical agent trials used 0.14.4, as did the Kubernetes hybrid trials. The final Finnish hybrid and receipt-first blocks used 0.14.6 and 0.14.7 respectively. The later changes addressed explicit embedding duration, oversized exact-search limits and skill instructions. No ranking parameters changed between those versions. The [setup logs](backends/), implementation snapshots, raw events and per-answer round counts accompany each study. The shared prepared database costs are additional to the per-run setup times in the means.
+The latest full blocks provide 48 completed, audited Doktimoi/control runs and nine completed competitor runs. The later changes addressed explicit embedding duration, oversized exact-search limits and skill instructions. No ranking parameters changed between those versions. The [setup logs](backends/), implementation snapshots, raw events and per-answer round counts accompany each study. The shared prepared database costs are additional to the per-run setup times in the means.
 
 ## Kubernetes hybrid and competitor results
 

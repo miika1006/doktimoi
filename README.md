@@ -1,6 +1,6 @@
 # Doktimoi
 
-**On two Kubernetes documentation reviews, Doktimoi saved 48.5–64.7% of total tokens with Claude Code and 25.0–32.6% with Codex** compared with ordinary file tools given no batching instructions. The Codex runs with Doktimoi included a batching instruction. Giving Codex just that instruction (group independent tool calls, such as searches or file reads, in the same round) saved 20.8–22.4% with ordinary file tools alone. [Benchmark results](benchmarks/README.md)
+**On two Kubernetes documentation reviews, Doktimoi 0.14.2 saved 48.5–64.7% of total tokens with Claude Code on Windows, and Doktimoi 0.14.4 saved 25.0–32.6% with Codex on macOS**, compared with ordinary file tools given no batching instructions. The Codex runs with Doktimoi included a batching instruction. Giving Codex just that instruction (group independent tool calls, such as searches or file reads, in the same round) saved 20.8–22.4% with ordinary file tools alone. [Benchmark results](benchmarks/README.md)
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -25,6 +25,8 @@ keyword and optional semantic search); QMD retrieves, your assistant writes the 
 For Markdown-only collections, QMD's own skill may be enough.
 
 ## Measured results
+
+### Claude Code on Windows
 
 On 16 November 2026, Claude Code (`claude-opus-5-5`, Windows) answered two ten-question
 reviews of 409 Kubernetes documentation files, the second written after all tuning, three
@@ -58,7 +60,11 @@ often sent their long natural-language searches one batch per round, and less ex
 semantic hits led to extra exact-match checks. On this English task, keyword search
 already matches the documents' wording.
 
-Antivirus scanning was on during the Windows runs. Costs, quality checks and raw traces are in [benchmarks/](benchmarks/README.md).
+Antivirus scanning was on during the Windows runs. Costs, quality checks and raw traces are in the [Claude Code results](benchmarks/README.md#claude-code-windows-16-november-2026).
+
+### Codex on macOS
+
+On 22 November 2026, Codex (`gpt-6.1-sol`, Apple M1) used Doktimoi 0.14.4 for both Kubernetes reviews in lexical and hybrid modes and for the lexical Finnish archive decision. The hybrid Finnish archive decision used 0.14.6. The final English receipt comparison over Finnish sources used 0.14.7 in both retrieval modes. [Codex results and version evidence](benchmarks/codex/mac-2026-11-22/README.md#doktimoi-versions)
 
 ## Example uses
 
