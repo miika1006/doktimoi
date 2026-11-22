@@ -26,11 +26,14 @@ async function check(directory, file) {
   const text = await fs.readFile(path.join(directory, file), 'utf8');
   const sections = [...text.matchAll(/^\s*(?:#{1,3}\s*|\*\*)?(\d+)\.\s/gm)].map(match => Number(match[1]));
   const citations = [], abbreviated = [];
-  /** Checks that every range of a citation exists in its corpus source and records it. */
-  const record = async (list, source, ranges, quoted) => {
+  const sourceLines = async source => {
     const resolved = path.resolve(corpus, source);
     assert.ok(resolved.startsWith(corpus), 'Citation must stay inside corpus');
-    const lines = (await fs.readFile(resolved, 'utf8')).split('\n').length;
+    return (await fs.readFile(resolved, 'utf8')).split('\n').length;
+  };
+  /** Checks that every range of a citation exists in its corpus source and records it. */
+  const record = async (list, source, ranges, quoted) => {
+    const lines = await sourceLines(source);
     for (const range of ranges.split(/,\s*/)) {
       const [first, last = first] = range.replace(/^L/, '').split(/[-–]L?/).map(Number);
       assert.ok(first >= 1 && last >= first && last <= lines, `${file}: invalid range ${quoted}`);
@@ -42,6 +45,10 @@ async function check(directory, file) {
   }
   const definitions = new Map([...text.matchAll(/^\[([^\]]+)\]:\s+(?:.*?\/docs\/|docs\/)?((?:concepts|tasks|reference|tutorials|setup)\/[^\s#]+\.md)\s*$/gm)]
     .map(match => [match[1].toLowerCase(), match[2]]));
+  // Codex file links can point to a single line while their label cites a longer range.
+  for (const match of text.matchAll(/\[[^\]\n]*?(?::|,\s*lines?\s+)(\d+[-–]\d+(?:,\s*\d+(?:[-–]\d+)?)*)\]\((?:[^)\n]*\/docs\/|docs\/)?((?:concepts|tasks|reference|tutorials|setup)\/[\w./-]+\.md)(?::\d+|#L\d+(?:-L\d+)?)?\)/g)) {
+    await record(citations, match[2], match[1], match[0]);
+  }
   for (const match of text.matchAll(/\[[^\]\n]*?:(\d+(?:[-–]\d+)?(?:,\s*\d+(?:[-–]\d+)?)*)\]\[([^\]]+)\]/g)) {
     const source = definitions.get(match[2].toLowerCase());
     assert.ok(source, `Missing citation definition: ${match[2]}`);
@@ -53,7 +60,7 @@ async function check(directory, file) {
   const mentioned = [];
   const RANGES = '(\\d+(?:[-–]\\d+)?(?:,\\s*:?\\d+(?:[-–]\\d+)?)*)';
   const fits = async (source, ranges) => {
-    const lines = (await fs.readFile(path.resolve(corpus, source), 'utf8')).split('\n').length;
+    const lines = await sourceLines(source);
     return ranges.split(/,\s*/).every(range => Math.max(...range.split(/[-–]/).map(Number)) <= lines);
   };
   for (const match of text.matchAll(new RegExp(`((?:concepts|tasks|reference)\\/[\\w./-]+\\.md)|(?<![\\w/.-])([\\w.-]+\\.md):${RANGES}|[\`(]:${RANGES}`, 'g'))) {

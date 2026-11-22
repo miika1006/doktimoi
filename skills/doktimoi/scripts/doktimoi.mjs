@@ -582,9 +582,13 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       return prefix;
     }
 
-    async function embed(failure) {
-      const embeddings = await store.embed();
-      if (embeddings.errors) throw new Error(failure);
+    async function embed(failure, fullBuild = false) {
+      // QMD 2.8.3's public wrapper drops maxDurationMs. Explicit full builds can take hours.
+      const embeddings = fullBuild && qmdStore?.generateEmbeddings
+        ? await qmdStore.generateEmbeddings(store.internal, { maxDurationMs: 0 })
+        : await store.embed();
+      const pending = (await store.getStatus()).needsEmbedding;
+      if (embeddings.errors || pending) throw new Error(`${failure}: ${embeddings.errors} failure(s), ${pending} document(s) pending. Run embed again to resume.`);
       return embeddings;
     }
 
@@ -647,7 +651,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       },
       async embed() {
         const update = await sync();
-        return { update, embeddings: await embed('Embedding failed; semantic index is incomplete') };
+        return { update, embeddings: await embed('Embedding failed; semantic index is incomplete', true) };
       },
       /**
        * Loads the embedding model when the folder has a semantic index, without the index lock,

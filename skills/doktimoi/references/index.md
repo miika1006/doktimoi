@@ -116,6 +116,8 @@ This is a one-time native build requiring compiler tools; it can download CMake
 and uses the dependency's bundled llama.cpp revision. It does not change sandbox
 permissions. See [node-llama-cpp's Metal instructions](https://node-llama-cpp.withcat.ai/guide/Metal).
 
+A full embedding build on a large folder can take over 30 minutes. If it is interrupted, run the same `embed` command again. Completed documents are reused. Successful completion checks that no documents are waiting for embeddings.
+
 ## Turn semantic search on or off; check status
 
 To turn it on later, ask for consent as above, then run `embed`. To turn it off
