@@ -45,7 +45,7 @@ repeated context. Doktimoi saves by needing fewer rounds and by adding less to e
   not fall back to Grep and whole-file reads.
 
 In the review below this meant 6 model rounds instead of 23. The saving depends on the
-task: on a small Finnish archive that a few file reads cover, Codex used more tokens
+task: on a Finnish archive question whose answer sits in a few small files, Codex used more tokens
 with Doktimoi than with batched file tools.
 
 ## Measured results
