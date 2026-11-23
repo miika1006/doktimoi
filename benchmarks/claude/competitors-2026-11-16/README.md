@@ -1,13 +1,14 @@
 # Local retrieval skills: Claude Code comparison on Windows
 
-**Incomplete, paused 16 November 2026.** The lexical arms below are complete except
-QMD Search (one of three runs). The Meme and fidx hybrid arms, QMD on the held-out
-task and a controlled Rust/Node retrieval measurement have not been run. Doktimoi's own
-[hybrid](../hybrid-2026-11-16-windows/README.md) and [held-out](../heldout-2026-11-16-windows/README.md)
-runs are complete, as are [Doktimoi 0.14.2](../lexical-0142-2026-11-16-windows/README.md)
-runs: 385,461 tokens (−64.7%), 93.6 s.
-[../../codex/skill-comparison-2026-11-15/HANDOFF.md](../../codex/skill-comparison-2026-11-15/HANDOFF.md)
-lists how to resume on Windows. The [Mac/Codex study](../../codex/mac-2026-11-22/README.md) reports its own host-specific runs.
+**Incomplete and discontinued.** Paused on 16 November 2026 and closed on 23 November:
+no further comparisons against other tools are planned. The lexical arms below are
+complete except QMD Search (one of three runs). The Meme and fidx hybrid arms, QMD on
+the held-out task and a controlled Rust/Node retrieval measurement were never run.
+Doktimoi's own [hybrid](../hybrid-2026-11-16-windows/README.md) and
+[held-out](../heldout-2026-11-16-windows/README.md) runs are complete. The 16 November
+Doktimoi and control runs on this task were superseded by the
+[23 November three-arm study](../batch-2026-11-23-windows/README.md) and are in git
+history (`ba0c3e1`). The [Mac/Codex study](../../codex/mac-2026-11-22/README.md) reports its own host-specific runs.
 
 Claude Code 2.1.325, `claude-opus-5-5`, medium effort; Windows 11, Node 26.13.0.
 The unchanged [production-design task](../../task.md) and the 409 pinned Kubernetes
@@ -19,8 +20,8 @@ here, not with a machine without scanning.
 ## Results
 
 Means over runs that passed the tool-use audit; failed audits are counted, never
-averaged. Doktimoi and its Read/Grep/Glob control are the
-[same-day paired runs](../lexical-2026-11-16-windows/). Competitor arms run alone
+averaged. Doktimoi and its Read/Grep/Glob control are the same-day paired runs
+(`benchmarks/claude/lexical-2026-11-16-windows` at `ba0c3e1`). Competitor arms run alone
 (`--arm competitor`) and are compared with that control. Setup (indexing) is
 excluded from agent time.
 

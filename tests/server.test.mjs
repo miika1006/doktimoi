@@ -152,13 +152,24 @@ test('searches and reads in a semantic folder go through one server with the sam
 test('search falls back to running in-process when the recorded server does not answer', async t => {
   const root = await folder(t, true);
   const pipe = process.platform === 'win32' ? '\\\\.\\pipe\\doktimoi-missing-test' : path.join(os.tmpdir(), 'doktimoi-missing-test.sock');
-  await fs.writeFile(path.join(root, '.doktimoi', 'server.json'), JSON.stringify({ pipe, token: 'a'.repeat(64), pid: process.pid, script: await fs.realpath(cli), version: 'test' }));
+  await fs.writeFile(path.join(root, '.doktimoi', 'server.json'), JSON.stringify({ pipe, token: 'a'.repeat(64), pid: process.pid, script: await fs.realpath(cli), version: skillRequire('./package.json').version }));
   const result = run(['search', root, '--query', 'SERVER_TOKEN']);
   assert.equal(result.status, 0);
   assert.match(result.stdout, /SERVER_TOKEN needs approval/);
   // The unreachable server is replaced in the background; wait for it so cleanup can stop it.
   for (let i = 0; i < 100 && (await readInfo(root))?.pid === process.pid; i++) await new Promise(resolve => setTimeout(resolve, 100));
   assert.notEqual((await readInfo(root))?.pid, process.pid);
+});
+
+test('a server left running by an older version at the same script path is replaced', async t => {
+  const root = await folder(t);
+  const search = ['search', root, '--query', 'SERVER_TOKEN'];
+  assert.equal(run(search).status, 0);
+  const info = await readInfo(root);
+  await fs.writeFile(path.join(root, '.doktimoi', 'server.json'), JSON.stringify({ ...info, version: '0.0.1' }));
+  assert.match(run(search).stdout, /SERVER_TOKEN needs approval/);
+  assert.equal(alive(info.pid), false);
+  assert.notEqual((await readInfo(root)).pid, info.pid);
 });
 
 test('stop and build shut the folder server down so the cache can be rebuilt or removed', async t => {

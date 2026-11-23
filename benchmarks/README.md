@@ -4,29 +4,49 @@ The benchmark measures a whole assistant task, including the context each model 
 re-sends, rather than the size of one tool response. Only the latest run per agent, OS and
 retrieval mode is kept; older runs are in git history.
 
-## Claude Code, Windows: 16 November 2026
+## Claude Code, Windows
 
-`claude-opus-5-5`, medium effort, Claude Code 2.1.325, Windows 11. **Real-time antivirus
-scanning was on**; it slows indexing and process start-up, so times compare within these
-runs. Means of three runs; total tokens are provider input plus output with cached input
-counted once.
+`claude-opus-5-5`, medium effort, Windows 11. Means of three runs; total tokens are
+provider input plus output with cached input counted once.
+
+### Production design, 23 November 2026
+
+Claude Code 2.1.326, antivirus scanning off. The [three-arm study](claude/batch-2026-11-23-windows/README.md)
+rotates ordinary file tools, the same tools with a one-sentence batching instruction, and
+Doktimoi with that same instruction.
+
+| Arm | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 |
+| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 |
+| Batched Doktimoi 0.14.7 | 451,845 | −67.9% | −52.6% | $0.76 | 93.6 s | 7.7 |
+| [Batched Doktimoi 0.14.8](claude/batch-doktimoi-0148-2026-11-23-windows/README.md) (unpaired rerun) | 376,985 | −73.2% | −60.4% | $0.61 | 87.5 s | 6.3 |
+
+Batching alone saved a third of the tokens but 8.5% of the cost; Doktimoi halved the
+batched control's tokens. Cost falls less than tokens because the arms bring about the
+same amount of new context and differ in how often the cached context is re-sent. All
+answers ran over the requested word range. Each 0.14.7 run lost one round to shell
+variables that Claude Code refused; 0.14.8 names them in the skill.
+
+### Other tasks, 16 November 2026
+
+Claude Code 2.1.325. **Real-time antivirus scanning was on**; it slows indexing and
+process start-up, so times compare within these runs and not with 23 November.
 
 | Task | Arm | Total tokens | vs control | Agent time | Cost |
 | --- | --- | ---: | ---: | ---: | ---: |
-| [Production design](claude/lexical-2026-11-16-windows/README.md) | Read/Grep/Glob control | 1,092,232 | — | 140.7 s | $0.85 |
-| | [Doktimoi 0.14.2](claude/lexical-0142-2026-11-16-windows/README.md) | 385,461 | −64.7% | 93.6 s | $0.69 |
-| | [Doktimoi 0.14.2 hybrid (GPU)](claude/hybrid-2026-11-16-windows/README.md) | 476,179 | −56.4% | 108.8 s | $0.61 |
+| Production design | [Doktimoi 0.14.2 hybrid (GPU)](claude/hybrid-2026-11-16-windows/README.md) | 476,179 | −56.4% | 108.8 s | $0.61 |
 | [Held-out batch platform](claude/heldout-2026-11-16-windows/README.md) | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | $0.99 |
 | | Doktimoi 0.14.2 | 642,117 | −48.5% | 93.8 s | $0.70 |
 | [Meeting question (fi)](claude/meeting-2026-11-16-windows/README.md) | Read/Grep/Glob control | 347,239 | — | 52.4 s | $0.38 |
 | | Doktimoi 0.14.1 | 171,786 | −50.5% | 52.5 s | $0.28 |
 
-The [competitor comparison](claude/competitors-2026-11-16/README.md) ran QMD, Meme (QMD's
-Rust port), QMD Search, library-docs, GBrain and doc-search on the production task; it is
-paused with QMD Search and the hybrid competitor arms incomplete. Doktimoi used the fewest
-tokens and tool calls. Current checks on this machine:
-[148 tests passed, 5 skipped](claude/tests-0143-windows.log) (OCR tests off) and
-[20/20 retrieval cases](claude/retrieval-0143-windows.json).
+The hybrid row compares with that day's control (1,092,232 tokens), now in git history.
+The [competitor comparison](claude/competitors-2026-11-16/README.md) (QMD, Meme, QMD
+Search, library-docs, GBrain and doc-search on the production task) is incomplete and
+discontinued; no further comparisons against other tools are planned. Current checks on
+this machine for 0.14.8: [157 tests passed, 5 skipped](claude/tests-0148-windows.log)
+(OCR tests off) and [20/20 retrieval cases](claude/retrieval-0148-windows.json).
 
 ## Codex, macOS
 
@@ -79,7 +99,10 @@ Linked shorter pages and images are intentionally absent. The [second corpus](fi
 [validate-retrieval.mjs](validate-retrieval.mjs) checks they are in the top ten lexical hits
 and that exact-mode lines and reads match the originals (latest: 20/20). Hybrid ranking last
 scored [18/20](codex/mac-2026-11-22/retrieval-current-hybrid.json): semantic fusion
-can demote precise lexical evidence. [check-answers.mjs](check-answers.mjs) checks answer
+can demote precise lexical evidence. [Auto mode](claude/auto-mode-2026-11-23-windows/README.md)
+(lexical first, meaning only when no passage has every term) kept 20/20 at lexical cost
+and found 5/8 bilingual Finnish-archive passages against 4/8 lexical and 2/8 hybrid; it
+has no agent benchmark yet. [check-answers.mjs](check-answers.mjs) checks answer
 structure and that every cited range exists, which is not proof that a claim is supported;
 answers were also screened for the decision-relevant qualifications
 ([qualifier-check.mjs](claude/qualifier-check.mjs), [rubric](codex/quality-review.md)).
@@ -94,7 +117,7 @@ node benchmarks/check-answers.mjs benchmarks/claude/NEW_DIR
 node benchmarks/claude/summarize-runs.mjs benchmarks/claude/NEW_DIR
 ```
 
-Use `--agent codex --arm batch-study` for the three-arm batching comparison, `--task PATH` for another task, `--competitor CONFIG --arm
+Use `--arm batch-study` (either agent) for the three-arm batching comparison and `--arm batch-doktimoi` to rerun its Doktimoi arm, `--task PATH` for another task, `--competitor CONFIG --arm
 competitor` for a competitor and, with consent to a local model, `--retrieval hybrid
 --prepared DIR` for a prepared semantic index. Output folders must be new; `--resume`
 continues only when every recorded hash matches. After a new run in the same environment,

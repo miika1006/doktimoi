@@ -1,0 +1,456 @@
+{
+  "startedAt": "2026-11-23T03:15:17.619Z",
+  "corpus": {
+    "revision": "a6b9d383dfe5cba5d846d3f05475c6cc25f3d2d7",
+    "manifestSha256": "158933343ec85fb0e0f5c9e751555d1bc4517ef288dee14026c7045057c678fa",
+    "files": 409,
+    "bytes": 8513875
+  },
+  "node": "v26.13.0",
+  "platform": "win32-x64",
+  "claude": "2.1.326 (Claude Code)",
+  "model": "claude-opus-5-5",
+  "reasoningEffort": "medium",
+  "arm": "batch-study",
+  "competitor": null,
+  "retrieval": "lexical",
+  "embeddingModel": null,
+  "forceCpu": null,
+  "preparedIndex": null,
+  "runnerSha256": "7947e75737280b675938683c21f57ce5f0822c7ce7e133385c097282ad7922c3",
+  "taskPath": "C:\\Users\\miikame\\AppData\\Local\\Temp\\claude\\3988ca781ac53f72\\45e1d038-d290-492b-9126-79a661110c4a\\scratchpad\\bench\\benchmarks\\task.md",
+  "taskSha256": "37a8854ebd6a88a06e28a2a5b6d5b86516a035f4bd415c20651b2363bfce2315",
+  "skillSha256": "fe76b5acb8a647ac5b2128816e14a8b39f46e34f1782f089d8eded54eb949ee6",
+  "runs": [
+    {
+      "pair": 1,
+      "mode": "baseline",
+      "elapsedMs": 123506,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "34c5ed71-7a02-40c1-99af-f96ec831390c",
+      "usage": {
+        "input_tokens": 1138348,
+        "cached_input_tokens": 1066388,
+        "cache_write_input_tokens": 69653,
+        "output_tokens": 9757,
+        "cost_usd": 0.9655602999999997
+      },
+      "totalTokens": 1148105,
+      "uncachedInputTokens": 71960,
+      "commands": 20,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 16212,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [
+          {
+            "id": "toolu_01Ge6eWHTvZd1T1j6BLjHXe2",
+            "command": "cd docs && f=$(find . -name \"manage-resources-containers.md\"); echo $f; grep -nE \"throttl|OOM|out of memory|hard limit|CPU limit|memory limit|terminat\" $f | head -20; grep -nE \"missing|not yet ready|not-ready|unready|stabilization|300|tolerance|0.1|initial-readiness|cpu-initialization|resource request|desiredReplicas =\" tasks/run-application/horizontal-pod-autoscale.md | head -40"
+          }
+        ],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "batched",
+      "elapsedMs": 127537,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "cd7f0c91-ca0a-42e7-bf4e-14a2a405026f",
+      "usage": {
+        "input_tokens": 905341,
+        "cached_input_tokens": 843316,
+        "cache_write_input_tokens": 59691,
+        "output_tokens": 12565,
+        "cost_usd": 0.8973658000000001
+      },
+      "totalTokens": 917906,
+      "uncachedInputTokens": 62025,
+      "commands": 44,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 26082,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 7,
+        "passed": true
+      }
+    },
+    {
+      "pair": 1,
+      "mode": "doktimoi",
+      "elapsedMs": 98555,
+      "buildMs": 10065,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "168650d0-3af0-47e2-a125-a8d6582cff92",
+      "usage": {
+        "input_tokens": 474339,
+        "cached_input_tokens": 388196,
+        "cache_write_input_tokens": 83600,
+        "output_tokens": 10832,
+        "cost_usd": 0.9629084
+      },
+      "totalTokens": 485171,
+      "uncachedInputTokens": 86143,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 25038,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [
+          {
+            "id": "toolu_01SZDRxwKJXU2GtMzdKi1dHw",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-doktimoi-KTD1nH/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"disruption budget involuntary disruptions\",\"node drain eviction API PodDisruptionBudget\"]},{\"queries\":[\"rolling update not limited by PodDisruptionBudget\",\"PDB workload resources rolling upgrade\"]},{\"queries\":[\"maxUnavailable maxSurge rolling update\"]},{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]}]' --limit 3"
+          },
+          {
+            "id": "toolu_01Kb7iDXwE2UsK5zhtqMmGCx",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-doktimoi-KTD1nH/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"startupProbe failureThreshold periodSeconds slow starting\"]},{\"queries\":[\"readiness probe fails removes endpoints\",\"liveness probe restarts container\"]},{\"queries\":[\"preStop hook grace period SIGTERM\",\"termination grace period SIGKILL\"]},{\"queries\":[\"terminating endpoints serving\",\"EndpointSlice terminating condition\"]}]' --limit 3"
+          }
+        ],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 10,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 2,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "batched",
+      "elapsedMs": 103694,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "288fe3c0-d81e-469d-be44-125099269e3d",
+      "usage": {
+        "input_tokens": 511783,
+        "cached_input_tokens": 464672,
+        "cache_write_input_tokens": 44786,
+        "output_tokens": 11858,
+        "cost_usd": 0.6882171
+      },
+      "totalTokens": 523641,
+      "uncachedInputTokens": 47111,
+      "commands": 32,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 17197,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 2,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "doktimoi",
+      "elapsedMs": 92491,
+      "buildMs": 10027,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "59dfd3b2-8e63-4a05-a7ae-7fe3c12ccc87",
+      "usage": {
+        "input_tokens": 391198,
+        "cached_input_tokens": 343266,
+        "cache_write_input_tokens": 45391,
+        "output_tokens": 10773,
+        "cost_usd": 0.6470819
+      },
+      "totalTokens": 401971,
+      "uncachedInputTokens": 47932,
+      "commands": 11,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 18099,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [
+          {
+            "id": "toolu_01GqBHxoVuePiC3Ko3qvwafn",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"disruption budget involuntary disruptions node failure\"]},{\"queries\":[\"voluntary disruption drain eviction PodDisruptionBudget\"]},{\"queries\":[\"rolling update deployment not limited by PodDisruptionBudget\"]},{\"queries\":[\"maxUnavailable maxSurge rolling update\"]}]' --limit 2"
+          },
+          {
+            "id": "toolu_018GKPbmeP8mYeAtz1wAF83z",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]},{\"queries\":[\"DoNotSchedule ScheduleAnyway skew\"]},{\"queries\":[\"startupProbe liveness readiness disabled until succeeds\"]},{\"queries\":[\"readiness probe fails removes endpoints traffic\"]}]' --limit 2"
+          },
+          {
+            "id": "toolu_01MN8j9m86bPPGsiDBT4nTmt",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"preStop hook grace period SIGTERM SIGKILL termination\"]},{\"queries\":[\"terminating endpoints EndpointSlice serving\"]},{\"queries\":[\"CPU limit throttling memory limit OOM killed\"]},{\"queries\":[\"HPA missing metrics not yet ready pods\"]}]' --limit 2"
+          },
+          {
+            "id": "toolu_01QaCMeWJ16xkQKivVa8LoyK",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"network policy isolated ingress egress additive\"]},{\"queries\":[\"Secrets stored unencrypted base64 encryption at rest\"]},{\"queries\":[\"reclaim policy Retain Delete persistent volume\"]},{\"queries\":[\"StatefulSet deleting scaling volumes not deleted\"]}]' --limit 2"
+          }
+        ],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 10,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 1,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 2,
+      "mode": "baseline",
+      "elapsedMs": 131280,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "d32a9134-f4bb-4898-83b1-e63309055ff6",
+      "usage": {
+        "input_tokens": 1346278,
+        "cached_input_tokens": 1295588,
+        "cache_write_input_tokens": 48377,
+        "output_tokens": 12971,
+        "cost_usd": 0.9054963000000003
+      },
+      "totalTokens": 1359249,
+      "uncachedInputTokens": 50690,
+      "commands": 23,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 19512,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [
+          {
+            "id": "toolu_01T8RWMf5PShU9J95XSCNCxr",
+            "command": "f=concepts/scheduling-eviction/topology-spread-constraints.md; grep -nE \"maxSkew|topologyKey|DoNotSchedule|ScheduleAnyway|minDomains|rolling|not guarantee|scaled down|zone.*fail|nodeAffinityPolicy|matchLabelKeys\" $f | head -50"
+          },
+          {
+            "id": "toolu_0179nMNQHt5a3pQPc1PvZS2i",
+            "command": "cd /c/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-baseline-O3czjL/docs; sed -n '55,82p;360,384p' concepts/services-networking/network-policies.md; echo ----; grep -rnlE \"port: 53|kube-dns|CoreDNS\" --include=*.md . | xargs grep -lE \"NetworkPolicy\" | head"
+          }
+        ],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 1,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "doktimoi",
+      "elapsedMs": 89830,
+      "buildMs": 10188,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "f5356a67-68fd-4fab-b028-0477f8f170c7",
+      "usage": {
+        "input_tokens": 458492,
+        "cached_input_tokens": 407329,
+        "cache_write_input_tokens": 48620,
+        "output_tokens": 9901,
+        "cost_usd": 0.6682945
+      },
+      "totalTokens": 468393,
+      "uncachedInputTokens": 51163,
+      "commands": 10,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 20753,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [
+          {
+            "id": "toolu_014H14cGP5rhWcYfqdmcridg",
+            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; node \"$S\" batch \"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-doktimoi-l2mTzS/docs\" --requests '[{\"queries\":[\"disruption budget voluntary involuntary disruptions\"]},{\"queries\":[\"PodDisruptionBudget rolling update deployment not limited\"]},{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]},{\"queries\":[\"startup probe liveness readiness disabled until succeeds\"]}]' --limit 3"
+          }
+        ],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 9,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 1,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 0,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "baseline",
+      "elapsedMs": 139742,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "dcc1b1a4-8e32-48a7-a9ff-4f249efe0f5b",
+      "usage": {
+        "input_tokens": 1705522,
+        "cached_input_tokens": 1646997,
+        "cache_write_input_tokens": 56203,
+        "output_tokens": 14083,
+        "cost_usd": 1.0606582000000002
+      },
+      "totalTokens": 1719605,
+      "uncachedInputTokens": 58525,
+      "commands": 39,
+      "failedCommands": 1,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 23019,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [
+          {
+            "id": "toolu_019Z9sbbVK3BRk5WwCcrnGkQ",
+            "exitCode": 1,
+            "messages": []
+          }
+        ],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 6,
+        "passed": true
+      }
+    },
+    {
+      "pair": 3,
+      "mode": "batched",
+      "elapsedMs": 154812,
+      "buildMs": 0,
+      "embedMs": 0,
+      "indexCopyMs": 0,
+      "preflightMs": 0,
+      "setupMs": 0,
+      "threadId": "88ac3969-9ef0-424e-8360-8b432ac9a907",
+      "usage": {
+        "input_tokens": 1401650,
+        "cached_input_tokens": 1335719,
+        "cache_write_input_tokens": 63583,
+        "output_tokens": 15975,
+        "cost_usd": 1.0952188999999999
+      },
+      "totalTokens": 1417625,
+      "uncachedInputTokens": 65931,
+      "commands": 52,
+      "failedCommands": 0,
+      "transportErrors": [],
+      "toolOutputTokensEstimate": 26614,
+      "audit": {
+        "targetedReads": [],
+        "deniedAttempts": [],
+        "skillReads": 0,
+        "competitorCommands": 0,
+        "successfulCompetitorCommands": 0,
+        "doktimoiCommands": 0,
+        "hybridCommands": 0,
+        "successfulHybridCommands": 0,
+        "referenceReads": 0,
+        "filenameCommands": 0,
+        "violations": [],
+        "operationErrors": [],
+        "cappedOutputs": 0,
+        "emptySearches": 0,
+        "repeatedCommands": 8,
+        "passed": true
+      }
+    }
+  ],
+  "implementationSha256": "e161cff6cbd34906fda8e64c98c3d062c7ffd055022e633c905c246b6c5927b9"
+}

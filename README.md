@@ -1,6 +1,6 @@
 # Doktimoi
 
-**On two Kubernetes documentation reviews, Doktimoi 0.14.2 saved 48.5–64.7% of total tokens with Claude Code on Windows, and Doktimoi 0.14.4 saved 25.0–32.6% with Codex on macOS**, compared with ordinary file tools given no batching instructions. The Codex runs with Doktimoi included a batching instruction. Giving Codex just that instruction (group independent tool calls, such as searches or file reads, in the same round) saved 20.8–22.4% with ordinary file tools alone. [Benchmark results](benchmarks/README.md)
+**On a Kubernetes documentation review with Claude Code on Windows, Doktimoi 0.14.7 used 67.9% fewer total tokens than ordinary file tools and 52.6% fewer than the same tools given a batching instruction; with Codex on macOS, Doktimoi 0.14.4 saved 25.0–32.6% on two such reviews.** The Doktimoi runs included the batching instruction (group independent tool calls, such as searches or file reads, in the same round). That instruction alone saved 32.4% with Claude Code and 20.8–22.4% with Codex. Cost fell less than tokens: 22% with Claude Code. [Benchmark results](benchmarks/README.md)
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -28,39 +28,35 @@ For Markdown-only collections, QMD's own skill may be enough.
 
 ### Claude Code on Windows
 
-On 16 November 2026, Claude Code (`claude-opus-5-5`, Windows) answered two ten-question
-reviews of 409 Kubernetes documentation files, the second written after all tuning, three
-fresh runs per row. Doktimoi 0.14.2 used the fewest tokens and tool calls and the least
-time of every arm, with answers of comparable quality.
+On 23 November 2026, Claude Code (`claude-opus-5-5`, Windows) answered a ten-question
+production review of 409 Kubernetes documentation files, three fresh runs per row. The
+batched arms got one extra sentence asking to group independent searches and reads.
 
-| Task | Retrieval | Total tokens | vs control | Agent time | Tool calls |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Production design | Read/Grep/Glob control | 1,092,232 | — | 140.7 s | 31 |
-| | **Doktimoi 0.14.2** | **385,461** | **−64.7%** | **93.6 s** | 11 |
-| | Doktimoi 0.14.2 hybrid (GPU) | 476,179 | −56.4% | 108.8 s | 11 |
-| | Meme 1.0.0 (Rust port of QMD) | 777,178 | −28.8% | 194.5 s | 43 |
-| | QMD 2.8.3 | 836,378 | −23.4% | 135.8 s | 44 |
-| | library-docs | 1,335,672 | +22.3% | 147.7 s | 37 |
-| | GBrain (keyword) | 1,347,006 | +23.3% | 169.8 s | 40 |
-| | doc-search | 2,127,833 | +94.8% | 423.2 s | 44 |
-| Held-out batch platform | Read/Grep/Glob control | 1,247,728 | — | 118.8 s | 34 |
-| | **Doktimoi 0.14.2** | **642,117** | **−48.5%** | **93.8 s** | 14 |
+| Retrieval | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 |
+| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 |
+| Batched Doktimoi 0.14.7 | 451,845 | −67.9% | −52.6% | $0.76 | 93.6 s | 7.7 |
+| **Batched Doktimoi 0.14.8** (unpaired rerun) | **376,985** | **−73.2%** | **−60.4%** | **$0.61** | **87.5 s** | **6.3** |
 
-**Tokens.** Each model round re-sends the whole conversation, so about 83% of Doktimoi's
-385k tokens are that repeated context, 14% new context and 2% the written answer.
-Doktimoi returns cited passages for several questions per call and needs 5–7 rounds;
-the other tools return file names or snippets, so the agent opens files over 31–47 calls.
+**Tokens.** Each model round re-sends the whole conversation, so rounds decide the
+total. Doktimoi returns cited passages for several questions per call and needed 6–8
+rounds; ordinary file tools needed 20–27.
 
-**Time.** Of 93.6 s, writing the answer took about 53 s, model work between rounds 30 s
-and the searches about 10 s. Indexing the 409 files takes about 22 s once.
+**Cost.** Cost falls less than tokens: every arm of the three-arm study brought about
+the same new context (72,000 tokens per run), and re-sent context is read from the cache
+at a low price. Batching alone cut cost by 8.5%, Doktimoi 0.14.7 by 22%.
 
-**Hybrid (GPU).** The GPU only computes embeddings and costs no tokens. The hybrid runs
-most likely used more tokens because their agents made 7–9 rounds instead of 5–7: they
-often sent their long natural-language searches one batch per round, and less exact
-semantic hits led to extra exact-match checks. On this English task, keyword search
-already matches the documents' wording.
+**Time.** Doktimoi runs were 29–33% shorter. Indexing the 409 files takes about 10 s once.
 
-Antivirus scanning was on during the Windows runs. Costs, quality checks and raw traces are in the [Claude Code results](benchmarks/README.md#claude-code-windows-16-november-2026).
+**Quality.** Every answer has ten sections and existing citation ranges, and every
+answer ran over the requested word range. The memos were screened for six known
+qualifications, not reviewed claim by claim.
+
+On an earlier held-out review (16 November, antivirus scanning on) Doktimoi 0.14.2 used
+48.5% fewer tokens than ordinary file tools, and hybrid search used more tokens than
+keyword search on this English corpus. Antivirus scanning was off on 23 November. Costs,
+checks, trace findings and raw traces are in the [Claude Code results](benchmarks/README.md#claude-code-windows).
 
 ### Codex on macOS
 
@@ -133,7 +129,11 @@ Windows and the macOS CPU backend for semantic search.
 
 The index is a disposable, machine-local `.doktimoi/` folder; source documents are never
 rewritten or uploaded. Keyword search needs no AI model. Optional semantic search runs a
-local embedding model only after you agree to download it. A hidden per-folder server keeps
+local embedding model only after you agree to download it. With it enabled, `--mode auto`
+answers by keywords while a passage holds every search term and adds matches by meaning
+only when none does; in [passage tests](benchmarks/claude/auto-mode-2026-11-23-windows/README.md)
+it matched keyword search on English queries (20/20) and found 5 of 8 bilingual passages
+against 4 for keywords and 2 for always-on hybrid fusion. A hidden per-folder server keeps
 the index open (and the model loaded, when enabled) and answers searches in parallel; it never
 creates an index or enables a model.
 

@@ -146,6 +146,15 @@ test('batches reuse unused output space for later complete passages', async t =>
   assert.ok(Buffer.byteLength(output) <= 20000);
 });
 
+test('a brief batch request gets the brief default of ten results', async t => {
+  const { root, project } = await fixture(t);
+  for (let i = 0; i < 6; i++) await fs.writeFile(path.join(root, `${i}.md`), `# Note ${i}\n\nLOCATE_TERM appears in note ${i}.`);
+  const run = async request => (await execute(project, { command: 'batch', values: {}, input: JSON.stringify([request]) })).output;
+  assert.equal((await run({ queries: ['LOCATE_TERM'], brief: true })).match(/^\d\.md:/gm).length, 6);
+  assert.equal((await run({ queries: ['LOCATE_TERM'] })).match(/^\d\.md:/gm).length, 4);
+  await assert.rejects(run({ queries: ['LOCATE_TERM'], path: ['0.md'] }), /Unknown batch request key "path"; use queries, paths/);
+});
+
 test('headings already present in a passage are not printed twice', () => {
   const heading = 'Section title\n-------------';
   const text = `${heading}\n\nA complete condition.`;
@@ -316,6 +325,13 @@ test('a bare indexed workbook returns its first cited sheet and points to the ne
   const many = await project.readAll(['tariff.xlsx', next]);
   assert.match(many.pieces[0], /November/);
   assert.match(many.pieces[1], /78/);
+  // Text files and files mixing line and converted passages (YAML comments) name a readable next passage too.
+  await fs.writeFile(path.join(root, 'notes.md'), '# One\n\nFirst part.\n\n# Two\n\nSecond part.');
+  await fs.writeFile(path.join(root, 'conf.yaml'), 'service:\n  retries: 3\n# why three\n');
+  for (const [file, expected] of [['notes.md', /Second part/], ['conf.yaml', /why three/]]) {
+    const start = await project.read(file);
+    assert.match((await project.read(start.continuation.match(/next: read "([^"]+)"/)[1])).text, expected);
+  }
 });
 
 test('a clipped ledger passage cites its visible lines and reads back the matching record', async t => {
@@ -737,6 +753,20 @@ test('a heading directly followed by another heading is merged into that section
   assert.equal(render({ results: [{ ...chunks[1], text: chunks[1].text }] }), 'plan.md:9-11\nPlan\n## Next\n\nMore text.');
 });
 
+test('YAML front matter stays in the first chunk under its title and a leading rule is not front matter', () => {
+  const page = '---\ntitle: "Pod Lifecycle"\nweight: 30\n---\n\nIntro text.\n\n## Phase\n\nPhase text.';
+  assert.deepEqual(chunkMarkdown(page, 'p.md').map(chunk => [chunk.location, chunk.heading]), [['lines:1-6', 'Pod Lifecycle'], ['lines:8-10', 'Phase']]);
+  assert.match(chunkMarkdown(page, 'p.md')[0].text, /^---\ntitle: "Pod Lifecycle"\nweight: 30\n---\n\nIntro text\.$/);
+  assert.deepEqual(chunkMarkdown('---\n\n# Unrelated\n\nBody.\n\n---\n\nMore.', 'r.md').map(chunk => chunk.heading), ['', 'Unrelated']);
+});
+
+test('a chunk without a heading is not found by a placeholder title', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'notes.txt'), 'Plain ledger line without any heading.');
+  assert.equal((await project.search(['document'])).payload.results.length, 0);
+  assert.equal((await project.search(['ledger'])).payload.results[0].source, 'notes.txt');
+});
+
 test('adjacent hits of one source are returned as one result with one reference', async t => {
   const { root, project } = await fixture(t);
   await fs.writeFile(path.join(root, 'plan.md'), '# One\n\nADJACENT_TERM first.\n\n# Two\n\nADJACENT_TERM second.\n\n# Three\n\nNothing here.\n\n# Four\n\nADJACENT_TERM fourth.');
@@ -783,6 +813,11 @@ test('a read of several references returns each in order within one shared outpu
   assert.match(mixed, /^small\.md:5-7\n[\s\S]*SMALL_TERM two\.\n\nexample\.docx:extracted-lines:[\s\S]*AutoGen[\s\S]*\n\nmissing\.md:1\n\[Error: Unknown or obsolete chunk: missing\.md:1\]\n\nsmall\.md:1-3\n# Small\n\nSMALL_TERM one\.$/);
   assert.equal(await read(['small.md:1-3']), (await execute(project, { command: 'read', refs: ['small.md:1-3'], values: { from: '1' } })).output);
   assert.equal(await read(['small.md:1-3']), renderSingle(await project.read('small.md:1-3')));
+  // Windows shells and agents spell a returned reference with backslashes, ./ or the folder's absolute path.
+  await fs.mkdir(path.join(root, 'sub'));
+  await fs.writeFile(path.join(root, 'sub', 'deep.md'), '# Deep\n\nDEEP_TERM one.\n');
+  const deep = await read(['sub/deep.md:1-3']);
+  for (const spelling of ['sub\\deep.md:1-3', './sub/deep.md:1-3', `${path.join(await fs.realpath(root), 'sub', 'deep.md')}:1-3`]) assert.equal(await read([spelling]), deep);
   const capped = await read(['plan.md:1-9999', 'small.md:1-3', docx]);
   assert.ok(Buffer.byteLength(capped) <= 20000 && tokens(capped) <= 6000, `${Buffer.byteLength(capped)} bytes, ${tokens(capped)} tokens`);
   assert.match(capped, /^plan\.md:1-\d+\n# Plan[\s\S]*\n\[Continue: read "plan\.md:\d+-\d+"\]\n\[Output cap reached; not read: "small\.md:1-3" "example\.docx:extracted-lines:[^"]+"\]$/);
@@ -795,6 +830,14 @@ test('a read of several references returns each in order within one shared outpu
 
 /** Renders a single read the way the CLI prints it. */
 function renderSingle(item) { return render({ results: [item], note: item.continuation }); }
+
+test('auto mode without a semantic index answers exactly like lexical search', async t => {
+  const { root, project } = await fixture(t);
+  await fs.writeFile(path.join(root, 'a.md'), '# A\n\nAUTO_TERM needs approval.');
+  for (const queries of [['AUTO_TERM'], ['AUTO_TERM absentword'], ['absentword']]) {
+    assert.deepEqual((await project.search(queries, { mode: 'auto' })).payload, (await project.search(queries)).payload);
+  }
+});
 
 test('several questions in one search call each get their own section, filters and brief apply to all', async t => {
   const { root, project } = await fixture(t);

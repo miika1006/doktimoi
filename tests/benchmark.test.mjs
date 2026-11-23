@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { auditRun, samePath, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, copyCorpus, summarizeEvents, verifiedRounds, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
+import { auditRun, samePath, commandWords, commandGroups, loadBenchmarkTask, hybridEvidence, verifyArtifacts, validateCompetitor, claudeToCodexEvents, claudeModelRounds,copyCorpus, summarizeEvents, verifiedRounds, verifyCorpus } from '../benchmarks/agent-benchmark.mjs';
 
 test('benchmark counts provider tokens without double-counting cache or reasoning', () => {
   const events = [
@@ -94,6 +94,9 @@ test('Claude events count every model and cache token once and audit file tools 
   assert.equal(auditRun(bypass, 'doktimoi').passed, false);
   assert.equal(auditRun(bypass, 'baseline').passed, true);
   assert.throws(() => summarizeEvents(claudeToCodexEvents(encode([{ ...events.at(-1), is_error: true }]))), /completed turn/);
+  // Parallel tool calls of one response arrive as separate events with the same message id.
+  const block = id => ({ type: 'assistant', message: { id, content: [] } });
+  assert.equal(claudeModelRounds(encode([block('m1'), block('m1'), result('a', 'x'), block('m2')])), 2);
 });
 
 

@@ -24,6 +24,11 @@ new output folder or `--resume` an unchanged one, and report negative results pl
 
 ## Not done
 
+**Closed on 23 November 2026:** comparisons against other tools (items 1–4) are
+discontinued. The measurements that continue compare Doktimoi with ordinary file tools
+and with the same tools given a batching instruction (`--arm batch-study`); the
+[23 November Windows run](../../claude/batch-2026-11-23-windows/README.md) is the first.
+
 On Windows with Claude Code (`--agent claude`; adapters in
 `benchmarks/claude/competitors-2026-11-16/configs/`, regenerate with `make-configs.mjs`):
 

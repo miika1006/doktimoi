@@ -1,5 +1,10 @@
 # Setup
 
+Contents: [Runtime and installation](#runtime-and-installation) ·
+[Ask about the local AI option](#ask-about-the-local-ai-option) ·
+[Turn semantic search on or off; check status](#turn-semantic-search-on-or-off-check-status) ·
+[Future sessions](#future-sessions) · [Cache](#cache)
+
 ## Runtime and installation
 
 Requires Node.js 24.15+ (or 22.22.2+) and npm 12.2.1+. Check `node --version`,
@@ -97,8 +102,9 @@ node "<skill>/scripts/doktimoi.mjs" embed "<folder>"
 
 Record semantic search as enabled only after it completes. On failure, report it,
 keep keyword search and record enablement as pending; never present lexical
-results as semantic. Afterwards use `--mode hybrid` for meaning-based questions
-and keyword search for exact identifiers. Documents are never uploaded. Models
+results as semantic. Afterwards use `--mode auto`: it answers by keywords while a
+passage holds every term and adds matches by meaning only when none does. `--mode
+hybrid` always fuses both and can rank a precise keyword match lower. Documents are never uploaded. Models
 use QMD's local cache (`XDG_CACHE_HOME` isolates it). `QMD_FORCE_CPU=1` requests
 CPU execution; report the actual backend when benchmarking.
 
@@ -201,7 +207,7 @@ search shows only those of returned sources. Most are routine OCR notes, one per
 image or scanned page, saying recognized text may contain errors. `status` reports them
 separately; tell the user they are not indexing failures.
 The cache is disposable: if it is incompatible or incomplete, rebuild it while
-preserving unrelated user files. A folder with semantic search may have a
+preserving unrelated user files. A searched folder may have a
 background search server holding `index.sqlite` open; run
 `node "<skill>/scripts/doktimoi.mjs" stop "<folder>"` before deleting the cache
 (`build` stops it itself). Old v1 `matrix.json`/`.ai` files are ignored.

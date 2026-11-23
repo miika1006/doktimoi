@@ -1,8 +1,9 @@
 # Production task: Doktimoi 0.14.2 hybrid search, Claude Code, Windows
 
 16 November 2026, three Doktimoi runs with semantic (hybrid) search on a prepared index,
-compared with the same day's [Read/Grep/Glob controls](../lexical-2026-11-16-windows/README.md)
-and [lexical 0.14.2 runs](../lexical-0142-2026-11-16-windows/README.md). Claude Code
+compared with the same day's Read/Grep/Glob controls and lexical 0.14.2 runs. Those two
+run sets were superseded by the [23 November study](../batch-2026-11-23-windows/README.md)
+and are in git history (`ba0c3e1`). Claude Code
 2.1.325, `claude-opus-5-5`, medium effort. **Real-time antivirus scanning was on.**
 
 | Arm | Total tokens | vs control | Agent time | Cost | Tool calls |

@@ -2,12 +2,15 @@
 // Prints per-arm means of audited runs from benchmark output folders; failed audits are counted, never averaged.
 import fs from 'node:fs';
 import path from 'node:path';
+import { claudeModelRounds } from '../agent-benchmark.mjs';
 
 const rows = [];
 for (const dir of process.argv.slice(2)) {
   const summary = JSON.parse(fs.readFileSync(path.join(dir, 'summary.json'), 'utf8'));
   const arms = new Map();
   for (const run of summary.runs) {
+    // Runs recorded before the runner counted Claude's model rounds: count them from the raw events.
+    if (summary.claude) run.modelRounds ??= claudeModelRounds(fs.readFileSync(path.join(dir, `${run.pair}-${run.mode}.events.jsonl`), 'utf8'));
     const arm = arms.get(run.mode) ?? { passed: [], failed: 0 };
     if (run.audit.passed) arm.passed.push(run); else arm.failed++;
     arms.set(run.mode, arm);

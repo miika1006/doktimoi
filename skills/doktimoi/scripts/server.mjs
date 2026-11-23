@@ -53,8 +53,9 @@ export async function viaServer(root, script, request) {
   let info = await readInfo(root);
   // Never turn a hook or direct server request into index creation.
   if (!info && !existsSync(path.join(root, CACHE_DIR, 'index.sqlite'))) return null;
-  // A newer plugin version takes the folder over; an older client leaves a newer server alone.
-  if (info && info.script !== script && isOlder(info.version, await ownVersion())) info = await stopServer(root, info);
+  // A newer plugin version takes the folder over, also when updated in place at the same path (its
+  // server still runs the old code); an older client leaves a newer server alone.
+  if (info && isOlder(info.version, await ownVersion())) info = await stopServer(root, info);
   if (!info) info = await waitForInfo(root, start(root, script));
   if (info?.script !== script) return null;
   try { return await send(info, request); }

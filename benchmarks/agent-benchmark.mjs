@@ -391,6 +391,16 @@ export function claudeToCodexEvents(raw) {
   return out.map(e => JSON.stringify(e)).join('\n');
 }
 
+/**
+ * Counts the model responses in raw Claude Code stream-json events, the final answer included.
+ * One response arrives as several `assistant` events (one per content block) sharing a message id.
+ * @example claudeModelRounds(raw) // 8
+ */
+export function claudeModelRounds(raw) {
+  const events = raw.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+  return new Set(events.filter(e => e.type === 'assistant').map(e => e.message.id)).size;
+}
+
 const DENIED = /denied by your permission settings|haven't granted it yet|Permission to use \S+ (?:has been|was) denied|requires approval|can't be checked before it runs/;
 
 /** Maps one Claude tool call to a Codex item type and command. */
@@ -633,11 +643,14 @@ async function main() {
         await fs.writeFile(path.join(output, `${name}.timing.json`), JSON.stringify({ elapsedMs, buildMs, embedMs, indexCopyMs, preflightMs, setupMs, exitCode: run.status }, null, 2) + '\n');
         if (run.status !== 0) throw new Error(`${name} failed (${run.status}): ${run.error ?? 'see stderr and events'}`);
         let raw = await fs.readFile(path.join(output, `${name}.events.jsonl`), 'utf8');
+        let claudeRounds;
         if (values.agent === 'claude') {
           await fs.writeFile(path.join(output, `${name}.answer.md`), raw.trim().split('\n').map(line => JSON.parse(line)).findLast(e => e.type === 'result')?.result ?? '');
+          claudeRounds = claudeModelRounds(raw);
           raw = claudeToCodexEvents(raw);
         }
         const metrics = summarizeEvents(raw), audit = auditRun(raw, mode, resolvedCompetitor, workspace);
+        if (claudeRounds) metrics.modelRounds = claudeRounds;
         if (run.rounds) {
           const rounds = verifiedRounds(run.rounds, metrics.usage);
           metrics.modelRounds = rounds?.length ?? null;

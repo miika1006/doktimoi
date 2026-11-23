@@ -82,6 +82,8 @@ test('approves a single lexical search, read or status against an indexed folder
   assert.ok(allowed(decide(bash(`node "${script}" read "${indexed}" "a.md:1-5" --from 1 --lines 40`, indexed), pluginRoot)));
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" search "${indexed}" --query "ä ö"` }, cwd: indexed }, pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" search "${indexed}" --query "how is access granted" --mode hybrid`, indexed), pluginRoot)));
+  // Auto only reads an existing semantic index, like hybrid, and is plain lexical search without one.
+  assert.ok(allowed(decide(bash(`node "${script}" batch "${indexed}" --requests '[{"queries":["how is access granted"],"mode":"auto"}]' --mode auto`, indexed), pluginRoot)));
   assert.ok(allowed(decide(bash(`node "${script}" status "${indexed}"`, indexed), pluginRoot)));
   assert.ok(allowed(decide({ tool_name: 'PowerShell', tool_input: { command: `node "${script}" status .` }, cwd: indexed }, pluginRoot)));
 });

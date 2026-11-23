@@ -92,10 +92,19 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
     length = 0;
   }
   const sizeOf = node => node.position.end.offset - node.position.start.offset;
-  const blocks = fromMarkdown(text).children.flatMap(node => node.type === 'list' && sizeOf(node) > 2400 ? node.children : [node]);
+  // CommonMark reads YAML front matter as a rule plus a setext heading holding every field. Parse
+  // it blanked out (positions stay) and keep it as one block of the first chunk, headed by its title.
+  let front = FRONT_MATTER.exec(text)?.[0];
+  const parsed = fromMarkdown(front ? front.replace(/[^\r\n]/g, ' ') + text.slice(front.length) : text);
+  const blocks = parsed.children.flatMap(node => node.type === 'list' && sizeOf(node) > 2400 ? node.children : [node]);
+  if (front) {
+    blocks.unshift({ type: 'frontMatter', position: { start: { line: 1, offset: 0 }, end: { line: front.split('\n').length, offset: front.length } } });
+    headings[0] = /^title:[ \t]*["']?(.*?)["']?[ \t]*$/m.exec(front)?.[1];
+  }
   for (const node of blocks) {
     if (node.type === 'heading') {
       if (pending.some(block => block.type !== 'heading')) flush();
+      if (front) { headings.length = 0; front = null; }
       headings.length = node.depth;
       headings[node.depth - 1] = text.slice(node.position.start.offset, node.position.end.offset).replace(/^#+\s*/, '');
     }
@@ -107,6 +116,9 @@ export function chunkMarkdown(text, source, locationKind = 'lines') {
   flush();
   return chunks;
 }
+
+// A first line of ---, a YAML key on the next line and a closing --- or ... line.
+const FRONT_MATTER = /^---[ \t]*\r?\n(?=[A-Za-z_][\w-]*:)[\s\S]*?\r?\n(?:---|\.\.\.)[ \t]*(?=\r?\n|$)/;
 
 const segmentChunks = (source, segments) => segments.flatMap(segment => chunkMarkdown(segment.text, source, segment.location)
   .map(chunk => ({ ...chunk, heading: segment.heading, visual: segment.visual })));

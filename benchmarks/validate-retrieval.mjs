@@ -9,8 +9,8 @@ import { openProject, reference } from '../skills/doktimoi/scripts/doktimoi.mjs'
 import { copyCorpus, verifyCorpus } from './agent-benchmark.mjs';
 
 const { values } = parseArgs({ options: { mode: { type: 'string', default: 'lexical' }, prepared: { type: 'string' } } });
-assert.ok(['lexical', 'hybrid'].includes(values.mode), '--mode must be lexical or hybrid');
-assert.equal(!!values.prepared, values.mode === 'hybrid', 'Hybrid validation requires --prepared pointing to a user-approved semantic index');
+assert.ok(['lexical', 'auto', 'hybrid'].includes(values.mode), '--mode must be lexical, auto or hybrid');
+assert.equal(!!values.prepared, values.mode !== 'lexical', 'Auto and hybrid validation require --prepared pointing to a user-approved semantic index');
 const corpus = await verifyCorpus();
 const queries = JSON.parse(await fs.readFile(new URL('validation-queries.json', import.meta.url), 'utf8'));
 const root = await fs.mkdtemp(path.join(os.tmpdir(), 'doktimoi-validation-'));

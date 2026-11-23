@@ -49,7 +49,7 @@ function approveDoktimoiCommand(input, pluginRoot) {
   if (!['search', 'batch', 'read', 'status'].includes(command)) return null;
   if (command === 'status' && rest.length) return null;
   const options = parseOptions(rest);
-  if (!options || !['lexical', 'hybrid', 'exact'].includes(options.values.mode)) return null;
+  if (!options || !['lexical', 'auto', 'hybrid', 'exact'].includes(options.values.mode)) return null;
   const references = options.positionals.length;
   if (command === 'read' ? references < 1 || references > MAX_REFS : references) return null;
   if (options.values.requests !== undefined) {
@@ -59,7 +59,7 @@ function approveDoktimoiCommand(input, pluginRoot) {
       if (!Array.isArray(requests) || !requests.length || requests.length > 20 || requests.some(request =>
         !request || typeof request !== 'object' || !Array.isArray(request.queries) ||
         Object.keys(request).some(key => !['queries', 'paths', 'exclude', 'mode', 'limit', 'brief', 'budget', 'verify'].includes(key)) ||
-        !['lexical', 'hybrid', 'exact'].includes(request.mode ?? 'lexical'))) return null;
+        !['lexical', 'auto', 'hybrid', 'exact'].includes(request.mode ?? 'lexical'))) return null;
     } catch { return null; }
   } else if (command === 'batch') return null;
   // A path inside an indexed folder uses that folder's index; the CLI never creates one outside build.
@@ -111,7 +111,7 @@ function missingDependencies(pluginRoot) {
 
 function remind(root, pluginRoot, bypass) {
   if (!root) return null;
-  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" for cited passages. Batch independent questions with --next; read only unresolved evidence, several references per call. Use --brief to locate sections and --mode exact for literal phrases. Run each call as one command without cd or chaining. Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
+  return output({ additionalContext: `${root} is indexed by doktimoi. For content lookups, fact checks and verification while editing here use the doktimoi skill instead of ${bypass}: node "${scriptPath(pluginRoot)}" search "${root}" --query "terms" for cited passages. Batch independent questions with --next; read only unresolved evidence, several references per call. Use --brief to locate sections and --mode exact for literal phrases. Run each call as one command with literal paths, without variables, cd or chaining. Use Grep only for file names or exact edit locations in a file doktimoi returned.` });
 }
 
 /**

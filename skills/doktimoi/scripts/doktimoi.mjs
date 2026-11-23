@@ -102,6 +102,7 @@ const MAX_OUTPUT_BYTES = 20000;
 const MAX_BUDGET = 6000;
 const BUDGET_CAPPED = `--budget capped at ${MAX_BUDGET} tokens per call.`;
 const NO_MATCH_HINT = 'Lexical search ANDs the terms of a query: use fewer or rarer terms, one --query per phrasing, or --mode hybrid if semantic search is on.';
+const AUTO_FALLBACK = 'No passage has every term of a query; these match some terms or the meaning of the first query.';
 const OR_FALLBACK = 'No passage has every term of a query; these match some terms. Use fewer or rarer terms, or one --query per phrasing.';
 const SOURCE_CHANGED = 'DOKTIMOI_SOURCE_CHANGED';
 const SOURCE_CHANGE_ATTEMPTS = 6;
@@ -246,7 +247,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
   extractSnippet = qmd.extractSnippet;
   const root = await fs.realpath(directory);
   const qmdStore = await qmdInternals();
-  const converterVersion = JSON.stringify({ version: 19, ...extractionConfig() });
+  const converterVersion = JSON.stringify({ version: 20,...extractionConfig() });
   const cache = await safePath(root, '.doktimoi');
   await fs.mkdir(cache, { recursive: true });
   for (const name of ['chunks', 'visuals', 'ocr', 'manifest.json', 'index.sqlite', 'index.sqlite-wal', 'index.sqlite-shm', 'dirty', 'write.lock', 'server.json', 'server.lock']) {
@@ -372,7 +373,8 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         });
         next.files[source] = { hash: digest, stamp: signature, bytes: raw.length, ...(result.skipped && { skipped: true }), warnings: result.warnings, chunks: result.chunks.map(chunk => {
           // Repeating the source path makes filename-only hits outrank actual evidence in BM25.
-          const body = `# ${chunk.heading || 'Document'}\n\n${chunk.text}`;
+          // A chunk without a heading gets a title of no search terms: a placeholder word would match queries.
+          const body = `# ${chunk.heading || '-'}\n\n${chunk.text}`;
           const id = hash(`${source}\0${chunk.location}\0${body}`).slice(0, 32);
           writes.push({ id, body });
           return { id, location: chunk.location, heading: chunk.heading, visual: chunk.visual };
@@ -599,7 +601,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
        * file prefixes; `maxBytes` caps the rendered results so batch searches can share one output.
        */
       async search(queries, { mode = 'lexical', brief = false, limit = brief ? 10 : 4, budget = brief ? 800 : 1600, verify = false, scope, paths = [], exclude = [], maxBytes = MAX_OUTPUT_BYTES } = {}) {
-        if (!['lexical', 'hybrid', 'exact'].includes(mode)) throw new Error('mode must be lexical, hybrid or exact');
+        if (!['lexical', 'auto', 'hybrid', 'exact'].includes(mode)) throw new Error('mode must be lexical, auto, hybrid or exact');
         const maxQueries = mode === 'exact' ? MAX_EXACT_PHRASES : MAX_PHRASINGS;
         if (!Array.isArray(queries) || !queries.length || queries.length > maxQueries || queries.some(q => typeof q !== 'string' || !q.trim() || /[\r\n]/.test(q))) {
           throw new Error(mode === 'exact' ? `Provide 1–${MAX_EXACT_PHRASES} single-line phrases in exact mode`
@@ -608,7 +610,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         if (!Number.isInteger(budget) || budget < 256) throw new Error('budget must be an integer >= 256');
         if (!Number.isSafeInteger(limit) || limit < 1 || (mode !== 'exact' && limit > 20)) throw new Error('limit must be a positive integer, at most 20 for ranked search');
         budget = Math.min(budget, MAX_BUDGET);
-        const update = await prepare({ verify, hybrid: mode === 'hybrid' });
+        const update = await prepare({ verify, hybrid: ['auto', 'hybrid'].includes(mode) });
         return gate.read(async () => {
           const started = performance.now();
           const options = { mode, brief, limit, budget, scope, paths, exclude, maxBytes, stale: update.stale };
@@ -791,22 +793,26 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         }
       };
       const lexical = query => ranked(count => store.searchLex(query, { collection: 'docs', limit: count }));
-      if (mode !== 'lexical' && !(await store.getStatus()).hasVectorIndex) throw new Error('Semantic index missing; run embed before hybrid search');
+      // Auto is lexical search in a folder without a semantic index, so it is safe as a standing choice.
+      const semantic = mode !== 'lexical' && (await store.getStatus()).hasVectorIndex;
+      if (mode === 'hybrid' && !semantic) throw new Error('Semantic index missing; run embed before hybrid search');
+      const vector = () => ranked(async count => {
+        const rows = await vectorSearch(queries[0], count);
+        // QMD can log embedding failures and return []; do not label that a successful hybrid search.
+        if (!rows.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
+        return rows;
+      });
       const lists = [];
       for (const query of queries) lists.push(await lexical(query));
+      const matched = lists.some(list => list.length);
       let note;
-      if (mode !== 'lexical') {
-        const vector = await ranked(async count => {
-          const rows = await vectorSearch(queries[0], count);
-          // QMD can log embedding failures and return []; do not label that a successful hybrid search.
-          if (!rows.length && metadata.size) throw new Error('Semantic search returned no candidates; check model/GPU availability');
-          return rows;
-        });
-        lists.push(vector);
-      } else if (lists.every(list => !list.length)) {
+      if (mode === 'hybrid') lists.push(await vector());
+      else if (!matched) {
         const terms = fallbackTerms(queries);
         lists.push(terms.length ? await ranked(count => searchAnyTerm(terms, count)) : []);
         note = lists.at(-1).length ? OR_FALLBACK : NO_MATCH_HINT;
+        // No passage has every term: meaning ranks on equal terms with the partial-term matches.
+        if (semantic) { lists.push(await vector()); note = AUTO_FALLBACK; }
       }
       const fused = new Map();
       for (const list of lists) list.forEach((row, rank) => {
@@ -878,10 +884,12 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
 
     /** Reads a reference for read(), on an up-to-date index. */
     async function readReference(ref, from, lines, budget, maxBytes = MAX_OUTPUT_BYTES) {
+      ref = rootRelative(ref);
       const chunks = chunksForReference(ref);
-      // An agent may have a converted filename from a citation without a sheet/page reference.
+      // An agent may have a bare filename from a citation, without lines or a sheet/page reference.
       const fileChunks = !chunks.length && manifest.files[ref]?.chunks;
-      if (fileChunks?.length && !LINE_SPAN.test(fileChunks[0].location)) chunks.push(fileChunks[0]);
+      if (fileChunks?.length) chunks.push(fileChunks[0]);
+      const nextPassage = fileChunks?.length > 1 && `First of ${fileChunks.length} passages; next: read "${reference({ source: ref, location: fileChunks[1].location })}". Search with --path for other sections.`;
       if (!chunks.length && await createdSinceSync(ref)) throw sourceChanged(`Source not indexed yet: ${ref}; retry`);
       if (!chunks.length) throw new Error(`Unknown or obsolete chunk: ${ref}`);
       const joined = chunks.length === 1 ? await evidence(chunks[0].id) : await joinChunks(chunks);
@@ -900,7 +908,7 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
       }
       const span = /^lines:(\d+)-(\d+)$/.exec(item.location);
       if (!span) {
-        if (fileChunks?.length > 1) result.continuation = `First of ${fileChunks.length} passages; next: read "${ref}:${fileChunks[1].location}". Search with --path for other sections.`;
+        if (nextPassage) result.continuation = nextPassage;
         return result;
       }
       // A cut last line is only partly shown: the location includes it and the continuation repeats it.
@@ -915,7 +923,20 @@ export async function openProject(directory, { modelIdleMs, watch: watchSources 
         else if (budget < MAX_BUDGET) result.continuation = 'Line exceeds budget; increase --budget';
         else result.continuation = `Line ${next} exceeds the per-call output cap and is cut.${next < Number(span[2]) ? ` ${continueFrom(next + 1)}` : ''}`;
       }
+      if (nextPassage) result.continuation ??= nextPassage;
       return result;
+    }
+
+    /**
+     * Rewrites a reference typed with backslashes, a leading `./` or the indexed folder's absolute
+     * path to the root-relative form search prints; Windows shells and agents produce all three.
+     * @example rootRelative('C:\\docs\\plans\\a.md:5-9') // 'plans/a.md:5-9' when the index root is C:\docs
+     */
+    function rootRelative(ref) {
+      const value = String(ref).replaceAll('\\', '/').replace(/^(\.\/)+/, '');
+      const base = `${root.replaceAll('\\', '/')}/`;
+      const inside = process.platform === 'win32' ? value.toLowerCase().startsWith(base.toLowerCase()) : value.startsWith(base);
+      return inside ? value.slice(base.length) : value;
     }
 
     /** Reads references in order for readAll() until the shared budget or byte cap runs out. */
@@ -1076,7 +1097,7 @@ async function main() {
   checkRuntime();
   if (command === 'serve' && root) return serveFolder(root);
   if (!CLI_COMMANDS.includes(command) || !root) {
-    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|hybrid|exact]; run with --help for details');
+    throw new Error('Usage: node doktimoi.mjs build|sync|search|batch|read|embed|status|disable-semantic|stop ROOT [REFERENCE] [--query TERMS] [--mode lexical|auto|hybrid|exact]; run with --help for details');
   }
   const folder = await fs.realpath(root).catch(() => { throw new Error(`Folder not found: ${root}`); });
   if (command === 'build') await stopServer(folder);
@@ -1157,7 +1178,11 @@ export async function execute(project, { command, refs: given = [], id, values, 
   if (command === 'batch') {
     const requests = JSON.parse(input ?? values.requests);
     if (!Array.isArray(requests) || requests.length < 1 || requests.length > MAX_QUESTIONS) throw new Error(`Batch requires 1–${MAX_QUESTIONS} search requests`);
-    result = await searchEach(project, requests.map(request => ({ ...searchOptions(values), ...request })), values, notices);
+    // An ignored misspelling such as "path" would silently search every source.
+    const unknown = requests.flatMap(request => Object.keys(request ?? {})).find(key => !BATCH_KEYS.includes(key));
+    if (unknown) throw new Error(`Unknown batch request key "${unknown}"; use ${BATCH_KEYS.join(', ')}`);
+    // A request's own brief decides its default limit and budget, as --brief does for a search.
+    result = await searchEach(project, requests.map(request => ({ ...searchOptions({ ...values, brief: request?.brief ?? values.brief }), ...request })), values, notices);
   }
   const lines = values.lines === undefined ? undefined : Number(values.lines);
   if (command === 'read' && refs.length === 1) {
@@ -1227,12 +1252,6 @@ function searchOptions(values) {
 const capNote = values => Number(values.budget) > MAX_BUDGET ? BUDGET_CAPPED : undefined;
 
 /**
- * Describes the folder's index, lock and background server in a few lines without changing
- * anything: no lock, sync, server start or model load.
- * `scope` names the folder asked about when it lies inside the indexed `root`.
- * @example await status('C:\\docs') // 'Index: 12 sources, 340 chunks, 0 extraction warnings, updated 2026-11-09T10:12:03+02:00\n…'
- */
-/**
  * Separates the routine OCR accuracy notes, one per OCR'd image or page, from other extraction
  * caveats, so a large warning total is not mistaken for failed indexing. '' when there are none.
  * @example warningBreakdown(['Image: OCR may misread text; …', 'YAML: aliases …']) // 'Extraction warnings: 1 routine OCR notes …; 1 other …'
@@ -1243,6 +1262,12 @@ export function warningBreakdown(warnings) {
   return `Extraction warnings: ${ocr} routine OCR notes (text read from images or scanned pages may contain recognition errors; not indexing failures); ${warnings.length - ocr} other format caveats (build lists them)`;
 }
 
+/**
+ * Describes the folder's index, lock and background server in a few lines without changing
+ * anything: no lock, sync, server start or model load.
+ * `scope` names the folder asked about when it lies inside the indexed `root`.
+ * @example await status('C:\\docs') // 'Index: 12 sources, 340 chunks, 0 extraction warnings, updated 2026-11-09T10:12:03+02:00\n…'
+ */
 async function status(root, scope) {
   const cache = path.join(root, '.doktimoi');
   const manifestFile = path.join(cache, 'manifest.json');
@@ -1362,6 +1387,7 @@ const SERVER_MODEL_IDLE_MS = 31 * 60 * 1000;
 const MAX_QUESTIONS = 20;
 const MAX_PHRASINGS = 4;
 const MAX_EXACT_PHRASES = 20;
+const BATCH_KEYS = ['queries', 'paths', 'exclude', 'mode', 'limit', 'brief', 'budget', 'verify'];
 const CLI_COMMANDS = ['build', 'sync', 'search', 'batch', 'read', 'embed', 'status', 'disable-semantic', 'stop'];
 const USAGE = `Usage: node doktimoi.mjs COMMAND ROOT [REFERENCE] [options]
 
@@ -1388,7 +1414,9 @@ Options:
                    ANDed; when no passage has them all, results matching some terms are labeled
   --next           search: starts the next question; each gets its own section (Q1, Q2, …) and
                    a share of the output cap; other options apply to every question
-  --mode MODE      lexical (default), hybrid (needs embed; first query is also the semantic one)
+  --mode MODE      lexical (default); auto (lexical, adding semantic matches of the first query
+                   only when no passage holds every term; plain lexical if embed was never
+                   run); hybrid (needs embed; always fuses lexical and semantic);
                    or exact: list every line holding the phrase, ignoring case, as FILE then
                    "  N: line" (Markdown/text source line N; read FILE:N) or "  LOCATION: line"
                    (Office, PDF, OCR; read FILE:LOCATION); repeated --query are alternatives
@@ -1415,7 +1443,7 @@ References:
   Read output starts with the source lines it shows, e.g. file.md:20-64. A cut read ends
   with [Continue: read "file.md:65-120"], the range that reads on. References that did not
   fit a multi-reference read are named in [Output cap reached; not read: ...].
-  For converted files use a returned reference, or the indexed filename for its first passage.
+  For converted files use a returned reference. A bare indexed filename gives its first passage.
   CSV/TSV csv-lines:N-M names the original physical lines; its field text is normalized.`;
 
 if (process.argv[1] && await fs.realpath(process.argv[1]).catch(() => null) === await scriptPath()) {

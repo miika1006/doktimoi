@@ -1,6 +1,6 @@
 ---
 name: doktimoi
-description: Find cited evidence in local documentation, Office files, PDFs and images. In a folder with a .doktimoi index, use this for content searches and fact checks instead of Grep or whole-file reads; pass this workflow to subagents searching that folder.
+description: Searches local documentation, Office files, PDFs and images and returns cited passages within a token budget. Use for content searches and fact checks in a folder with a .doktimoi index, instead of Grep or whole-file reads, and pass this workflow to subagents searching that folder.
 ---
 
 # Doktimoi
@@ -44,14 +44,15 @@ node "<skill>/scripts/doktimoi.mjs" read "<folder>" "returned/a.md:20-65" "retur
   path is absent searches all sources, labelled; other batch answers remain valid.
   `search --next` also batches questions, but CLI filters apply to all of them.
 - Use `"mode":"exact"` for literal phrases (up to 20 alternatives); it lists
-  matching source lines within the output budget. If semantic search is enabled, use `"mode":"hybrid"`
-  for topical questions and put the natural-language question first. Additional
+  matching source lines within the output budget. If semantic search is enabled, use `"mode":"auto"`
+  and put the natural-language question first: it stays lexical while a passage holds every
+  term and adds matches by meaning only when none does. Additional
   queries can be lexical alternatives. Use exact mode first for a known identifier; carry it into the next source to join records. A missing match never proves absence.
 
 ## Reading and correctness
 
 Markdown/text `file.md:N-M` reads original lines. For Office, PDFs and images,
-read the returned reference or use a bare indexed filename for its first passage. Read takes up to 20 ranges. Each call shares a cap of 6000
+read the returned reference. A bare indexed filename reads its first passage. Read takes up to 20 references. Each call shares a cap of 6000
 estimated tokens / 20 KB; follow `Continue` or `not read` notices only for evidence
 still needed. `--help` lists options. Only open a returned `[Visual: ...]` image inside `.doktimoi`.
 
@@ -67,7 +68,8 @@ Excel formula values are cached.
 
 Quote absolute paths and use a supported Node executable; macOS apps/login shells
 may select an older Node, so use its supported absolute path when provided.
-A single command lets the plugin recognize retrieval; the host sandbox applies.
+Run each call as one literal command with full paths: shell variables, `cd`, pipes
+or chaining stop the plugin from recognizing retrieval. The host sandbox applies.
 Report failed/denied calls. Grep is only for filenames or edit locations in a
 returned file. Search refreshes changed sources; new PDF/Office/OCR conversion
 can take minutes. For `Index busy`/`Index lock lost`, retry once with fewer

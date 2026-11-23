@@ -1,5 +1,8 @@
 # Remaining Mac benchmark work
 
+**23 November 2026:** comparisons against other tools are discontinued, so the fidx
+item below will not be run. It stays here as a record of where the study stopped.
+
 - **fidx end-to-end production reviews (0/3 completed).** Both embedding model files were verified. The 409-file fidx snapshot contains 6,239 chunks, and the first agent passed the [native hybrid preflight](fidx-hybrid/1-competitor.preflight.json). The [trace](fidx-hybrid/1-competitor.events.jsonl) records 37 completed shell commands, then a provider usage-limit error before the final memo or usage event. The provider reported a reset on 29 November 2026. No partial timing, token total or answer is included in the means. When capacity is available and a new run is requested, use the [prepared adapter](configs/fidx-prepared.json) with the same model, effort and corpus and a **new output folder**. The stopped folder contains an incomplete run and cannot be resumed. Verify the pinned local assets listed in the adapter; temporary paths may need to be reconstructed using the [reproduction notes](README.md#reproduce). Collect three complete audited sessions and check citations, the feature gate and the shutdown source before comparing results.
 - **Metal inside the standard Mac Codex workspace.** Native host probing found the Apple M1 GPU. In the agent sandbox both Metal query preflights failed. The published Doktimoi and Meme hybrid agent measurements used working CPU builds. A Metal comparison requires a working backend in the same sandbox and a fresh query preflight. [Backend logs](backends/README.md)
 

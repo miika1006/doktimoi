@@ -4,7 +4,7 @@ import path from 'node:path';
 import { openProject, reference } from '../../skills/doktimoi/scripts/doktimoi.mjs';
 
 const [root, mode] = process.argv.slice(2);
-assert.ok(root && ['lexical', 'hybrid'].includes(mode), 'Pass an indexed corpus root and lexical or hybrid');
+assert.ok(root && ['lexical', 'auto', 'hybrid'].includes(mode), 'Pass an indexed corpus root and lexical, auto or hybrid');
 const queries = [
   ['fi', 'Montako tallennetta Harmaahaikara-erään pakattiin?', 'paivakirjat/Kide/2025-11.txt', 'Niteitä 37'],
   ['fi', '152511-080', 'kuitit/L-50.png', 'PAJU 4'],
