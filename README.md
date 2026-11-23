@@ -24,6 +24,28 @@ keyword and optional semantic search); QMD retrieves, your assistant writes the 
 
 For Markdown-only collections, QMD's own skill may be enough.
 
+## Where the token saving comes from
+
+An agent re-sends the whole conversation on every model round, so most tokens are
+repeated context. Doktimoi saves by needing fewer rounds and by adding less to each:
+
+- **Passages, not file names.** A search returns the relevant paragraphs with their
+  source lines, so the agent does not follow a Grep hit with a file read.
+- **Several questions per call.** One `batch` call answers up to 20 questions, and the
+  skill tells the agent to send independent batches in the same round.
+- **Bounded output.** A call returns at most 6000 tokens and 20 KB, shared between its
+  questions; a passage that does not fit is cut to an excerpt around the match.
+- **No repeated text.** Adjacent hits of one file merge into one result, and a `read`
+  call fetches only the missing line ranges of up to 20 references at once.
+- **Citations that can be reused.** Every result carries a verified reference, so the
+  agent cites it without reopening the source to check.
+- **No permission stalls.** The hook approves the read-only commands, so the agent does
+  not fall back to Grep and whole-file reads.
+
+In the review below this meant 6 model rounds instead of 23. The saving depends on the
+task: on a small Finnish archive that a few file reads cover, Codex used more tokens
+with Doktimoi than with batched file tools.
+
 ## Measured results
 
 ### Claude Code on Windows
