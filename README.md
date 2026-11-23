@@ -1,6 +1,6 @@
 # Doktimoi
 
-**On a Kubernetes documentation review with Claude Code on Windows, Doktimoi 0.14.7 used 67.9% fewer total tokens than ordinary file tools and 52.6% fewer than the same tools given a batching instruction; with Codex on macOS, Doktimoi 0.14.4 saved 25.0–32.6% on two such reviews.** The Doktimoi runs included the batching instruction (group independent tool calls, such as searches or file reads, in the same round). That instruction alone saved 32.4% with Claude Code and 20.8–22.4% with Codex. Cost fell less than tokens: 22% with Claude Code. [Benchmark results](benchmarks/README.md)
+**On a Kubernetes documentation review with Claude Code on Windows, Doktimoi 0.14.8 used 73.2% fewer total tokens than ordinary file tools and 60.4% fewer than the same tools given a batching instruction; with Codex on macOS, Doktimoi 0.14.4 saved 25.0–32.6% on two such reviews.** The Doktimoi runs included the batching instruction (group independent tool calls, such as searches or file reads, in the same round). That instruction alone saved 32.4% with Claude Code and 20.8–22.4% with Codex. Cost fell less than tokens: 38% with Claude Code. [Benchmark results](benchmarks/README.md)
 
 Doktimoi is a Claude Code and Codex skill that gives a documentation folder a local
 search engine. It indexes the files and returns relevant passages with source citations
@@ -30,33 +30,32 @@ For Markdown-only collections, QMD's own skill may be enough.
 
 On 23 November 2026, Claude Code (`claude-opus-5-5`, Windows) answered a ten-question
 production review of 409 Kubernetes documentation files, three fresh runs per row. The
-batched arms got one extra sentence asking to group independent searches and reads.
+batched arms got one extra sentence asking to group independent searches and reads. The
+Doktimoi runs followed the two file-tool arms and were not interleaved with them.
 
-| Retrieval | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 |
-| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 |
-| Batched Doktimoi 0.14.7 | 451,845 | −67.9% | −52.6% | $0.76 | 93.6 s | 7.7 |
-| **Batched Doktimoi 0.14.8** (unpaired rerun) | **376,985** | **−73.2%** | **−60.4%** | **$0.61** | **87.5 s** | **6.3** |
+| Retrieval | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds | Screened qualifications |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 | 12/18 |
+| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 | 13/18 |
+| **Batched Doktimoi 0.14.8** | **376,985** | **−73.2%** | **−60.4%** | **$0.61** | **87.5 s** | **6.3** | 14/18 |
 
 **Tokens.** Each model round re-sends the whole conversation, so rounds decide the
-total. Doktimoi returns cited passages for several questions per call and needed 6–8
+total. Doktimoi returns cited passages for several questions per call and needed 6–7
 rounds; ordinary file tools needed 20–27.
 
-**Cost.** Cost falls less than tokens: every arm of the three-arm study brought about
-the same new context (72,000 tokens per run), and re-sent context is read from the cache
-at a low price. Batching alone cut cost by 8.5%, Doktimoi 0.14.7 by 22%.
+**Cost.** Cost falls less than tokens, because re-sent context is read from the cache at
+a low price: batching alone cut cost by 8.5%, Doktimoi by 38%.
 
-**Time.** Doktimoi runs were 29–33% shorter. Indexing the 409 files takes about 10 s once.
+**Time.** Doktimoi runs were a third shorter. Indexing the 409 files takes about 10 s once.
 
-**Quality.** Every answer has ten sections and existing citation ranges, and every
-answer ran over the requested word range. The memos were screened for six known
-qualifications, not reviewed claim by claim.
+**Accuracy.** Finding the evidence at least as well as without the skill is the
+requirement; a saving that loses accuracy is not a result. "Screened qualifications"
+counts six decision-relevant conditions in each of the three answers. Every answer has
+ten sections and existing citation ranges, and every answer ran over the requested word
+range. The memos were not reviewed claim by claim.
 
-On an earlier held-out review (16 November, antivirus scanning on) Doktimoi 0.14.2 used
-48.5% fewer tokens than ordinary file tools, and hybrid search used more tokens than
-keyword search on this English corpus. Antivirus scanning was off on 23 November. Costs,
-checks, trace findings and raw traces are in the [Claude Code results](benchmarks/README.md#claude-code-windows).
+Antivirus scanning was off. Costs, checks, raw traces and results for other tasks are in
+the [Claude Code results](benchmarks/README.md#claude-code-windows).
 
 ### Codex on macOS
 

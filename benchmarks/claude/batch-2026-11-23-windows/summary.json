@@ -112,57 +112,6 @@
       }
     },
     {
-      "pair": 1,
-      "mode": "doktimoi",
-      "elapsedMs": 98555,
-      "buildMs": 10065,
-      "embedMs": 0,
-      "indexCopyMs": 0,
-      "preflightMs": 0,
-      "setupMs": 0,
-      "threadId": "168650d0-3af0-47e2-a125-a8d6582cff92",
-      "usage": {
-        "input_tokens": 474339,
-        "cached_input_tokens": 388196,
-        "cache_write_input_tokens": 83600,
-        "output_tokens": 10832,
-        "cost_usd": 0.9629084
-      },
-      "totalTokens": 485171,
-      "uncachedInputTokens": 86143,
-      "commands": 11,
-      "failedCommands": 0,
-      "transportErrors": [],
-      "toolOutputTokensEstimate": 25038,
-      "audit": {
-        "targetedReads": [],
-        "deniedAttempts": [
-          {
-            "id": "toolu_01SZDRxwKJXU2GtMzdKi1dHw",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-doktimoi-KTD1nH/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"disruption budget involuntary disruptions\",\"node drain eviction API PodDisruptionBudget\"]},{\"queries\":[\"rolling update not limited by PodDisruptionBudget\",\"PDB workload resources rolling upgrade\"]},{\"queries\":[\"maxUnavailable maxSurge rolling update\"]},{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]}]' --limit 3"
-          },
-          {
-            "id": "toolu_01Kb7iDXwE2UsK5zhtqMmGCx",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-1-doktimoi-KTD1nH/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"startupProbe failureThreshold periodSeconds slow starting\"]},{\"queries\":[\"readiness probe fails removes endpoints\",\"liveness probe restarts container\"]},{\"queries\":[\"preStop hook grace period SIGTERM\",\"termination grace period SIGKILL\"]},{\"queries\":[\"terminating endpoints serving\",\"EndpointSlice terminating condition\"]}]' --limit 3"
-          }
-        ],
-        "skillReads": 0,
-        "competitorCommands": 0,
-        "successfulCompetitorCommands": 0,
-        "doktimoiCommands": 10,
-        "hybridCommands": 0,
-        "successfulHybridCommands": 0,
-        "referenceReads": 1,
-        "filenameCommands": 0,
-        "violations": [],
-        "operationErrors": [],
-        "cappedOutputs": 0,
-        "emptySearches": 2,
-        "repeatedCommands": 0,
-        "passed": true
-      }
-    },
-    {
       "pair": 2,
       "mode": "batched",
       "elapsedMs": 103694,
@@ -201,65 +150,6 @@
         "cappedOutputs": 0,
         "emptySearches": 0,
         "repeatedCommands": 2,
-        "passed": true
-      }
-    },
-    {
-      "pair": 2,
-      "mode": "doktimoi",
-      "elapsedMs": 92491,
-      "buildMs": 10027,
-      "embedMs": 0,
-      "indexCopyMs": 0,
-      "preflightMs": 0,
-      "setupMs": 0,
-      "threadId": "59dfd3b2-8e63-4a05-a7ae-7fe3c12ccc87",
-      "usage": {
-        "input_tokens": 391198,
-        "cached_input_tokens": 343266,
-        "cache_write_input_tokens": 45391,
-        "output_tokens": 10773,
-        "cost_usd": 0.6470819
-      },
-      "totalTokens": 401971,
-      "uncachedInputTokens": 47932,
-      "commands": 11,
-      "failedCommands": 0,
-      "transportErrors": [],
-      "toolOutputTokensEstimate": 18099,
-      "audit": {
-        "targetedReads": [],
-        "deniedAttempts": [
-          {
-            "id": "toolu_01GqBHxoVuePiC3Ko3qvwafn",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"disruption budget involuntary disruptions node failure\"]},{\"queries\":[\"voluntary disruption drain eviction PodDisruptionBudget\"]},{\"queries\":[\"rolling update deployment not limited by PodDisruptionBudget\"]},{\"queries\":[\"maxUnavailable maxSurge rolling update\"]}]' --limit 2"
-          },
-          {
-            "id": "toolu_018GKPbmeP8mYeAtz1wAF83z",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]},{\"queries\":[\"DoNotSchedule ScheduleAnyway skew\"]},{\"queries\":[\"startupProbe liveness readiness disabled until succeeds\"]},{\"queries\":[\"readiness probe fails removes endpoints traffic\"]}]' --limit 2"
-          },
-          {
-            "id": "toolu_01MN8j9m86bPPGsiDBT4nTmt",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"preStop hook grace period SIGTERM SIGKILL termination\"]},{\"queries\":[\"terminating endpoints EndpointSlice serving\"]},{\"queries\":[\"CPU limit throttling memory limit OOM killed\"]},{\"queries\":[\"HPA missing metrics not yet ready pods\"]}]' --limit 2"
-          },
-          {
-            "id": "toolu_01QaCMeWJ16xkQKivVa8LoyK",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; F=\"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-2-doktimoi-mPOiKR/docs\"; node \"$S\" batch \"$F\" --requests '[{\"queries\":[\"network policy isolated ingress egress additive\"]},{\"queries\":[\"Secrets stored unencrypted base64 encryption at rest\"]},{\"queries\":[\"reclaim policy Retain Delete persistent volume\"]},{\"queries\":[\"StatefulSet deleting scaling volumes not deleted\"]}]' --limit 2"
-          }
-        ],
-        "skillReads": 0,
-        "competitorCommands": 0,
-        "successfulCompetitorCommands": 0,
-        "doktimoiCommands": 10,
-        "hybridCommands": 0,
-        "successfulHybridCommands": 0,
-        "referenceReads": 1,
-        "filenameCommands": 0,
-        "violations": [],
-        "operationErrors": [],
-        "cappedOutputs": 0,
-        "emptySearches": 1,
-        "repeatedCommands": 0,
         "passed": true
       }
     },
@@ -311,53 +201,6 @@
         "cappedOutputs": 0,
         "emptySearches": 0,
         "repeatedCommands": 1,
-        "passed": true
-      }
-    },
-    {
-      "pair": 3,
-      "mode": "doktimoi",
-      "elapsedMs": 89830,
-      "buildMs": 10188,
-      "embedMs": 0,
-      "indexCopyMs": 0,
-      "preflightMs": 0,
-      "setupMs": 0,
-      "threadId": "f5356a67-68fd-4fab-b028-0477f8f170c7",
-      "usage": {
-        "input_tokens": 458492,
-        "cached_input_tokens": 407329,
-        "cache_write_input_tokens": 48620,
-        "output_tokens": 9901,
-        "cost_usd": 0.6682945
-      },
-      "totalTokens": 468393,
-      "uncachedInputTokens": 51163,
-      "commands": 10,
-      "failedCommands": 0,
-      "transportErrors": [],
-      "toolOutputTokensEstimate": 20753,
-      "audit": {
-        "targetedReads": [],
-        "deniedAttempts": [
-          {
-            "id": "toolu_014H14cGP5rhWcYfqdmcridg",
-            "command": "S=\"C:/Users/miikame/AppData/Local/Temp/claude/3988ca781ac53f72/45e1d038-d290-492b-9126-79a661110c4a/scratchpad/bench/skills/doktimoi/scripts/doktimoi.mjs\"; node \"$S\" batch \"C:/Users/miikame/AppData/Local/Temp/doktimoi-bench-3-doktimoi-l2mTzS/docs\" --requests '[{\"queries\":[\"disruption budget voluntary involuntary disruptions\"]},{\"queries\":[\"PodDisruptionBudget rolling update deployment not limited\"]},{\"queries\":[\"maxSkew topologyKey whenUnsatisfiable\"]},{\"queries\":[\"startup probe liveness readiness disabled until succeeds\"]}]' --limit 3"
-          }
-        ],
-        "skillReads": 0,
-        "competitorCommands": 0,
-        "successfulCompetitorCommands": 0,
-        "doktimoiCommands": 9,
-        "hybridCommands": 0,
-        "successfulHybridCommands": 0,
-        "referenceReads": 1,
-        "filenameCommands": 0,
-        "violations": [],
-        "operationErrors": [],
-        "cappedOutputs": 0,
-        "emptySearches": 0,
-        "repeatedCommands": 0,
         "passed": true
       }
     },
@@ -452,5 +295,6 @@
       }
     }
   ],
-  "implementationSha256": "e161cff6cbd34906fda8e64c98c3d062c7ffd055022e633c905c246b6c5927b9"
+  "implementationSha256": "e161cff6cbd34906fda8e64c98c3d062c7ffd055022e633c905c246b6c5927b9",
+  "removedRuns": "The three Doktimoi 0.14.7 runs of this study were removed when the 0.14.8 rerun in ../batch-doktimoi-0148-2026-11-23-windows superseded them; they are in git history at fff6967. The remaining run records are unchanged."
 }

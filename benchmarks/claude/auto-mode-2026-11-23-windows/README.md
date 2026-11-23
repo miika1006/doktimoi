@@ -25,10 +25,9 @@ without a semantic index it is lexical search.
 - Auto returns more text than lexical on the natural-language questions because the
   fused fallback fills the result limit.
 
-A first variant also padded short lexical results with semantic matches
-([Kubernetes](kubernetes-auto-padded.json), [Finnish](finnish-auto-padded.json)). It
-found the same passages (20/20 and 5/8) but returned 67,325 tokens on the Kubernetes
-queries, so it was dropped.
+A first variant also padded short lexical results with semantic matches. It found the
+same passages (20/20 and 5/8) but returned 67,325 tokens on the Kubernetes queries, so it
+was dropped; its results are in git history (`fff6967`).
 
 ## Limits
 

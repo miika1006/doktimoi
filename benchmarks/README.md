@@ -11,22 +11,23 @@ provider input plus output with cached input counted once.
 
 ### Production design, 23 November 2026
 
-Claude Code 2.1.326, antivirus scanning off. The [three-arm study](claude/batch-2026-11-23-windows/README.md)
-rotates ordinary file tools, the same tools with a one-sentence batching instruction, and
-Doktimoi with that same instruction.
+Claude Code 2.1.326, antivirus scanning off. [Ordinary file tools and the same tools with
+a one-sentence batching instruction](claude/batch-2026-11-23-windows/README.md) rotated;
+Doktimoi with that same instruction ran right after them, unpaired.
 
-| Arm | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 |
-| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 |
-| Batched Doktimoi 0.14.7 | 451,845 | −67.9% | −52.6% | $0.76 | 93.6 s | 7.7 |
-| [Batched Doktimoi 0.14.8](claude/batch-doktimoi-0148-2026-11-23-windows/README.md) (unpaired rerun) | 376,985 | −73.2% | −60.4% | $0.61 | 87.5 s | 6.3 |
+| Arm | Total tokens | vs ordinary | vs batched files | Cost | Agent time | Model rounds | Screened qualifications |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ordinary file tools (Read/Grep/Glob) | 1,408,986 | — | — | $0.98 | 131.5 s | 23.3 | 12/18 |
+| Batched file tools | 953,057 | −32.4% | — | $0.89 | 128.7 s | 14.7 | 13/18 |
+| [Batched Doktimoi 0.14.8](claude/batch-doktimoi-0148-2026-11-23-windows/README.md) | 376,985 | −73.2% | −60.4% | $0.61 | 87.5 s | 6.3 | 14/18 |
 
-Batching alone saved a third of the tokens but 8.5% of the cost; Doktimoi halved the
-batched control's tokens. Cost falls less than tokens because the arms bring about the
-same amount of new context and differ in how often the cached context is re-sent. All
-answers ran over the requested word range. Each 0.14.7 run lost one round to shell
-variables that Claude Code refused; 0.14.8 names them in the skill.
+Batching alone saved a third of the tokens but 8.5% of the cost. Doktimoi used 60% fewer
+tokens than the batched control and cost 32% less; cost falls less than tokens because
+re-sent context is read from the cache at a low price. "Screened qualifications" counts
+six decision-relevant conditions in each of three answers
+([qualifier-check.mjs](claude/qualifier-check.mjs)); every answer also has ten sections
+and only existing citation ranges, and every answer ran over the requested word range.
+The memos were not reviewed claim by claim.
 
 ### Other tasks, 16 November 2026
 

@@ -50,11 +50,20 @@ all three: use `path`, never hard-coded separators, and test Windows paths
 
 ## Benchmarks
 
-- Results are evidence: never edit recorded runs (`benchmarks/** -text`).
-- Keep only the latest results. When a benchmark is run again in the same environment
-  (agent, OS and retrieval mode), commit the new run, delete the older run folders with
-  their pilots, failed attempts, reviews and logs, and make the docs show only the newest
-  results. Older runs live in git history.
+- **Accuracy comes first.** Doktimoi must find the evidence at least as well as the
+  same agent without it; a token saving with less accurate answers is a regression, not a
+  result. Every agent benchmark reports an accuracy check next to its tokens, for the
+  Doktimoi arm and the ordinary-file control alike (exact answer key where the task has
+  one, otherwise the qualifier screen and citation check), and says what was not checked.
+  Do not ship a retrieval or skill change that lowers a recorded accuracy result.
+- Results are evidence: never change the data of a recorded run (`benchmarks/** -text`).
+- **Only the latest measurement is kept, in the folders and in every README.** One result
+  per benchmark, meaning agent, OS, task, retrieval mode and arm. When a benchmark or one
+  of its arms is run again, commit the new run and delete what it supersedes: the older
+  run folders or that arm's run files and its entries in `summary.json` (leave a
+  `removedRuns` note naming the commit), with their pilots, failed attempts, dropped
+  variants, reviews and logs. Tables in the root README and `benchmarks/README.md` show
+  one row per arm and no version-by-version history. Older runs live in git history.
   The runner refuses existing output folders; `--resume` continues only when nothing changed.
 - Results are separated by agent: `benchmarks/codex/` and `benchmarks/claude/`.
   `node benchmarks/agent-benchmark.mjs --agent codex|claude --output benchmarks/<agent>/<name> --pairs 3`.
