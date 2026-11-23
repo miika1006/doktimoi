@@ -37,8 +37,10 @@ repeated context. Doktimoi saves by needing fewer rounds and by adding less to e
   questions; a passage that does not fit is cut to an excerpt around the match.
 - **No repeated text.** Adjacent hits of one file merge into one result, and a `read`
   call fetches only the missing line ranges of up to 20 references at once.
-- **Citations that can be reused.** Every result carries a verified reference, so the
-  agent cites it without reopening the source to check.
+- **Citations come with the passage.** Every result starts with its file and line range,
+  checked against the source file when it is returned, so the agent cites it without
+  reopening the source. A citation describes the file at that moment; it is not stored
+  or updated if the file changes later.
 - **No permission stalls.** The hook approves the read-only commands, so the agent does
   not fall back to Grep and whole-file reads.
 
